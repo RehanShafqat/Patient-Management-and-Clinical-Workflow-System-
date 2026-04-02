@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('specialities_id')->constrained()->onDelete('cascade');
+            $table->foreignId('practice_location_id')->constrained()->onDelete('cascade');
 
             $table->string('license_number');
             $table->json('availability_schedule')->nullable();
@@ -22,7 +24,6 @@ return new class extends Migration
 
             $table->timestamps();
 
-            // add specialty and location place later
         });
     }
 

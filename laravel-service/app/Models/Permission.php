@@ -8,6 +8,9 @@ class Permission extends Model
 {
     protected $fillable = [
         'name',
+        'id',
+        'default'
+
     ];
 
     public function users()
