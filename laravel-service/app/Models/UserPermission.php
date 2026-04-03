@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class FdoPermission extends Model
+class UserPermission extends Model
 {
     //
 }

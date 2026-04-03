@@ -23,12 +23,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'role',
         'first_name',
         'last_name',
         'email',
+        'password',
         'phone',
         'is_active',
-        'role'
     ];
 
     /**
@@ -37,8 +38,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password'
     ];
 
     /**
@@ -55,8 +55,40 @@ class User extends Authenticatable
         ];
     }
 
-    public function permissions()
+
+    // One user (doctor) has one doctor profile
+    public function doctorProfile()
     {
-        return $this->belongsToMany(Permission::class);
+        return $this->hasOne(DoctorProfile::class);
+    }
+
+    // One FDO user has many permission rows
+    public function userPermissions()
+    {
+        return $this->hasMany(UserPermission::class);
+    }
+
+    // Appointments created by this FDO
+    public function createdAppointments()
+    {
+        return $this->hasMany(Appointment::class, 'created_by');
+    }
+
+    // Helper: check if user is admin
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    // Helper: check if user is doctor
+    public function isDoctor(): bool
+    {
+        return $this->role === 'doctor';
+    }
+
+    // Helper: check if user is FDO
+    public function isFdo(): bool
+    {
+        return $this->role === 'fdo';
     }
 }

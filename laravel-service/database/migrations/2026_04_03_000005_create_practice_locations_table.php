@@ -8,10 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('specialties', function (Blueprint $table) {
+        Schema::create('practice_locations', function (Blueprint $table) {
             $table->id();
-            $table->string('specialty_name');
-            $table->text('description')->nullable();
+            $table->string('location_name');
+            $table->text('address')->nullable();
+            $table->string('city');
+            $table->string('state');
+            $table->string('zip');
+            $table->string('phone');
+            $table->string('email');
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();
@@ -21,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('specialties');
+        Schema::dropIfExists('practice_locations');
     }
 };

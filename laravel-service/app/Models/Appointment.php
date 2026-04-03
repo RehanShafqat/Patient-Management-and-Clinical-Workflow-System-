@@ -79,7 +79,7 @@ class Appointment extends Model
 
     public function specialty()
     {
-        return $this->belongsTo(Specialities::class);
+        return $this->belongsTo(Specialty::class);
     }
 
     public function practiceLocation()

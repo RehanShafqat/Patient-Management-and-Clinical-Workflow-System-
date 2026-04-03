@@ -6,21 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('insurance', function (Blueprint $table) {
+        Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('insurance_name');
-            $table->string('insurance_code')->nullable();
-            $table->boolean('is_active')->default(true);
-
+            $table->string('permission_name')->unique();
+            $table->string('description')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('insurance');
+        Schema::dropIfExists('permissions');
     }
 };

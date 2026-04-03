@@ -26,4 +26,9 @@ class Insurance extends Model
     {
         return $this->hasMany(PatientCase::class);
     }
+
+    public function primaryAddress()
+    {
+        return $this->hasOne(InsuranceAddress::class)->where('is_primary', true);
+    }
 }

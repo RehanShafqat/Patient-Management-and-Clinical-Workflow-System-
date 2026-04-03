@@ -7,14 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Permission extends Model
 {
     protected $fillable = [
-        'name',
-        'id',
-        'default'
-
+        'permission_name',
+        'description'
     ];
 
-    public function users()
+    // One permission type is assigned to many FDO users
+    public function userPermissions()
     {
-        return $this->belongsToMany(User::class);
+        return $this->hasMany(UserPermission::class);
     }
 }

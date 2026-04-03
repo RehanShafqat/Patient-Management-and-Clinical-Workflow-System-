@@ -14,14 +14,14 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->enum('role', array_column(Roles::cases(), 'value'))->default(Roles::FDO->value);
+            
             $table->string('first_name');
             $table->string('last_name');
             $table->string('email')->unique();
-            $table->string('phone')->nullable();
             $table->string('password');
+            $table->string('phone')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->enum('role', array_column(Roles::cases(), 'value'))->default(Roles::FDO->value);
-            $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
         });

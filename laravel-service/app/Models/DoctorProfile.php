@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DoctorProfile extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'user_id',
-        'specialities_id',
+        'specialty_id',
         'practice_location_id',
         'license_number',
         'availability_schedule',
@@ -21,8 +24,8 @@ class DoctorProfile extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function specialities() {
-        return $this->belongsTo(Specialities::class);
+    public function specialty() {
+        return $this->belongsTo(Specialty::class);
     }
 
     public function practiceLocation() {

@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Patient extends Model
 {
+
+    use SoftDeletes;
+
     protected $fillable = [
         'first_name',
         'middle_name',
         'last_name',
         'date_of_birth',
         'gender',
-        'ssn',
         'email',
         'phone',
         'mobile',
@@ -32,7 +35,40 @@ class Patient extends Model
         'deleted_at',
     ];
 
-    public function cases(){
-        return $this->hasMany(Cases::class);
+
+    protected $hidden = [
+        'ssn', // never expose SSN in API responses
+    ];
+
+
+    // Computed age from date_of_birth — never stored in DB
+    public function getAgeAttribute(): int
+    {
+       // Convert date_of_birth into a Carbon date object
+        $birthDate = \Carbon\Carbon::parse($this->date_of_birth);
+
+        // Return the calculated age
+        return $birthDate->age;
+    }
+
+
+    // One patient has many cases
+    public function cases()
+    {
+        return $this->hasMany(PatientCase::class);
+    }
+
+
+    // One patient has many appointments (denormalized)
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+
+    // One patient has many visits (denormalized)
+    public function visits()
+    {
+        return $this->hasMany(Visit::class);
     }
 }

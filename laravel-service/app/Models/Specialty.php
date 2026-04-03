@@ -15,6 +15,9 @@ class Specialty extends Model
         'is_active',
     ];
 
+    public function doctorProfiles(){
+        return $this->hasMany(DoctorProfile::class);
+    }
     public function appointments()
     {
         return $this->hasMany(Appointment::class);

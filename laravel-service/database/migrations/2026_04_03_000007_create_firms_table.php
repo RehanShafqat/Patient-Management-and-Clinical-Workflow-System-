@@ -1,22 +1,29 @@
 <?php
 
+use App\Enums\Firms;
+use App\Enums\FirmType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('practice_locations', function (Blueprint $table) {
+        Schema::create('firms', function (Blueprint $table) {
             $table->id();
-            $table->string('location_name');
+
+            $table->string('firm_name');
+
+            $table->enum('firm_type', array_column(FirmType::cases(), 'value'))->default(FirmType::OTHER->value);
+
             $table->text('address');
-            $table->string('city');
-            $table->string('state');
-            $table->string('zip');
             $table->string('phone');
-            $table->string('email');
+            $table->string('contact_person');
+
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();
@@ -24,8 +31,11 @@ return new class extends Migration
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('practice_locations');
+        Schema::dropIfExists('firms');
     }
 };

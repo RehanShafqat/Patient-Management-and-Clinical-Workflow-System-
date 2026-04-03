@@ -29,4 +29,8 @@ class PracticeLocation extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function doctorProfiles() {
+        return $this->hasMany(DoctorProfile::class);
+    }
 }
