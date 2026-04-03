@@ -1,27 +1,20 @@
 import cors from "cors";
 import express from "express";
-import { authMiddleware } from "./middlewares/auth.middleware";
 import { loggerMiddleware } from "./middlewares/logger.middleware";
-import appointmentRouter from "./routes/appointment.routes";
-import authRouter from "./routes/auth.routes";
-import caseRouter from "./routes/case.routes";
-import patientRouter from "./routes/patient.routes";
-import visitRouter from "./routes/visit.routes";
 
+import { authMiddleware } from "./middlewares/auth.middleware";
+import proxy from "./proxies/proxy";
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(loggerMiddleware);
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-app.use("/api/auth", authRouter);
-app.use("/api/patients", authMiddleware, patientRouter);
-app.use("/api/cases", authMiddleware, caseRouter);
-app.use("/api/appointments", authMiddleware, appointmentRouter);
-app.use("/api/visits", authMiddleware, visitRouter);
+app.use(loggerMiddleware);
+app.use(authMiddleware);
+app.use(proxy);
 
 export default app;

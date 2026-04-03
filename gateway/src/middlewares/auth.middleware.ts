@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 export const authMiddleware = (
   req: Request,
@@ -8,7 +8,7 @@ export const authMiddleware = (
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    res.status(401).json({ message: "Unauthorized" });
+    res.status(401).json({ success: false, message: "Unauthorized" });
     return;
   }
 
