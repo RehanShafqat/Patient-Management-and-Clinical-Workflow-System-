@@ -1,0 +1,40 @@
+import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import routes from "./routes";
+import { errorHandler } from "./Middlewares/error.middleware";
+import { AppError } from "./utils/app-error.util";
+import logger from "./config/logger.config";
+import cookieParser from "cookie-parser";
+const app = express();
+
+app.use(helmet());
+app.use(
+  cors({
+    origin: [process.env.CLIENT_URL as string],
+    credentials: true,
+  }),
+);
+app.use(express.json());
+app.use(cookieParser());
+
+//INFO: Request Logger
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  logger.info(`${req.method} ${req.originalUrl}`);
+  next();
+});
+
+app.use("/express/check", (req, res, next) => {
+  res.json({ message: "You are on express server" });
+});
+
+//INFO: Routes
+app.use("/api", routes);
+
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  next(new AppError(404, `Cannot find ${req.method} ${req.originalUrl}`));
+});
+
+app.use(errorHandler);
+
+export default app;

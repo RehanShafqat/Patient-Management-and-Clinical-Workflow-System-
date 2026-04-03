@@ -11,7 +11,7 @@ export const routes = [
     target: process.env.LARAVEL_SERVICE_URL,
   },
   {
-    pathFilter: ["/api/auth"],
+    pathFilter: ["/express/check"],
     target: process.env.EXPRESS_SERVICE_URL,
   },
 ];
