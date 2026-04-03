@@ -18,17 +18,38 @@ class DoctorProfile extends Model
         'bio',
     ];
 
-    // Add relationship
+    // convert JSON-> PHP array
+    protected $casts = [
+        'availability_schedule' => 'array',
+    ];
+
+    // One doctor profile belongs to one user (one-to-one)
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function specialty() {
+    // One doctor profile belongs to one specialty
+    public function specialty()
+    {
         return $this->belongsTo(Specialty::class);
     }
 
-    public function practiceLocation() {
+    // One doctor profile belongs to one practice location
+    public function practiceLocation()
+    {
         return $this->belongsTo(PracticeLocation::class);
+    }
+
+    // One doctor has many appointments
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'doctor_id');
+    }
+
+    // One doctor has many visits
+    public function visits()
+    {
+        return $this->hasMany(Visit::class, 'doctor_id');
     }
 }

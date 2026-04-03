@@ -30,53 +30,59 @@ class PatientCase extends Model
         'clinical_notes',
     ];
 
+    // automatically convert attributes to date data types
     protected $casts = [
         'date_of_accident' => 'date',
         'opening_date' => 'date',
         'closing_date' => 'date',
     ];
 
-//   Boot Method
-
-    protected static function boot()
+    // Auto-generate case_number before creating
+    protected static function booted(): void
     {
-        parent::boot();
-
         static::creating(function ($case) {
-            $case->case_number =
-                'CASE-' . date('Y') . '-' . strtoupper(uniqid());
+            $year = now()->format('Y');
+            $sequence = str_pad(
+                PatientCase::withTrashed()->whereYear('created_at', $year)->count() + 1,
+                5, '0', STR_PAD_LEFT
+            );
+            $case->case_number = "CASE-{$year}-{$sequence}";
         });
     }
 
-//    Relationships
-
+    // One case belongs to one patient
     public function patient()
     {
         return $this->belongsTo(Patient::class);
     }
 
-    public function appointments()
-    {
-        return $this->hasMany(Appointment::class, 'case_id');
-    }
-
-    public function visits()
-    {
-        return $this->hasMany(Visit::class, 'case_id');
-    }
-
+    // One case belongs to one practice location
     public function practiceLocation()
     {
         return $this->belongsTo(PracticeLocation::class);
     }
 
+    // One case optionally belongs to one insurance
     public function insurance()
     {
         return $this->belongsTo(Insurance::class);
     }
 
+    // One case optionally belongs to one firm
     public function firm()
     {
         return $this->belongsTo(Firm::class);
+    }
+
+    // One case has many appointments
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'case_id');
+    }
+
+    // One case has many visits (denormalized)
+    public function visits()
+    {
+        return $this->hasMany(Visit::class, 'case_id');
     }
 }

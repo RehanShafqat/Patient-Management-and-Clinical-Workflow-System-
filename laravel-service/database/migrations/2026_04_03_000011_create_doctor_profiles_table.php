@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('doctor_profiles', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('specialty_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('practice_location_id')->constrained('practice_locations')->onDelete('cascade');
+            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
+            $table->foreignId('specialty_id')->constrained()->onDelete('restrict');
+            $table->foreignId('practice_location_id')->constrained('practice_locations')->onDelete('restrict');
 
             $table->string('license_number');
             $table->json('availability_schedule')->nullable();

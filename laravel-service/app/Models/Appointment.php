@@ -17,7 +17,6 @@ class Appointment extends Model
         'doctor_id',
         'appointment_date',
         'appointment_time',
-        'end_time',
         'appointment_type',
         'specialty_id',
         'practice_location_id',
@@ -33,73 +32,83 @@ class Appointment extends Model
     protected $casts = [
         'appointment_date' => 'date',
         'appointment_time' => 'datetime:H:i',
-        'end_time' => 'datetime:H:i',
         'reminder_sent' => 'boolean',
     ];
 
-    // Boot Method
-    
-    protected static function boot()
+    // Auto-generate appointment_number before creating
+    protected static function booted(): void
     {
-        parent::boot();
-
-        // When creating new appointment
         static::creating(function ($appointment) {
-
-            // Generate unique appointment number
-            $appointment->appointment_number =
-                'APT-' . date('Ymd') . '-' . strtoupper(uniqid());
-
-            // Set end time
-            $appointment->setEndTime();
+            $year = now()->format('Y');
+            $sequence = str_pad(
+                Appointment::withTrashed()->whereYear('created_at', $year)->count() + 1,
+                6,
+                '0',
+                STR_PAD_LEFT
+            );
+            $appointment->appointment_number = "APT-{$year}-{$sequence}";
         });
 
-        // When updating appointment
-        static::updating(function ($appointment) {
-            $appointment->setEndTime();
+        // Auto-create visit when status changes to Completed
+        static::updated(function ($appointment) {
+            if (
+                $appointment->isDirty('status') &&
+                $appointment->status === 'Completed' &&
+                !$appointment->visit
+            ) {
+                Visit::createFromAppointment($appointment);
+            }
         });
     }
 
-    // Relationships
+    // Computed end_time — never stored in DB
+    public function getEndTimeAttribute(): string
+    {
+        return Carbon::parse($this->appointment_time)
+            ->addMinutes($this->duration_minutes)
+            ->format('H:i:s');
+    }
 
+    // Belongs to a case
+    public function case()
+    {
+        return $this->belongsTo(PatientCase::class, 'case_id');
+    }
+
+    // Belongs to a patient (denormalized)
     public function patient()
     {
         return $this->belongsTo(Patient::class);
     }
 
-    public function case()
-    {
-        return $this->belongsTo(PatientCase::class);
-    }
-
+    // Belongs to a doctor profile
     public function doctor()
     {
-        return $this->belongsTo(User::class, 'doctor_id');
+        return $this->belongsTo(DoctorProfile::class, 'doctor_id');
     }
 
+    // Belongs to a specialty
     public function specialty()
     {
         return $this->belongsTo(Specialty::class);
     }
 
+    // Belongs to a practice location
     public function practiceLocation()
     {
         return $this->belongsTo(PracticeLocation::class);
     }
 
+    // Created by an FDO user
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // Helper Methods
-    
-    public function setEndTime()
+    // One appointment has one visit (after completion)
+    public function visit()
     {
-        if ($this->appointment_time && $this->duration_minutes) {
-            $start = Carbon::parse($this->appointment_time);
-            $this->end_time = $start->addMinutes($this->duration_minutes);
-        }
+        return $this->hasOne(Visit::class);
     }
 
 }
