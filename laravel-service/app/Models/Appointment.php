@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\AppointmentStatus;
+use App\Enums\AppointmentType;
+use App\Enums\ReminderMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
@@ -33,6 +36,9 @@ class Appointment extends Model
         'appointment_date' => 'date',
         'appointment_time' => 'datetime:H:i',
         'reminder_sent' => 'boolean',
+        'appointment_type' => AppointmentType::class,
+        'status' => AppointmentStatus::class,
+        'reminder_method' => ReminderMethod::class,
     ];
 
     // Auto-generate appointment_number before creating
@@ -70,7 +76,7 @@ class Appointment extends Model
     }
 
     // Belongs to a case
-    public function case()
+    public function patientCase()
     {
         return $this->belongsTo(PatientCase::class, 'case_id');
     }
@@ -110,5 +116,4 @@ class Appointment extends Model
     {
         return $this->hasOne(Visit::class);
     }
-
 }

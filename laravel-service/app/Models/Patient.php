@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\Gender;
+use App\Enums\PatientStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -25,14 +27,13 @@ class Patient extends Model
         'zip_code',
         'country',
         'emergency_contact_name',
-        'emergency_contact_phone', 
+        'emergency_contact_phone',
         'primary_physician',
         'insurance_provider',
         'insurance_policy_number',
         'preferred_language',
         'patient_status',
         'registration_date',
-        'deleted_at',
     ];
 
 
@@ -40,11 +41,17 @@ class Patient extends Model
         'ssn', // never expose SSN in API responses
     ];
 
+    protected $casts = [
+        'gender' => Gender::class,
+        'patient_status' => PatientStatus::class,
+        'date_of_birth' => 'date',
+        'registration_date' => 'datetime',
+    ];
 
     // Computed age from date_of_birth — never stored in DB
     public function getAgeAttribute(): int
     {
-       // Convert date_of_birth into a Carbon date object
+        // Convert date_of_birth into a Carbon date object
         $birthDate = \Carbon\Carbon::parse($this->date_of_birth);
 
         // Return the calculated age
@@ -53,7 +60,7 @@ class Patient extends Model
 
 
     // One patient has many cases
-    public function cases()
+    public function patientCases()
     {
         return $this->hasMany(PatientCase::class);
     }

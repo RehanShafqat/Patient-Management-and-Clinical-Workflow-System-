@@ -20,7 +20,11 @@ class PracticeLocation extends Model
         'is_active',
     ];
 
-    public function cases()
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    public function patientCases()
     {
         return $this->hasMany(PatientCase::class);
     }
@@ -30,7 +34,8 @@ class PracticeLocation extends Model
         return $this->hasMany(Appointment::class);
     }
 
-    public function doctorProfiles() {
+    public function doctorProfiles()
+    {
         return $this->hasMany(DoctorProfile::class);
     }
 }

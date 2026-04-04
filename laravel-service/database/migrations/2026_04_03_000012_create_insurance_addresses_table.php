@@ -8,22 +8,25 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('insurance_address', function (Blueprint $table) {
+        Schema::create('insurance_addresses', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('insurance_id')->constrained('insurance')->cascadeOnDelete();
+            $table->foreignId('insurance_id')->constrained('insurances')->cascadeOnDelete();
 
             $table->text('address');
             $table->string('phone')->nullable();
-            $table->boolean('is_primary')->default(true);
 
+            $table->boolean('is_primary')->default(false);
             $table->timestamps();
+
             $table->softDeletes();
+
+            // Ensure only one primary address per insurance
+            $table->unique(['insurance_id', 'is_primary']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('insurance_address');
+        Schema::dropIfExists('insurance_addresses');
     }
 };

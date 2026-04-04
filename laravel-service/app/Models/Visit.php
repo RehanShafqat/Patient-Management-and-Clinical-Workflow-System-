@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Enums\VisitStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -40,6 +41,7 @@ class Visit extends Model
         'prescription_documents'   => 'array',
         'follow_up_required'       => 'boolean',
         'referral_made'            => 'boolean',
+        'visit_status'             => VisitStatus::class,
     ];
 
     // Called automatically from Appointment::booted() on status → Completed
@@ -48,7 +50,9 @@ class Visit extends Model
         $year     = now()->format('Y');
         $sequence = str_pad(
             self::withTrashed()->whereYear('created_at', $year)->count() + 1,
-            6, '0', STR_PAD_LEFT
+            6,
+            '0',
+            STR_PAD_LEFT
         );
 
         return self::create([

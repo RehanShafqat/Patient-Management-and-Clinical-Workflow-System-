@@ -10,13 +10,17 @@ return new class extends Migration
     {
         Schema::create('practice_locations', function (Blueprint $table) {
             $table->id();
-            $table->string('location_name');
+            $table->string('location_name')->unique();
+
             $table->text('address')->nullable();
             $table->string('city');
+
             $table->string('state');
             $table->string('zip');
-            $table->string('phone');
-            $table->string('email');
+
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
+
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();

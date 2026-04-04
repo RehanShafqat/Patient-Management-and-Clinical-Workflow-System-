@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('specialties', function (Blueprint $table) {
             $table->id();
-            $table->string('specialty_name');
+            $table->string('specialty_name')->unique();
+
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
 

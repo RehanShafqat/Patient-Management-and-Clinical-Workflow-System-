@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\CaseCategory;
+use App\Enums\CasePriority;
+use App\Enums\CaseStatus;
+use App\Enums\CaseType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PatientCase extends Model
 {
     use SoftDeletes;
-
-    protected $table = 'cases';
 
     protected $fillable = [
         'case_number',
@@ -32,6 +34,10 @@ class PatientCase extends Model
 
     // automatically convert attributes to date data types
     protected $casts = [
+        'category' => CaseCategory::class,
+        'case_type' => CaseType::class,
+        'priority' => CasePriority::class,
+        'case_status' => CaseStatus::class,
         'date_of_accident' => 'date',
         'opening_date' => 'date',
         'closing_date' => 'date',
@@ -44,7 +50,9 @@ class PatientCase extends Model
             $year = now()->format('Y');
             $sequence = str_pad(
                 PatientCase::withTrashed()->whereYear('created_at', $year)->count() + 1,
-                5, '0', STR_PAD_LEFT
+                5,
+                '0',
+                STR_PAD_LEFT
             );
             $case->case_number = "CASE-{$year}-{$sequence}";
         });

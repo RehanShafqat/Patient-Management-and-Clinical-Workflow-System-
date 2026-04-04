@@ -4,8 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use App\Enums\Roles;
-use Carbon\Traits\Timestamp;
+use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -16,7 +15,6 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
     use SoftDeletes;
-    use Timestamp;
     /**
      * The attributes that are mass assignable.
      *
@@ -51,7 +49,7 @@ class User extends Authenticatable
         return [
             // 'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => Roles::class
+            'role' => Role::class
         ];
     }
 
@@ -77,18 +75,18 @@ class User extends Authenticatable
     // Helper: check if user is admin
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === Role::ADMIN;
     }
 
     // Helper: check if user is doctor
     public function isDoctor(): bool
     {
-        return $this->role === 'doctor';
+        return $this->role === Role::DOCTOR;
     }
 
     // Helper: check if user is FDO
     public function isFdo(): bool
     {
-        return $this->role === 'fdo';
+        return $this->role === Role::FDO;
     }
 }

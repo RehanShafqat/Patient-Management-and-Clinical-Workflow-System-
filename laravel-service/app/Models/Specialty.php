@@ -15,7 +15,13 @@ class Specialty extends Model
         'is_active',
     ];
 
-    public function doctorProfiles(){
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    public function doctorProfiles()
+    {
         return $this->hasMany(DoctorProfile::class);
     }
     public function appointments()

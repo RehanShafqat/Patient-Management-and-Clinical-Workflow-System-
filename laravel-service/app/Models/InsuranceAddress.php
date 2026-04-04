@@ -13,7 +13,11 @@ class InsuranceAddress extends Model
         'insurance_id',
         'address',
         'phone',
-        'is_primary'  // main/default address for this insurance
+        'is_primary'  // marks the main/default address for this insurance
+    ];
+
+    protected $casts = [
+        'is_primary' => 'boolean',
     ];
 
     // One insurance address belongs to one insurance company

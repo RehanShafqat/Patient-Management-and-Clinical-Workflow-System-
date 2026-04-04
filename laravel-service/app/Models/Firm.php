@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Enums\FirmType;
 
 class Firm extends Model
 {
@@ -18,7 +19,11 @@ class Firm extends Model
         'is_active',
     ];
 
-    public function cases()
+    protected $casts = [
+        'firm_type' => FirmType::class,
+    ];
+
+    public function patientCases()
     {
         return $this->hasMany(PatientCase::class);
     }

@@ -9,7 +9,7 @@ class Insurance extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'insurance';
+    protected $table = 'insurances';
 
     protected $fillable = [
         'insurance_name',
@@ -17,12 +17,12 @@ class Insurance extends Model
         'is_active',
     ];
 
-    public function addresses()
+    public function insuranceAddress()
     {
         return $this->hasMany(InsuranceAddress::class);
     }
 
-    public function cases()
+    public function patientCases()
     {
         return $this->hasMany(PatientCase::class);
     }
