@@ -1,10 +1,8 @@
-const models = {};
+// central export file to simplify imports
 
-// INFO: These are associations between the models
-// Subject.hasMany(Video, { foreignKey: "subject_id", as: "videos" });
-// Subject.belongsTo(User, { foreignKey: "user_id", as: "creator" });
-// Video.belongsTo(Subject, { foreignKey: "subject_id", as: "subject" });
-
-//INFO: we will add individual models in this object
-export {};
-export default models;
+export { User } from './user.model';
+export { DoctorProfile } from './doctorProfile.model';
+export { Patient } from './patient.model';
+export { PatientCase } from './patientCase.model';
+export { Permission } from './permission.model';
+export { UserPermission } from './userPermission.model';
