@@ -72,4 +72,19 @@ export class AuthService {
     // Admin gets base only
     return basePayload;
   };
+
+  getMe = async (userId: string) => {
+    const user = await User.findByPk(userId);
+
+    if (!user) throw new AppError(404, "User not found");
+    if (!user.is_active) throw new AppError(403, "User account is inactive");
+
+    return {
+      id: String(user.id),
+      role: user.role,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      created_at: user.created_at,
+    };
+  };
 }

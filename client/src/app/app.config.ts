@@ -5,9 +5,9 @@ import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 
 export const appConfig: ApplicationConfig = {
-    providers: [
-        provideRouter(routes),
-        // Register JWT interceptor here — attaches token to every request automatically
-        provideHttpClient(withInterceptors([jwtInterceptor])),
-    ]
+  providers: [
+    provideRouter(routes),
+
+    provideHttpClient(withInterceptors([jwtInterceptor])),
+  ],
 };
