@@ -1,5 +1,5 @@
 // proxies/proxy.ts
-import { createProxyMiddleware } from "http-proxy-middleware";
+import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import { routes } from "../config/routes.config";
 import { Router } from "express";
 
@@ -11,6 +11,9 @@ routes.forEach(({ pathFilter, target }) => {
       pathFilter,
       target,
       changeOrigin: true,
+      on: {
+        proxyReq: fixRequestBody,
+      },
       //   xfwd: true,
     }),
   );

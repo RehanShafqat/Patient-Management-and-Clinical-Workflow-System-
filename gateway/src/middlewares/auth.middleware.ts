@@ -5,6 +5,13 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction,
 ): void => {
+  const publicPaths = ["/health", "/api/auth/signup", "/api/auth/login"];
+
+  if (publicPaths.includes(req.path)) {
+    next();
+    return;
+  }
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
