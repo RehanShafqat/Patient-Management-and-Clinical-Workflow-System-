@@ -15,16 +15,14 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->enum('role', array_column(Role::cases(), 'value'))->default(Role::FDO->value);
-            
             $table->string('first_name');
             $table->string('last_name');
-
             $table->string('email')->unique();
             $table->string('password');
 
-            $table->string('phone')->nullable();
+            $table->string('phone');
             $table->boolean('is_active')->default(true);
-            
+
             $table->timestamps();
             $table->softDeletes();
         });

@@ -1,4 +1,5 @@
 import winston from "winston";
+import { env } from "./env.config";
 
 const { combine, timestamp, printf, colorize } = winston.format;
 
@@ -7,7 +8,7 @@ const logFormat = printf(({ level, message, timestamp }) => {
 });
 
 const logger = winston.createLogger({
-  level: process.env.NODE_ENV === "production" ? "info" : "debug",
+  level: env.NODE_ENV === "production" ? "info" : "debug",
   format: combine(timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), logFormat),
   transports: [
     new winston.transports.Console({

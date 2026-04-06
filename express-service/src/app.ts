@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import routes from "./routes";
 import { errorHandler } from "./Middlewares/error.middleware";
+import { env } from "./config/env.config";
 import { AppError } from "./utils/app-error.util";
 import logger from "./config/logger.config";
 import cookieParser from "cookie-parser";
@@ -11,7 +12,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL as string],
+    origin: [env.CLIENT_URL!],
     credentials: true,
   }),
 );

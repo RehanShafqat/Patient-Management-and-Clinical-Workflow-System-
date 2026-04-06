@@ -7,6 +7,8 @@ import {
   ForeignKeyConstraintError,
   OptimisticLockError,
 } from "sequelize";
+import { ZodError } from "zod";
+import { env } from "../config/env.config";
 
 export const errorHandler = (
   err: Error,
@@ -31,6 +33,17 @@ export const errorHandler = (
     return;
   }
 
+  if (err instanceof ZodError) {
+    console.log("hello");
+
+    const message = err.issues.map((e) => e.message).join(", ");
+
+    res.status(400).json({
+      success: false,
+      message,
+    });
+    return;
+  }
   if (err instanceof ValidationError) {
     const messages = err.errors.map((e) => e.message).join(", ");
     res.status(400).json({
@@ -61,9 +74,7 @@ export const errorHandler = (
   res.status(500).json({
     success: false,
     message:
-      process.env.NODE_ENV === "development"
-        ? err.message
-        : "Internal Server Error",
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+      env.NODE_ENV === "development" ? err.message : "Internal Server Error",
+    ...(env.NODE_ENV === "development" && { stack: err.stack }),
   });
 };

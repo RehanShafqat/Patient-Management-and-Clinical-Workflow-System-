@@ -1,9 +1,10 @@
 import { Response } from "express";
+import { env } from "../config/env.config";
 
 export const setAuthToken = (res: Response, accessToken: string) => {
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: env.NODE_ENV === "production",
     sameSite: "strict",
   });
 };
