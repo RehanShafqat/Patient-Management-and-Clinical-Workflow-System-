@@ -1,8 +1,25 @@
-// central export file to simplify imports
+import { DoctorProfile } from "./doctorProfile.model";
+import { Patient } from "./patient.model";
+import { PatientCase } from "./patientCase.model";
+import { Permission } from "./permission.model";
+import { User } from "./user.model";
+import { UserPermission } from "./userPermission.model";
 
-export { User } from "./user.model";
-export { DoctorProfile } from "./doctorProfile.model";
-export { Patient } from "./patient.model";
-export { PatientCase } from "./patientCase.model";
-export { Permission } from "./permission.model";
-export { UserPermission } from "./userPermission.model";
+const models = {
+  User,
+  DoctorProfile,
+  Patient,
+  PatientCase,
+  Permission,
+  UserPermission,
+};
+
+export {
+  User,
+  DoctorProfile,
+  Patient,
+  PatientCase,
+  Permission,
+  UserPermission,
+};
+export default models;

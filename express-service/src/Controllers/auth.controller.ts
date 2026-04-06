@@ -6,11 +6,12 @@ import { loginSchema } from "../validations";
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  login = (req: Request, res: Response, next: NextFunction) => {
+  login = async (req: Request, res: Response, next: NextFunction) => {
     try {
       loginSchema.parse(req.body);
-      const result = this.authService.login(req.body);
-      ApiResponse.send(res, result, 200);
+      const result = await this.authService.login(req.body);
+      res.cookie("accessToken", result.accessToken, { httpOnly: true });
+      ApiResponse.send(res, { user: result.user }, 200);
     } catch (error) {
       return next(error);
     }
