@@ -1,8 +1,16 @@
-// src/app/app.routes.ts
 import { Routes } from '@angular/router';
-import { adminGuard } from './core/guards/auth.guard';
+import {
+  authGuard,
+  adminGuard,
+  doctorGuard,
+  fdoGuard,
+} from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  // Default redirect
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+
+  // Public — no guard
   {
     path: 'login',
     loadComponent: () =>
@@ -10,4 +18,70 @@ export const routes: Routes = [
         (m) => m.LoginComponent,
       ),
   },
+
+  // Admin routes
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./layout/layout.component').then((m) => m.LayoutComponent),
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashbaord/admin-dashboard/admin-dashboard.component').then(
+            (m) => m.AdminDashboardComponent,
+          ),
+      },
+      // {
+      //     path: 'create-user',
+      //     loadComponent: () =>
+      //         import('./features/auth/create-user/create-user.component')
+      //         .then(m => m.CreateUserComponent)
+      // },
+      // Add patients, cases, appointments here later
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
+
+  // Doctor routes
+  {
+    path: 'doctor',
+    canActivate: [doctorGuard],
+    loadComponent: () =>
+      import('./layout/layout.component').then((m) => m.LayoutComponent),
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashbaord/doctor-dashboard/doctor-dashboard.component').then(
+            (m) => m.DoctorDashboardComponent,
+          ),
+      },
+      // Add appointments, visits, patients here later
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
+
+  // FDO routes
+  {
+    path: 'fdo',
+    canActivate: [fdoGuard],
+    loadComponent: () =>
+      import('./layout/layout.component').then((m) => m.LayoutComponent),
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashbaord/fdo-dashboard/fdo-dashboard.component').then(
+            (m) => m.FdoDashboardComponent,
+          ),
+      },
+      // Add patients, cases, appointments here later
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
+
+  // Catch-all
+  { path: '**', redirectTo: 'login' },
 ];
