@@ -62,9 +62,9 @@ export class AuthService {
   redirectToDashboard(): void {
     console.log(this.currentUserSubject.value);
 
-    // const role = this.getCurrentUser()?.role;
-    // if (role === 'admin') this.router.navigate(['/admin/dashboard']);
-    // else if (role === 'doctor') this.router.navigate(['/doctor/dashboard']);
-    // else if (role === 'fdo') this.router.navigate(['/fdo/dashboard']);
+    const role = this.getCurrentUser()?.role;
+    if (role === 'admin') this.router.navigate(['/admin/dashboard']);
+    else if (role === 'doctor') this.router.navigate(['/doctor/dashboard']);
+    else if (role === 'fdo') this.router.navigate(['/fdo/dashboard']);
   }
 }
