@@ -35,6 +35,14 @@ app.use("/api", routes);
 app.use((req: Request, _res: Response, next: NextFunction) => {
   next(new AppError(404, `Cannot find ${req.method} ${req.originalUrl}`));
 });
+declare global {
+  namespace Express {
+    export interface Request {
+      userId?: string;
+      userRole?: string;
+    }
+  }
+}
 
 app.use(errorHandler);
 
