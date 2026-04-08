@@ -33,8 +33,8 @@ return new class extends Migration {
                   $table->time('visit_time')->nullable();
 
                   $table->integer('visit_duration_minutes')->nullable();
-                  $table->foreignId('diagnosis_id')->nullable()
-                        ->constrained('diagnosis')
+                  $table->foreignId('diagnoses_id')->nullable()
+                        ->constrained('diagnoses')
                         ->onDelete('restrict');
 
                   $table->text('treatment');

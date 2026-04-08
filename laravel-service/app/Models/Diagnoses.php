@@ -4,16 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Diagnosis extends Model
+class Diagnoses extends Model
 {
     protected $fillable = [
         'icd_code',
-        'diagnosis_name',
+        'diagnoses_name',
         'description',
         'is_active',
     ];
 
-    // One diagnosis is used in many visits
+    // One diagnoses is used in many visits
     public function visits()
     {
         return $this->hasMany(Visit::class);

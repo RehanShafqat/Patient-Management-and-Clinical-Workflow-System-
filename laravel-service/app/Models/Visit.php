@@ -20,7 +20,7 @@ class Visit extends Model
         'visit_date',
         'visit_time',
         'visit_duration_minutes',
-        'diagnosis_id',
+        'diagnoses_id',
         'treatment',
         'treatment_plan',
         'prescription',
@@ -37,17 +37,17 @@ class Visit extends Model
     ];
 
     protected $casts = [
-        'vital_signs'              => 'array',
-        'prescription_documents'   => 'array',
-        'follow_up_required'       => 'boolean',
-        'referral_made'            => 'boolean',
-        'visit_status'             => VisitStatus::class,
+        'vital_signs' => 'array',
+        'prescription_documents' => 'array',
+        'follow_up_required' => 'boolean',
+        'referral_made' => 'boolean',
+        'visit_status' => VisitStatus::class,
     ];
 
     // Called automatically from Appointment::booted() on status → Completed
     public static function createFromAppointment(Appointment $appointment): self
     {
-        $year     = now()->format('Y');
+        $year = now()->format('Y');
         $sequence = str_pad(
             self::withTrashed()->whereYear('created_at', $year)->count() + 1,
             6,
@@ -56,15 +56,15 @@ class Visit extends Model
         );
 
         return self::create([
-            'visit_number'   => "VST-{$year}-{$sequence}",
+            'visit_number' => "VST-{$year}-{$sequence}",
             'appointment_id' => $appointment->id,
-            'case_id'        => $appointment->case_id,
-            'patient_id'     => $appointment->patient_id,
-            'doctor_id'      => $appointment->doctor_id,
-            'visit_date'     => now()->toDateString(),
-            'visit_time'     => now()->toTimeString(),
-            'visit_status'   => 'Draft',
-            // Doctor fills in diagnosis, treatment, vitals after this point
+            'case_id' => $appointment->case_id,
+            'patient_id' => $appointment->patient_id,
+            'doctor_id' => $appointment->doctor_id,
+            'visit_date' => now()->toDateString(),
+            'visit_time' => now()->toTimeString(),
+            'visit_status' => 'Draft',
+            // Doctor fills in diagnoses, treatment, vitals after this point
         ]);
     }
 
@@ -92,9 +92,9 @@ class Visit extends Model
         return $this->belongsTo(DoctorProfile::class, 'doctor_id');
     }
 
-    // Belongs to a diagnosis from master list
-    public function diagnosis()
+    // Belongs to a diagnoses from master list
+    public function diagnoses()
     {
-        return $this->belongsTo(Diagnosis::class);
+        return $this->belongsTo(Diagnoses::class);
     }
 }
