@@ -1,7 +1,7 @@
 // config/routes.config.ts
 export const routes = [
   {
-    pathFilter: [],
+    pathFilter: ["/api/health"],
     target: process.env.LARAVEL_SERVICE_URL,
   },
   {

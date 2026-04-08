@@ -4,5 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
-    return response()->json(['status' => 'API is working']);
+    return response()->success([
+        'status' => 'OK',
+        'timestamp' => now()->toDateTimeString()
+    ]);
 });
