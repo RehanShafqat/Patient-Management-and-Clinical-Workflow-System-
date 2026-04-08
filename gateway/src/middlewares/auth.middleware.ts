@@ -5,19 +5,19 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction,
 ): void => {
-  const publicPaths = ["/health", "/api/auth/signup", "/api/auth/login"];
+  // const publicPaths = ["/health", "/api/auth/signup", "/api/auth/login"];
 
-  if (publicPaths.includes(req.path)) {
-    next();
-    return;
-  }
+  // if (publicPaths.includes(req.path)) {
+  //   next();
+  //   return;
+  // }
 
-  const authHeader = req.headers.authorization;
+  // const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    res.status(401).json({ success: false, message: "Unauthorized" });
-    return;
-  }
+  // if (!authHeader) {
+  //   res.status(401).json({ success: false, message: "Unauthorized" });
+  //   return;
+  // }
 
   next();
 };

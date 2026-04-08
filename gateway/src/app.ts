@@ -6,7 +6,12 @@ import { authMiddleware } from "./middlewares/auth.middleware";
 import proxy from "./proxies/proxy";
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 app.get("/health", (_req, res) => {

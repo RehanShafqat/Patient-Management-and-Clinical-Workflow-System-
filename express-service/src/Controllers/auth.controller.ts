@@ -12,7 +12,7 @@ export class AuthController {
       loginSchema.parse(req.body);
       const result = await this.authService.login(req.body);
       res.cookie("accessToken", result.accessToken, { httpOnly: true });
-      ApiResponse.send(res, { user: result.user }, 200);
+      ApiResponse.send(res, { user: result.user }, "Login successful", 200);
     } catch (error) {
       return next(error);
     }
@@ -23,7 +23,7 @@ export class AuthController {
       if (!req.userId) return next(new AppError(401, "Unauthorized"));
 
       const user = await this.authService.getMe(req.userId);
-      ApiResponse.send(res, { user }, 200);
+      ApiResponse.send(res, { user }, "", 200);
     } catch (error) {
       return next(error);
     }

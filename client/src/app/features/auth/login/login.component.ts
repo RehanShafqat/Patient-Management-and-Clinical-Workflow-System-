@@ -14,17 +14,18 @@ import { AuthService } from '../../../core/services/auth/auth.service';
   templateUrl: './login.component.html',
 })
 export class LoginComponent implements OnInit {
-  loginForm: FormGroup = new FormGroup({});
   isLoading = false;
-  errorMessage = '';
   showPassword = false;
   authService = inject(AuthService);
+  loginForm = new FormBuilder().group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+  });
 
   ngOnInit() {
-    this.loginForm = new FormBuilder().group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-    });
+    if (this.authService.isLoggedIn()) {
+      this.authService.redirectToDashboard();
+    }
   }
   get email() {
     return this.loginForm.get('email')!;
@@ -40,16 +41,14 @@ export class LoginComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.errorMessage = '';
 
-    this.authService.login(this.loginForm.value).subscribe({
+    this.authService.login(this.loginForm.value as any).subscribe({
       next: () => {
         this.isLoading = false;
         this.authService.redirectToDashboard();
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err.error?.message || 'Invalid email or password.';
       },
     });
   }

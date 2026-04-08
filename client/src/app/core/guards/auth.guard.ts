@@ -2,7 +2,6 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth/auth.service';
 
-// Protects any route that requires login
 export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -10,12 +9,10 @@ export const authGuard: CanActivateFn = () => {
   if (authService.isLoggedIn()) {
     return true;
   }
-
   router.navigate(['/login']);
   return false;
 };
 
-// Protects routes that only Admin can access
 export const adminGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -28,7 +25,6 @@ export const adminGuard: CanActivateFn = () => {
   return false;
 };
 
-// Protects routes that only Doctor can access
 export const doctorGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -41,7 +37,6 @@ export const doctorGuard: CanActivateFn = () => {
   return false;
 };
 
-// Protects routes that only FDO can access
 export const fdoGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);

@@ -7,5 +7,5 @@ Route::get('/health', function () {
     return response()->success([
         'status' => 'OK',
         'timestamp' => now()->toDateTimeString()
-    ]);
+    ], "Health check successful");
 });
