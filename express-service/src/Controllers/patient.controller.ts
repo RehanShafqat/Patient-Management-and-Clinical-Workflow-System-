@@ -9,11 +9,6 @@ export class PatientController {
 
   createPatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Guard against missing body
-      if (!req.body || typeof req.body !== "object") {
-        return next(new AppError(400, "Request body is missing or malformed"));
-      }
-
       // Validate request body
       const patientData = createPatientSchema.parse(req.body);
       // console.log("BODY", patientData);
@@ -38,7 +33,7 @@ export class PatientController {
         return next(new AppError(500, "Patient record could not be created"));
       }
 
-      console.log("Patient created:", patient);
+      // console.log("Patient created:", patient);
 
       return ApiResponse.send(
         res,
@@ -46,7 +41,6 @@ export class PatientController {
         "Patient created successfully",
         201,
       );
-
     } catch (error) {
       return next(error);
     }

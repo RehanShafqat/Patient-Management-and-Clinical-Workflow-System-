@@ -12,6 +12,7 @@ import {
 } from "sequelize-typescript";
 import { PatientCase } from "./patientCase.model";
 import * as crypto from "crypto";
+import { Gender } from "../enums/gender.enum";
 
 @Table({
   tableName: "patients",
@@ -32,10 +33,10 @@ export class Patient extends Model {
   date_of_birth!: string;
 
   @Column({
-    type: DataType.ENUM("Male", "Female", "Other", "Prefer Not to Say"),
+    type: DataType.ENUM(...Object.values(Gender)), // Spreads the values: ["male", "female", ...]
     allowNull: false,
   })
-  gender!: string;
+  gender!: Gender;
 
   @Column({ type: DataType.STRING, allowNull: true, unique: true })
   ssn!: string; // stored encrypted

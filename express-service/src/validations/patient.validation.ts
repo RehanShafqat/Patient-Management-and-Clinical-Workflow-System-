@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { withRequiredPreprocess } from "./validation.utils";
+import { Gender } from "../enums/gender.enum";
 
 // phone regex (supports +, country code, dashes, spaces)
 const phoneRegex = /^(\+?\d{1,3}[-.\s]?)?\d{1,4}[-.\s]?\d{3}[-.\s]?\d{4}$/;
@@ -30,9 +31,7 @@ export const createPatientSchema = z.object({
       return date > minDate;
     }, "Please enter a valid date of birth"),
 
-  gender: withRequiredPreprocess(
-    z.enum(["male", "female", "other", "prefer not to say"]),
-  ),
+  gender: withRequiredPreprocess(z.enum(Gender)),
 
   ssn: withRequiredPreprocess(
     z.string().regex(/^\d{3}-\d{2}-\d{4}$/, "Invalid SSN format"),
