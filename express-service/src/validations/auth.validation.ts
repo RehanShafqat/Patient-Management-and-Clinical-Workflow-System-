@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { withRequiredPreprocess } from "./validation.utils";
 
-
 export const loginSchema = z.object({
   email: withRequiredPreprocess(
     z

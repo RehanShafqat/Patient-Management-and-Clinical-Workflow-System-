@@ -1,4 +1,3 @@
-// auth.service.ts
 import type { SignOptions } from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../config/env.config";
