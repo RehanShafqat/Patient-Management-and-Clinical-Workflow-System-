@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { withRequiredPreprocess } from "./validation.utils";
 
+// phone regex (supports +, country code, dashes, spaces)
+const phoneRegex = /^(\+?\d{1,3}[-.\s]?)?\d{1,4}[-.\s]?\d{3}[-.\s]?\d{4}$/;
+
 export const createPatientSchema = z.object({
   first_name: withRequiredPreprocess(
-    z
-      .string()
-      .min(3, "First name must be at least 3 characters long")
-      .max(50, "First name must be at most 50 characters long"),
+    z.string().min(3, "First name must be at least 3 characters long").max(50),
   ),
 
   middle_name: z
@@ -15,28 +15,23 @@ export const createPatientSchema = z.object({
     .optional(),
 
   last_name: withRequiredPreprocess(
-    z
-      .string()
-      .min(3, "Last name must be at least 3 characters long")
-      .max(50, "Last name must be at most 50 characters long"),
+    z.string().min(3, "Last name must be at least 3 characters long").max(50),
   ),
 
-  date_of_birth: withRequiredPreprocess(
-    z.coerce
-      .date()
-      .refine(
-        (date) => date <= new Date(),
-        "Date of birth cannot be in the future",
-      )
-      .refine((date) => {
-        const minDate = new Date();
-        minDate.setFullYear(minDate.getFullYear() - 150); // Max age 150
-        return date > minDate;
-      }, "Please enter a valid date of birth"),
-  ),
+  date_of_birth: z.coerce
+    .date()
+    .refine(
+      (date) => date <= new Date(),
+      "Date of birth cannot be in the future",
+    )
+    .refine((date) => {
+      const minDate = new Date();
+      minDate.setFullYear(minDate.getFullYear() - 150);
+      return date > minDate;
+    }, "Please enter a valid date of birth"),
 
   gender: withRequiredPreprocess(
-    z.enum(["Male", "Female", "Other", "Prefer not to say"]),
+    z.enum(["male", "female", "other", "prefer not to say"]),
   ),
 
   ssn: withRequiredPreprocess(
@@ -46,21 +41,11 @@ export const createPatientSchema = z.object({
   email: withRequiredPreprocess(z.string().email("Invalid email address")),
 
   phone: withRequiredPreprocess(
-    z
-      .string()
-      .regex(
-        /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/,
-        "Invalid phone number format",
-      ),
+    z.string().regex(phoneRegex, "Invalid phone number format"),
   ),
 
   mobile: withRequiredPreprocess(
-    z
-      .string()
-      .regex(
-        /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/,
-        "Invalid mobile number format",
-      ),
+    z.string().regex(phoneRegex, "Invalid mobile number format"),
   ),
 
   address: withRequiredPreprocess(
@@ -90,12 +75,7 @@ export const createPatientSchema = z.object({
   ),
 
   emergency_contact_phone: withRequiredPreprocess(
-    z
-      .string()
-      .regex(
-        /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/,
-        "Invalid emergency contact phone number",
-      ),
+    z.string().regex(phoneRegex, "Invalid emergency contact phone number"),
   ),
 
   primary_physician: z
@@ -116,10 +96,10 @@ export const createPatientSchema = z.object({
   preferred_language: z
     .string()
     .max(30, "Preferred language must be at most 30 characters long")
-    .default("English"),
+    .optional(),
 
   patient_status: withRequiredPreprocess(
-    z.enum(["Active", "Inactive", "Deceased", "Transferred"]),
+    z.enum(["active", "inactive", "deceased", "transferred"]),
   ),
 
   registration_date: z.coerce.date().optional(),

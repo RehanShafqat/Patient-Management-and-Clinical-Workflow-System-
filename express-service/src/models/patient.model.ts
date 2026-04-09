@@ -128,10 +128,21 @@ export class Patient extends Model {
 
   // SSN encryption helper
   static encryptSSN(ssn: string): string {
+    const secret = process.env.SSN_ENCRYPTION_KEY;
+
+    if (!secret || secret.length !== 32) {
+      throw new Error(
+        "SSN_ENCRYPTION_KEY must be a 32-character string in .env",
+      );
+    }
+
     const iv = crypto.randomBytes(16);
-    const key = Buffer.from(process.env.SSN_ENCRYPTION_KEY as string);
+    // Use 'utf8' to ensure the buffer is created correctly from the string
+    const key = Buffer.from(secret, "utf8");
     const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+
     const encrypted = Buffer.concat([cipher.update(ssn), cipher.final()]);
+
     return iv.toString("hex") + ":" + encrypted.toString("hex");
   }
 

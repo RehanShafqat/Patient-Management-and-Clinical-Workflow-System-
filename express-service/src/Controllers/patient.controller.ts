@@ -9,9 +9,14 @@ export class PatientController {
 
   createPatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      // Guard against missing body
+      if (!req.body || typeof req.body !== "object") {
+        return next(new AppError(400, "Request body is missing or malformed"));
+      }
+
       // Validate request body
       const patientData = createPatientSchema.parse(req.body);
-      console.log(patientData);
+      // console.log("BODY", patientData);
 
       // Check for duplicate patient (firstName + lastName + dateOfBirth)
       const existing = await Patient.findOne({
@@ -29,7 +34,19 @@ export class PatientController {
       // Create new patient
       const patient = await Patient.create(patientData);
 
-      ApiResponse.send(res, { patient }, 201);
+      if (!patient) {
+        return next(new AppError(500, "Patient record could not be created"));
+      }
+
+      console.log("Patient created:", patient);
+
+      return ApiResponse.send(
+        res,
+        { patient },
+        "Patient created successfully",
+        201,
+      );
+
     } catch (error) {
       return next(error);
     }
@@ -39,7 +56,7 @@ export class PatientController {
   getAllPatients = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const patients = await Patient.findAll();
-      ApiResponse.send(res, { patients }, 200);
+      ApiResponse.send(res, { patients }, "", 200);
     } catch (error) {
       next(error);
     }
@@ -56,7 +73,7 @@ export class PatientController {
 
       const patient = await Patient.findByPk(id);
       if (!patient) return next(new AppError(404, "Patient not found"));
-      ApiResponse.send(res, { patient }, 200);
+      ApiResponse.send(res, { patient }, "", 200);
     } catch (error) {
       next(error);
     }
@@ -77,7 +94,7 @@ export class PatientController {
       const updatedData = createPatientSchema.partial().parse(req.body); // allow partial updates
       await patient.update(updatedData);
 
-      ApiResponse.send(res, { patient }, 200);
+      ApiResponse.send(res, { patient }, "", 200);
     } catch (error) {
       next(error);
     }
@@ -96,7 +113,7 @@ export class PatientController {
       if (!patient) return next(new AppError(404, "Patient not found"));
 
       await patient.destroy(); // soft delete if Sequelize `paranoid: true`
-      ApiResponse.send(res, null, 204);
+      ApiResponse.send(res, null, "", 204);
     } catch (error) {
       next(error);
     }
