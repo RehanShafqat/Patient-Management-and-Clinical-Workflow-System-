@@ -1,26 +1,16 @@
 import { Request, Response, NextFunction } from "express";
-import { User } from "../models/user.model";
-import {
-  createUserSchema,
-  updateUserSchema,
-} from "../validations/user.validation";
 import { ApiResponse } from "../utils/api-response.util";
+import { UserService } from "../services/user.service";
+import { createUserSchema } from "../validations/user.validation";
 import { AppError } from "../utils/app-error.util";
 
 export class UserController {
+  constructor(private userService: UserService = new UserService()) {}
+
   createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData = createUserSchema.parse(req.body);
-
-      const existingUser = await User.findOne({
-        where: { email: userData.email },
-      });
-
-      if (existingUser) {
-        return next(new AppError(400, "Email already exists"));
-      }
-
-      const user = await User.create(userData);
+      const user = await this.userService.createUser(userData);
 
       return ApiResponse.send(res, { user }, "User created successfully", 201);
     } catch (error) {
@@ -30,7 +20,7 @@ export class UserController {
 
   getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const users = await User.findAll();
+      const users = await this.userService.getAllUsers();
 
       return ApiResponse.send(res, { users }, "Users fetched successfully");
     } catch (error) {
@@ -40,17 +30,15 @@ export class UserController {
 
   getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
       if (isNaN(Number(id))) {
         return next(new AppError(400, "Invalid ID format"));
       }
 
-      const user = await User.findByPk(Number(id));
-
-      if (!user) {
-        return next(new AppError(404, "User not found"));
-      }
+      const user = await this.userService.getUserById(id);
 
       return ApiResponse.send(res, { user }, "User fetched successfully");
     } catch (error) {
@@ -60,32 +48,16 @@ export class UserController {
 
   updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
       if (isNaN(Number(id))) {
         return next(new AppError(400, "Invalid ID format"));
       }
 
-      const user = await User.findByPk(Number(id));
-
-      if (!user) {
-        return next(new AppError(404, "User not found"));
-      }
-
-      const updateData = updateUserSchema.parse(req.body);
-
-      // Prevent email duplication
-      if (updateData.email) {
-        const existingUser = await User.findOne({
-          where: { email: updateData.email },
-        });
-
-        if (existingUser && existingUser.id !== user.id) {
-          return next(new AppError(400, "Email already in use"));
-        }
-      }
-
-      await user.update(updateData);
+      const updateData = createUserSchema.parse(req.body);
+      const user = await this.userService.updateUser(id, updateData);
 
       return ApiResponse.send(res, { user }, "User updated successfully");
     } catch (error) {
@@ -95,19 +67,15 @@ export class UserController {
 
   deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
       if (isNaN(Number(id))) {
         return next(new AppError(400, "Invalid ID format"));
       }
 
-      const user = await User.findByPk(Number(id));
-
-      if (!user) {
-        return next(new AppError(404, "User not found"));
-      }
-
-      await user.destroy();
+      await this.userService.deleteUser(id);
 
       return ApiResponse.send(res, null, "User deleted successfully");
     } catch (error) {

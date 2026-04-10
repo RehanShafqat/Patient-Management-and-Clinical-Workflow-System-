@@ -1,33 +1,81 @@
 import { z } from "zod";
 import { withRequiredPreprocess } from "./validation.utils";
-import { enumToArray } from "../utils/enum.util";
 import { UserRole } from "../enums/userRole.enum";
 
-// CREATE USER
-export const createUserSchema = z.object({
-  role: withRequiredPreprocess(z.enum(enumToArray(UserRole))),
-
-  first_name: withRequiredPreprocess(z.string().min(2).max(50)),
-
-  last_name: withRequiredPreprocess(z.string().min(2).max(50)),
-
-  email: withRequiredPreprocess(z.email("Invalid email format")),
-
-  password: withRequiredPreprocess(
-    z.string().min(6, "Password must be at least 6 characters"),
+const baseUser = z.object({
+  first_name: withRequiredPreprocess(
+    z
+      .string()
+      .min(2, "First name must be at least 2 characters")
+      .max(50, "First name cannot exceed 50 characters"),
   ),
-
-  phone: withRequiredPreprocess(z.string().max(20).optional()),
-
-  is_active: z.preprocess(
-    (val) => (val === "" || val === null ? undefined : val),
-    z.coerce.boolean().optional(),
+  last_name: withRequiredPreprocess(
+    z
+      .string()
+      .min(2, "Last name must be at least 2 characters")
+      .max(50, "Last name cannot exceed 50 characters"),
+  ),
+  email: withRequiredPreprocess(
+    z.email("Please provide a valid email address"),
+  ),
+  password: withRequiredPreprocess(
+    z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .max(100, "Password cannot exceed 100 characters"),
+  ),
+  phone: withRequiredPreprocess(
+    z.string().max(20, "Phone number cannot exceed 20 characters"),
+  ),
+  is_active: z.boolean(),
+});
+const doctorSchema = baseUser.extend({
+  role: z.literal(UserRole.DOCTOR),
+  specialty_id: withRequiredPreprocess(
+    z.string().min(1, "Specialty is required"),
+  ),
+  practice_location_id: withRequiredPreprocess(
+    z.string().min(1, "Practice location is required"),
+  ),
+  licence_number: withRequiredPreprocess(
+    z.string().min(1, "License number is required"),
+  ),
+  availability_schedule: z.json().optional(),
+  bio: withRequiredPreprocess(
+    z.string().max(500, "Bio cannot exceed 500 characters").optional(),
   ),
 });
+export const fdoSchema = baseUser.extend({
+  role: z.literal(UserRole.FDO),
+  permissions: z
+    .array(z.number().min(1, "Permission cannot be empty"))
+    .min(1, "At least one permission is required"),
+});
 
-// UPDATE USER (partial) -- columns are optional
-export const updateUserSchema = createUserSchema
-  .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided for update",
+const userRoleGuardSchema = z
+  .looseObject({
+    role: z.unknown().optional(),
+  })
+  .superRefine((data, ctx) => {
+    //INFO: if role is missing or empty, add an issue for the role field
+    if (typeof data.role !== "string" || data.role.trim() === "") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["role"],
+        message: "Role is required",
+      });
+      return;
+    }
+    //INFO: if role is not doctor or fdo, add an issue for the role field
+    if (![UserRole.DOCTOR, UserRole.FDO].includes(data.role as UserRole)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["role"],
+        message: "Role must be either doctor or fdo",
+      });
+    }
   });
+
+export const createUserSchema = userRoleGuardSchema.pipe(
+  z.discriminatedUnion("role", [doctorSchema, fdoSchema]),
+);
