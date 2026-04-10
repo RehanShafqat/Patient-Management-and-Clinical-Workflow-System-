@@ -5,7 +5,7 @@ import {
   DataType,
   BelongsTo,
   ForeignKey,
-  BeforeCreate,
+  BeforeValidate,
   CreatedAt,
   UpdatedAt,
   DeletedAt,
@@ -100,8 +100,8 @@ export class PatientCase extends Model {
   @DeletedAt
   deleted_at!: Date;
 
-  // Auto-generate case number before insert: CASE-YYYY-XXXXX
-  @BeforeCreate
+  // Auto-generate case number before validation so required case_number passes
+  @BeforeValidate
   static async generateCaseNumber(instance: PatientCase) {
     console.log("HOOK RUNNING: Generating case number...");
 
