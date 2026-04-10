@@ -17,7 +17,7 @@ import { hashPassword } from "../utils/bcrypt.util";
 
 @Table({
   tableName: "users",
-  paranoid: true, // enables soft delete using deleted_at automatically
+  paranoid: true,
   timestamps: true,
 })
 export class User extends Model {

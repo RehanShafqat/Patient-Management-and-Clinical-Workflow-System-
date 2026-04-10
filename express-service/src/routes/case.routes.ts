@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { CaseController } from "../Controllers/case.controller";
-import { checkAccessToken } from "../Middlewares/auth.middleware";
+import { checkAccessToken } from "../middlewares/auth.middleware";
+import { CaseController } from "../controllers/case.controller";
 
 const caseRouter = Router();
 const caseController = new CaseController();

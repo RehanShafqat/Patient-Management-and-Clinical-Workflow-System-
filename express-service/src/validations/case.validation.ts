@@ -96,7 +96,7 @@ export const createCaseSchema = z
   );
 
 export const updateCaseSchema = createCaseSchema
-  .partial()
+  // .partial()
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided for update",
   });

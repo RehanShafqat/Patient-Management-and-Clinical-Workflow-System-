@@ -1,39 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../utils/api-response.util";
-import { AppError } from "../utils/app-error.util";
-import { Patient } from "../models/patient.model";
+import { PatientService } from "../services/patient.service";
 import { createPatientSchema } from "../validations/patient.validation";
+import { AppError } from "../utils/app-error.util";
 
 export class PatientController {
-  constructor() {}
+  constructor(private patientService: PatientService = new PatientService()) {}
 
   createPatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Validate request body
       const patientData = createPatientSchema.parse(req.body);
-      // console.log("BODY", patientData);
-
-      // Check for duplicate patient (firstName + lastName + dateOfBirth)
-      const existing = await Patient.findOne({
-        where: {
-          first_name: patientData.first_name,
-          last_name: patientData.last_name,
-          date_of_birth: patientData.date_of_birth,
-        },
-      });
-
-      if (existing) {
-        return next(new AppError(409, "Patient already exists"));
-      }
-
-      // Create new patient
-      const patient = await Patient.create(patientData);
-
-      if (!patient) {
-        return next(new AppError(500, "Patient record could not be created"));
-      }
-
-      // console.log("Patient created:", patient);
+      const patient = await this.patientService.createPatient(patientData);
 
       return ApiResponse.send(
         res,
@@ -49,7 +26,7 @@ export class PatientController {
   // Get all patients
   getAllPatients = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const patients = await Patient.findAll();
+      const patients = await this.patientService.getAllPatients();
       ApiResponse.send(res, { patients }, "", 200);
     } catch (error) {
       next(error);
@@ -59,14 +36,15 @@ export class PatientController {
   // Get patient by ID
   getPatientById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Number(req.params.id);
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-      if (isNaN(id)) {
+      if (isNaN(Number(id))) {
         return next(new AppError(400, "Invalid patient ID"));
       }
 
-      const patient = await Patient.findByPk(id);
-      if (!patient) return next(new AppError(404, "Patient not found"));
+      const patient = await this.patientService.getPatientById(id);
       ApiResponse.send(res, { patient }, "", 200);
     } catch (error) {
       next(error);
@@ -76,17 +54,16 @@ export class PatientController {
   // Update patient
   updatePatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Number(req.params.id);
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-      if (isNaN(id)) {
+      if (isNaN(Number(id))) {
         return next(new AppError(400, "Invalid patient ID"));
       }
 
-      const patient = await Patient.findByPk(id);
-      if (!patient) return next(new AppError(404, "Patient not found"));
-
-      const updatedData = createPatientSchema.partial().parse(req.body); // allow partial updates
-      await patient.update(updatedData);
+      const updatedData = createPatientSchema.partial().parse(req.body);
+      const patient = await this.patientService.updatePatient(id, updatedData);
 
       ApiResponse.send(res, { patient }, "", 200);
     } catch (error) {
@@ -97,16 +74,15 @@ export class PatientController {
   // Soft delete patient
   deletePatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Number(req.params.id);
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-      if (isNaN(id)) {
+      if (isNaN(Number(id))) {
         return next(new AppError(400, "Invalid patient ID"));
       }
 
-      const patient = await Patient.findByPk(id);
-      if (!patient) return next(new AppError(404, "Patient not found"));
-
-      await patient.destroy(); // soft delete if Sequelize `paranoid: true`
+      await this.patientService.deletePatient(id);
       ApiResponse.send(res, null, "", 204);
     } catch (error) {
       next(error);
