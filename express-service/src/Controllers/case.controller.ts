@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { PatientCase } from "../models/patientCase.model";
-import { createCaseSchema } from "../validations/case.validation";
+import {
+  createCaseSchema,
+  updateCaseSchema,
+} from "../validations/case.validation";
 import { ApiResponse } from "../utils/api-response.util";
 import { AppError } from "../utils/app-error.util";
 
@@ -96,7 +99,7 @@ export class CaseController {
         return next(new AppError(404, "Case not found"));
       }
 
-      const updateData = createCaseSchema.parse(req.body);
+      const updateData = updateCaseSchema.parse(req.body);
 
       await patientCase.update(updateData);
 
