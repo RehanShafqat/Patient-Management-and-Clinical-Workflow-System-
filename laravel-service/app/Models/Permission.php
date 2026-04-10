@@ -8,7 +8,7 @@ class Permission extends Model
 {
     protected $fillable = [
         'permission_name',
-        'description'
+
     ];
 
     // One permission type is assigned to many FDO users

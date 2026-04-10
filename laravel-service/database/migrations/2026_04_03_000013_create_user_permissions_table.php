@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
             $table->foreignId('permission_id')->constrained()->onDelete('cascade');
-            $table->boolean('is_granted')->default(true); // whether this permission is granted to the user
+
 
             $table->timestamps();
             $table->unique(['user_id', 'permission_id']);
