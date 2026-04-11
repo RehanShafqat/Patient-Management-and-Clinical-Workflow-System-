@@ -127,38 +127,57 @@ export class Patient extends Model {
     }
   }
 
-  // SSN encryption helper
   static encryptSSN(ssn: string): string {
-    const secret = process.env.SSN_ENCRYPTION_KEY;
+  const secret = process.env.SSN_ENCRYPTION_KEY;
 
-    if (!secret || secret.length !== 32) {
-      throw new Error(
-        "SSN_ENCRYPTION_KEY must be a 32-character string in .env",
-      );
-    }
-
-    const iv = crypto.randomBytes(16);
-    // Use 'utf8' to ensure the buffer is created correctly from the string
-    const key = Buffer.from(secret, "utf8");
-    const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-
-    const encrypted = Buffer.concat([cipher.update(ssn), cipher.final()]);
-
-    return iv.toString("hex") + ":" + encrypted.toString("hex");
+  if (!secret) {
+    throw new Error("SSN_ENCRYPTION_KEY is missing in .env");
   }
 
-  // SSN decryption helper — call explicitly only when you need to show SSN
+  const key = Buffer.from(secret, "hex");
+
+  if (key.length !== 32) {
+    throw new Error("SSN_ENCRYPTION_KEY must be 64 hex characters (32 bytes)");
+  }
+
+  const iv = crypto.randomBytes(16);
+
+  const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+
+  const encrypted = Buffer.concat([
+    cipher.update(ssn, "utf8"),
+    cipher.final(),
+  ]);
+
+  return iv.toString("hex") + ":" + encrypted.toString("hex");
+}
+
   static decryptSSN(encrypted: string): string {
-    const [ivHex, encryptedHex] = encrypted.split(":");
-    const iv = Buffer.from(ivHex, "hex");
-    const key = Buffer.from(process.env.SSN_ENCRYPTION_KEY as string);
-    const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
-    const decrypted = Buffer.concat([
-      decipher.update(Buffer.from(encryptedHex, "hex")),
-      decipher.final(),
-    ]);
-    return decrypted.toString();
+  const secret = process.env.SSN_ENCRYPTION_KEY;
+
+  if (!secret) {
+    throw new Error("SSN_ENCRYPTION_KEY is missing in .env");
   }
+
+  if (!encrypted.includes(":")) {
+    return encrypted;
+  }
+
+  const key = Buffer.from(secret, "hex");
+
+  const [ivHex, encryptedHex] = encrypted.split(":");
+
+  const iv = Buffer.from(ivHex, "hex");
+
+  const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+
+  const decrypted = Buffer.concat([
+    decipher.update(Buffer.from(encryptedHex, "hex")),
+    decipher.final(),
+  ]);
+
+  return decrypted.toString("utf8");
+}
 
   // One patient has many cases
   @HasMany(() => PatientCase)
