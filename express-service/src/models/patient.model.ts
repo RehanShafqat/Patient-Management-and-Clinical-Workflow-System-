@@ -179,6 +179,12 @@ export class Patient extends Model<
           withSSN: { attributes: { include: ["ssn"] } },
         },
         indexes: [
+          //INFO: Prevent duplicate patient records with same first/last name and DOB
+          {
+            unique: true,
+            fields: ["first_name", "last_name", "date_of_birth"],
+            name: "unique_patient",
+          },
           //INFO: Patient search by name — the most common front-desk operation
           { fields: ["last_name", "first_name"] },
           //INFO: Unique patient email for communication and portal login

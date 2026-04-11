@@ -20,6 +20,9 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('is_active');
         });
     }
 

@@ -53,6 +53,16 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index(['doctor_id', 'appointment_date']);
+            $table->index(['patient_id', 'appointment_date']);
+            $table->index(['practice_location_id', 'appointment_date']);
+            $table->index('case_id');
+            $table->index('status');
+            $table->index(['appointment_date', 'status']);
+            $table->index('created_by');
+            $table->index(['reminder_sent', 'appointment_date']);
         });
     }
 

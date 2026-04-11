@@ -20,6 +20,10 @@ return new class extends Migration
 
             $table->timestamps();
             $table->unique(['user_id', 'permission_id']);
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('user_id');
+            $table->index('permission_id');
         });
     }
 

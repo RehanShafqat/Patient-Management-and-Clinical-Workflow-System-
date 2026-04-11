@@ -19,6 +19,10 @@ return new class extends Migration {
 
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('diagnoses_name');
+            $table->index('is_active');
         });
     }
 

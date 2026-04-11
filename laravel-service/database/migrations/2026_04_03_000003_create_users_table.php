@@ -25,6 +25,10 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('role');
+            $table->index(['role', 'is_active']);
         });
     }
 

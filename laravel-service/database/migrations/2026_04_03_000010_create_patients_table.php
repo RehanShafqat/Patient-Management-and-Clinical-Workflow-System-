@@ -56,6 +56,13 @@ return new class extends Migration
 
             // Unique constraint: no duplicate patient (first + last + DOB)
             $table->unique(['first_name', 'last_name', 'date_of_birth'], 'unique_patient');
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index(['last_name', 'first_name']);
+            $table->index('date_of_birth');
+            $table->index('patient_status');
+            $table->index('phone');
+            $table->index('registration_date');
         });
     }
 

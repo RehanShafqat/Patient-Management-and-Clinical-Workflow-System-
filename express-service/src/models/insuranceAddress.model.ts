@@ -1,10 +1,19 @@
 import {
-  Model, DataTypes, Sequelize,
-  InferAttributes, InferCreationAttributes, CreationOptional, ForeignKey, NonAttribute,
-} from 'sequelize';
-import type { Insurance } from './insurance.model';
+  Model,
+  DataTypes,
+  Sequelize,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+  ForeignKey,
+  NonAttribute,
+} from "sequelize";
+import type { Insurance } from "./insurance.model";
 
-export class InsuranceAddress extends Model<InferAttributes<InsuranceAddress>, InferCreationAttributes<InsuranceAddress>> {
+export class InsuranceAddress extends Model<
+  InferAttributes<InsuranceAddress>,
+  InferCreationAttributes<InsuranceAddress>
+> {
   declare id: CreationOptional<number>;
   declare insurance_id: ForeignKey<number>;
   declare address: string;
@@ -17,7 +26,10 @@ export class InsuranceAddress extends Model<InferAttributes<InsuranceAddress>, I
   declare insurance?: NonAttribute<Insurance>;
 
   static associate(models: Record<string, any>): void {
-    InsuranceAddress.belongsTo(models.Insurance, { foreignKey: 'insurance_id', as: 'insurance' });
+    InsuranceAddress.belongsTo(models.Insurance, {
+      foreignKey: "insurance_id",
+      as: "insurance",
+    });
   }
 
   static initModel(sequelize: Sequelize): typeof InsuranceAddress {
@@ -27,25 +39,29 @@ export class InsuranceAddress extends Model<InferAttributes<InsuranceAddress>, I
         insurance_id: { type: DataTypes.INTEGER, allowNull: false },
         address: { type: DataTypes.TEXT, allowNull: false },
         phone: { type: DataTypes.STRING, allowNull: true },
-        is_primary: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+        is_primary: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false,
+        },
         created_at: DataTypes.DATE,
         updated_at: DataTypes.DATE,
         deleted_at: DataTypes.DATE,
       },
       {
         sequelize,
-        tableName: 'insurance_addresses',
+        tableName: "insurance_addresses",
         timestamps: true,
         paranoid: true,
         underscored: true,
-        createdAt: 'created_at',
-        updatedAt: 'updated_at',
-        deletedAt: 'deleted_at',
+        createdAt: "created_at",
+        updatedAt: "updated_at",
+        deletedAt: "deleted_at",
         indexes: [
           //INFO: All addresses for a given insurance — used in insurance detail view
-          { fields: ['insurance_id'] },
+          { fields: ["insurance_id"] },
           //INFO: Fast primary-address resolution during claims and case creation
-          { fields: ['insurance_id', 'is_primary'] },
+          { unique: true, fields: ["insurance_id", "is_primary"] },
         ],
       },
     );

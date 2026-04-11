@@ -12,11 +12,15 @@ return new class extends Migration
             $table->id();
             $table->string('insurance_name');
 
-            $table->string('insurance_code')->nullable();
+            $table->string('insurance_code')->unique();
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('insurance_name');
+            $table->index('is_active');
         });
     }
 

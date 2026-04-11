@@ -22,6 +22,10 @@ return new class extends Migration
 
             // Ensure only one primary address per insurance
             $table->unique(['insurance_id', 'is_primary']);
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('insurance_id');
+            $table->index(['insurance_id', 'is_primary']);
         });
     }
 
