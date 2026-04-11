@@ -63,31 +63,58 @@ export class Patient extends Model<
     return years;
   }
 
-  //INFO: AES-256-CBC encryption for HIPAA-compliant SSN storage
   static encryptSSN(ssn: string): string {
     const secret = process.env.SSN_ENCRYPTION_KEY;
-    if (!secret || secret.length !== 32) {
+
+    if (!secret) {
+      throw new Error("SSN_ENCRYPTION_KEY is missing in .env");
+    }
+
+    const key = Buffer.from(secret, "hex");
+
+    if (key.length !== 32) {
       throw new Error(
-        "SSN_ENCRYPTION_KEY must be a 32-character string in .env",
+        "SSN_ENCRYPTION_KEY must be 64 hex characters (32 bytes)",
       );
     }
+
     const iv = crypto.randomBytes(16);
-    const key = Buffer.from(secret, "utf8");
+
     const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-    const encrypted = Buffer.concat([cipher.update(ssn), cipher.final()]);
+
+    const encrypted = Buffer.concat([
+      cipher.update(ssn, "utf8"),
+      cipher.final(),
+    ]);
+
     return iv.toString("hex") + ":" + encrypted.toString("hex");
   }
 
   static decryptSSN(encrypted: string): string {
+    const secret = process.env.SSN_ENCRYPTION_KEY;
+
+    if (!secret) {
+      throw new Error("SSN_ENCRYPTION_KEY is missing in .env");
+    }
+
+    if (!encrypted.includes(":")) {
+      return encrypted;
+    }
+
+    const key = Buffer.from(secret, "hex");
+
     const [ivHex, encryptedHex] = encrypted.split(":");
+
     const iv = Buffer.from(ivHex, "hex");
-    const key = Buffer.from(process.env.SSN_ENCRYPTION_KEY as string, "utf8");
+
     const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+
     const decrypted = Buffer.concat([
       decipher.update(Buffer.from(encryptedHex, "hex")),
       decipher.final(),
     ]);
-    return decrypted.toString();
+
+    return decrypted.toString("utf8");
   }
 
   static associate(models: Record<string, any>): void {

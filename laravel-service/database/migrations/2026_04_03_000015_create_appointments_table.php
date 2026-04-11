@@ -7,8 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -28,7 +27,7 @@ return new class extends Migration
 
             $table->date('appointment_date');
             $table->time('appointment_time');
-            $table->time('end_time')->nullable(); // computed in app logic
+            // $table->time('end_time')->nullable(); // computed in app logic
 
             $table->enum('appointment_type', array_column(AppointmentType::cases(), 'value'))
                 ->default(AppointmentType::NEW_PATIENT->value);
