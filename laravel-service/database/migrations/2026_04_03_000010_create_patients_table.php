@@ -24,7 +24,7 @@ return new class extends Migration
             $table->date('date_of_birth');
             $table->enum('gender', array_column(Gender::cases(), 'value'))->default(Gender::PREFER_NOT_TO_SAY->value);
 
-            $table->string('ssn')->unique()->nullable();
+            $table->string('ssn')->unique()->nullable(); 
             $table->string('email')->unique()->nullable();
 
             $table->string('phone')->nullable();

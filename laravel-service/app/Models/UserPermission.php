@@ -9,7 +9,6 @@ class UserPermission extends Model
     protected $fillable = [
         'user_id',
         'permission_id',
-        'is_granted',
     ];
 
     // Belongs to the FDO user

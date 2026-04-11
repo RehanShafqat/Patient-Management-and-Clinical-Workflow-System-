@@ -24,7 +24,7 @@ class AppointmentService
             ]);
 
         // Doctor sees only their own appointments
-        if ($user->role === 'doctor') {
+        if ($user->role->value === 'doctor') {
             $query->where('doctor_id', $user->doctorProfile?->id);
         }
 
@@ -140,9 +140,14 @@ class AppointmentService
 
         // If date or time is changing — check for conflicts
         if (isset($data['appointment_date']) || isset($data['appointment_time'])) {
+            // appointment_date is cast to Carbon by the model — format to Y-m-d string for the DB query
+            $existingDate = $appointment->appointment_date instanceof \Carbon\Carbon
+                ? $appointment->appointment_date->format('Y-m-d')
+                : $appointment->appointment_date;
+
             $this->checkDoctorConflict(
                 $data['doctor_id'] ?? $appointment->doctor_id,
-                $data['appointment_date'] ?? $appointment->appointment_date,
+                $data['appointment_date'] ?? $existingDate,
                 $data['appointment_time'] ?? $appointment->appointment_time,
                 $appointment->id   // exclude current appointment from conflict check
             );

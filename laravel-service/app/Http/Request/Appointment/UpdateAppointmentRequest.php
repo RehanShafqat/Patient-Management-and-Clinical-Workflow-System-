@@ -17,7 +17,7 @@ class UpdateAppointmentRequest extends FormRequest
 
     public function rules(): array
     {
-        if (auth()->user()->role === 'doctor') {
+        if (auth()->user()->role->value === 'doctor') {
             return [
                 'status' => [
                     'required',
