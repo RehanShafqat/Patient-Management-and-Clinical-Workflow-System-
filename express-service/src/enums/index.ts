@@ -9,7 +9,6 @@ import { FirmType } from "./firmType.enum";
 import { PatientStatus } from "./patientStatus.enum";
 import { ReminderMethod } from "./reminderMethod.enum";
 import { Role } from "./role.enum";
-import { Roles } from "./roles.enum";
 import { VisitStatus } from "./visitStatus.enum";
 
 const enums = {
@@ -19,7 +18,7 @@ const enums = {
   PatientStatus,
   ReminderMethod,
   Role,
-  Roles,
+
   VisitStatus,
   Gender,
   CaseCategory,
@@ -35,7 +34,6 @@ export {
   PatientStatus,
   ReminderMethod,
   Role,
-  Roles,
   VisitStatus,
   Gender,
   CaseCategory,

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { withRequiredPreprocess } from "./validation.utils";
-import { UserRole } from "../enums/userRole.enum";
+import { Role } from "../enums";
 
 const baseUser = z.object({
   first_name: withRequiredPreprocess(
@@ -30,7 +30,7 @@ const baseUser = z.object({
   is_active: z.boolean(),
 });
 const doctorSchema = baseUser.extend({
-  role: z.literal(UserRole.DOCTOR),
+  role: z.literal(Role.DOCTOR),
   specialty_id: withRequiredPreprocess(
     z.string().min(1, "Specialty is required"),
   ),
@@ -46,7 +46,7 @@ const doctorSchema = baseUser.extend({
   ),
 });
 export const fdoSchema = baseUser.extend({
-  role: z.literal(UserRole.FDO),
+  role: z.literal(Role.FDO),
   permissions: z
     .array(z.number().min(1, "Permission cannot be empty"))
     .min(1, "At least one permission is required"),
@@ -67,7 +67,7 @@ const userRoleGuardSchema = z
       return;
     }
     //INFO: if role is not doctor or fdo, add an issue for the role field
-    if (![UserRole.DOCTOR, UserRole.FDO].includes(data.role as UserRole)) {
+    if (![Role.DOCTOR, Role.FDO].includes(data.role as Role)) {
       ctx.addIssue({
         code: "custom",
         path: ["role"],

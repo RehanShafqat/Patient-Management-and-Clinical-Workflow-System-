@@ -1,9 +1,11 @@
+import z from "zod";
 import { PatientCase } from "../models/patientCase.model";
 import { AppError } from "../utils/app-error.util";
+import { createCaseSchema } from "../validations";
 
 export class CaseService {
-  createCase = async (caseData: Record<string, unknown>) => {
-    return PatientCase.create(caseData);
+  createCase = async (caseData: z.infer<typeof createCaseSchema>) => {
+    return {};
   };
 
   getAllCases = async () => {

@@ -1,6 +1,8 @@
+import z from "zod";
 import { Patient } from "../models/patient.model";
 import { AppError } from "../utils/app-error.util";
-
+import { createPatientSchema } from "../validations/patient.validation";
+import { PatientStatus } from "../enums";
 type CreatePatientInput = {
   first_name: string;
   last_name: string;
@@ -8,12 +10,15 @@ type CreatePatientInput = {
 } & Record<string, unknown>;
 
 export class PatientService {
-  createPatient = async (patientData: CreatePatientInput) => {
+  createPatient = async (patientData: z.infer<typeof createPatientSchema>) => {
     const existing = await Patient.findOne({
       where: {
         first_name: patientData.first_name,
         last_name: patientData.last_name,
-        date_of_birth: patientData.date_of_birth,
+        date_of_birth:
+          patientData.date_of_birth instanceof Date
+            ? patientData.date_of_birth.toISOString().split("T")[0]
+            : patientData.date_of_birth,
       },
     });
 
@@ -21,7 +26,14 @@ export class PatientService {
       throw new AppError(409, "Patient already exists");
     }
 
-    const patient = await Patient.create(patientData);
+    const patient = await Patient.create({
+      ...patientData,
+      patient_status: patientData.patient_status as PatientStatus,
+      date_of_birth:
+        patientData.date_of_birth instanceof Date
+          ? patientData.date_of_birth.toISOString().split("T")[0]
+          : patientData.date_of_birth,
+    });
 
     if (!patient) {
       throw new AppError(500, "Patient record could not be created");

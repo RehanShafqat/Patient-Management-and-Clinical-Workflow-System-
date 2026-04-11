@@ -8,7 +8,7 @@ import {
   NonAttribute,
 } from "sequelize";
 import { hashPassword } from "../utils/bcrypt.util";
-import { Role } from "../enums/role.enum";
+import { Role } from "../enums";
 
 export class User extends Model<
   InferAttributes<User>,
