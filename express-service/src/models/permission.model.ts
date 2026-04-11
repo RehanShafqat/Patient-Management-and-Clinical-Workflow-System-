@@ -1,28 +1,60 @@
 import {
-    Table, Column, Model, DataType,
-    HasMany, CreatedAt, UpdatedAt
-} from 'sequelize-typescript';
-import { UserPermission } from './userPermission.model';
+  Model,
+  DataTypes,
+  Sequelize,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+  NonAttribute,
+} from "sequelize";
 
-@Table({
-    tableName: 'permissions',
-    timestamps: true,
-})
-export class Permission extends Model {
+export class Permission extends Model<
+  InferAttributes<Permission>,
+  InferCreationAttributes<Permission>
+> {
+  declare id: CreationOptional<number>;
+  declare permission_name: string;
+  declare description: CreationOptional<string | null>;
+  declare created_at: CreationOptional<Date>;
+  declare updated_at: CreationOptional<Date>;
 
-    @Column({ type: DataType.STRING, allowNull: false, unique: true })
-    permission_name!: string;
+  declare userPermissions?: NonAttribute<
+    import("./userPermission.model").UserPermission[]
+  >;
 
-    @Column({ type: DataType.STRING, allowNull: true })
-    description!: string;
+  static associate(models: Record<string, any>): void {
+    Permission.hasMany(models.UserPermission, {
+      foreignKey: "permission_id",
+      as: "userPermissions",
+    });
+  }
 
-    @CreatedAt
-    created_at!: Date;
-
-    @UpdatedAt
-    updated_at!: Date;
-
-    // One permission type is assigned to many FDO users
-    @HasMany(() => UserPermission)
-    userPermissions!: UserPermission[];
+  static initModel(sequelize: Sequelize): typeof Permission {
+    Permission.init(
+      {
+        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        permission_name: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true,
+        },
+        description: { type: DataTypes.STRING, allowNull: true },
+        created_at: DataTypes.DATE,
+        updated_at: DataTypes.DATE,
+      },
+      {
+        sequelize,
+        tableName: "permissions",
+        timestamps: true,
+        underscored: true,
+        createdAt: "created_at",
+        updatedAt: "updated_at",
+        indexes: [
+          //INFO: Permission lookup by name during authorization checks
+          // { unique: true, fields: ['permission_name'] }, // Duplicate: already enforced by permission_name unique:true
+        ],
+      },
+    );
+    return Permission;
+  }
 }

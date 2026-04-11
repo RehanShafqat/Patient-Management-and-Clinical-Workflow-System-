@@ -1,80 +1,126 @@
-// src/models/User.ts
 import {
-  Table,
-  Column,
   Model,
-  DataType,
-  HasOne,
-  HasMany,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-  BeforeCreate,
-} from "sequelize-typescript";
-import { DoctorProfile } from "./doctorProfile.model";
-import { UserPermission } from "./userPermission.model";
+  DataTypes,
+  Sequelize,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+  NonAttribute,
+} from "sequelize";
 import { hashPassword } from "../utils/bcrypt.util";
+import { Role } from "../enums/role.enum";
 
-@Table({
-  tableName: "users",
-  paranoid: true,
-  timestamps: true,
-})
-export class User extends Model {
-  @Column({
-    type: DataType.ENUM("admin", "doctor", "fdo"),
-    allowNull: false,
-  })
-  role!: "admin" | "doctor" | "fdo";
+export class User extends Model<
+  InferAttributes<User>,
+  InferCreationAttributes<User>
+> {
+  declare id: CreationOptional<number>;
+  declare role: Role;
+  declare first_name: string;
+  declare last_name: string;
+  declare email: string;
+  declare password: string;
+  declare phone: CreationOptional<string | null>;
+  declare is_active: CreationOptional<boolean>;
+  declare created_at: CreationOptional<Date>;
+  declare updated_at: CreationOptional<Date>;
+  declare deleted_at: CreationOptional<Date | null>;
 
-  @Column({ type: DataType.STRING, allowNull: false })
-  first_name!: string;
-
-  @Column({ type: DataType.STRING, allowNull: false })
-  last_name!: string;
-
-  @Column({ type: DataType.STRING, allowNull: false, unique: true })
-  email!: string;
-
-  @Column({ type: DataType.STRING, allowNull: false })
-  password!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  phone!: string;
-
-  @Column({ type: DataType.BOOLEAN, defaultValue: true })
-  is_active!: boolean;
-
-  @CreatedAt
-  created_at!: Date;
-
-  @UpdatedAt
-  updated_at!: Date;
-
-  @DeletedAt
-  deleted_at!: Date;
-
-  // One user (doctor) has one doctor profile
-  @HasOne(() => DoctorProfile)
-  doctorProfile!: DoctorProfile;
-
-  // One FDO user has many user_permissions rows
-  @HasMany(() => UserPermission)
-  userPermissions!: UserPermission[];
+  //INFO: Associations are declared as NonAttribute so they are excluded from InferAttributes
+  declare doctorProfile?: NonAttribute<
+    import("./doctorProfile.model").DoctorProfile
+  >;
+  declare userPermissions?: NonAttribute<
+    import("./userPermission.model").UserPermission[]
+  >;
+  declare createdAppointments?: NonAttribute<
+    import("./appointment.model").Appointment[]
+  >;
 
   isAdmin(): boolean {
-    return this.role === "admin";
+    return this.role === Role.ADMIN;
   }
   isDoctor(): boolean {
-    return this.role === "doctor";
+    return this.role === Role.DOCTOR;
   }
   isFdo(): boolean {
-    return this.role === "fdo";
+    return this.role === Role.FDO;
   }
-  @BeforeCreate
-  static async hashPassword(instance: User) {
-    if (instance.password) {
-      instance.password = await hashPassword(instance.password);
-    }
+
+  static associate(models: Record<string, any>): void {
+    User.hasOne(models.DoctorProfile, {
+      foreignKey: "user_id",
+      as: "doctorProfile",
+    });
+    User.hasMany(models.UserPermission, {
+      foreignKey: "user_id",
+      as: "userPermissions",
+    });
+    User.hasMany(models.Appointment, {
+      foreignKey: "created_by",
+      as: "createdAppointments",
+    });
+  }
+
+  static initModel(sequelize: Sequelize): typeof User {
+    User.init(
+      {
+        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        role: {
+          type: DataTypes.ENUM(...Object.values(Role)),
+          allowNull: false,
+        },
+        first_name: { type: DataTypes.STRING, allowNull: false },
+        last_name: { type: DataTypes.STRING, allowNull: false },
+        email: { type: DataTypes.STRING, allowNull: false, unique: true },
+        password: { type: DataTypes.STRING, allowNull: false },
+        phone: { type: DataTypes.STRING, allowNull: true },
+        is_active: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: true,
+        },
+        created_at: DataTypes.DATE,
+        updated_at: DataTypes.DATE,
+        deleted_at: DataTypes.DATE,
+      },
+      {
+        sequelize,
+        tableName: "users",
+        timestamps: true,
+        paranoid: true,
+        underscored: true,
+        createdAt: "created_at",
+        updatedAt: "updated_at",
+        deletedAt: "deleted_at",
+        hooks: {
+          beforeCreate: async (user: User) => {
+            if (user.password) {
+              user.password = await hashPassword(user.password);
+            }
+          },
+          beforeUpdate: async (user: User) => {
+            if (user.changed("password")) {
+              user.password = await hashPassword(user.password);
+            }
+          },
+        },
+        indexes: [
+          //INFO: Login/auth queries always filter by email — unique B-tree handles this
+          // { unique: true, fields: ['email'] }, // Duplicate: already enforced by email unique:true
+          //INFO: Role-based access control filters by role on nearly every admin query
+          { fields: ["role"] },
+          //INFO: Dashboard queries filter active users by role (e.g. "all active doctors")
+          { fields: ["role", "is_active"] },
+        ],
+        defaultScope: {
+          attributes: { exclude: ["password"] },
+        },
+        scopes: {
+          withPassword: { attributes: { include: ["password"] } },
+        },
+      },
+    );
+    return User;
   }
 }

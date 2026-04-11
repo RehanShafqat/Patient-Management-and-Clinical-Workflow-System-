@@ -1,43 +1,99 @@
-// src/models/DoctorProfile.ts
 import {
-    Table, Column, Model, DataType,
-    BelongsTo, ForeignKey,
-    CreatedAt, UpdatedAt
-} from 'sequelize-typescript';
-import { User } from './user.model';
+  Model,
+  DataTypes,
+  Sequelize,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+  ForeignKey,
+  NonAttribute,
+} from "sequelize";
+import type { User } from "./user.model";
+import type { Specialty } from "./specialty.model";
+import type { PracticeLocation } from "./practiceLocation.model";
 
-@Table({
-    tableName: 'doctor_profiles',
-    timestamps: true,
-})
-export class DoctorProfile extends Model {
+export class DoctorProfile extends Model<
+  InferAttributes<DoctorProfile>,
+  InferCreationAttributes<DoctorProfile>
+> {
+  declare id: CreationOptional<number>;
+  declare user_id: ForeignKey<number>;
+  declare specialty_id: ForeignKey<number>;
+  declare practice_location_id: ForeignKey<number>;
+  declare license_number: string;
+  declare availability_schedule: CreationOptional<Record<string, any> | null>;
+  declare bio: CreationOptional<string | null>;
+  declare created_at: CreationOptional<Date>;
+  declare updated_at: CreationOptional<Date>;
+  declare deleted_at: CreationOptional<Date | null>;
 
-    @ForeignKey(() => User)
-    @Column({ type: DataType.INTEGER, allowNull: false, unique: true })
-    user_id!: number;
+  declare user?: NonAttribute<User>;
+  declare specialty?: NonAttribute<Specialty>;
+  declare practiceLocation?: NonAttribute<PracticeLocation>;
+  declare appointments?: NonAttribute<
+    import("./appointment.model").Appointment[]
+  >;
+  declare visits?: NonAttribute<import("./visit.model").Visit[]>;
 
-    @Column({ type: DataType.INTEGER, allowNull: false })
-    specialty_id!: number;
+  static associate(models: Record<string, any>): void {
+    DoctorProfile.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
+    DoctorProfile.belongsTo(models.Specialty, {
+      foreignKey: "specialty_id",
+      as: "specialty",
+    });
+    DoctorProfile.belongsTo(models.PracticeLocation, {
+      foreignKey: "practice_location_id",
+      as: "practiceLocation",
+    });
+    DoctorProfile.hasMany(models.Appointment, {
+      foreignKey: "doctor_id",
+      as: "appointments",
+    });
+    DoctorProfile.hasMany(models.Visit, {
+      foreignKey: "doctor_id",
+      as: "visits",
+    });
+  }
 
-    @Column({ type: DataType.INTEGER, allowNull: false })
-    practice_location_id!: number;
-
-    @Column({ type: DataType.STRING, allowNull: false })
-    license_number!: string;
-
-    @Column({ type: DataType.JSON, allowNull: true })
-    availability_schedule!: object;
-
-    @Column({ type: DataType.STRING, allowNull: true })
-    bio!: string;
-
-    @CreatedAt
-    created_at!: Date;
-
-    @UpdatedAt
-    updated_at!: Date;
-
-    // One doctor profile belongs to one user (one-to-one)
-    @BelongsTo(() => User)
-    user!: User;
+  static initModel(sequelize: Sequelize): typeof DoctorProfile {
+    DoctorProfile.init(
+      {
+        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        user_id: { type: DataTypes.INTEGER, allowNull: false, unique: true },
+        specialty_id: { type: DataTypes.INTEGER, allowNull: false },
+        practice_location_id: { type: DataTypes.INTEGER, allowNull: false },
+        license_number: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true,
+        },
+        availability_schedule: { type: DataTypes.JSON, allowNull: true },
+        bio: { type: DataTypes.TEXT, allowNull: true },
+        created_at: DataTypes.DATE,
+        updated_at: DataTypes.DATE,
+        deleted_at: DataTypes.DATE,
+      },
+      {
+        sequelize,
+        tableName: "doctor_profiles",
+        timestamps: true,
+        paranoid: true,
+        underscored: true,
+        createdAt: "created_at",
+        updatedAt: "updated_at",
+        deletedAt: "deleted_at",
+        indexes: [
+          //INFO: One-to-one with users — each user has at most one doctor profile
+          // { unique: true, fields: ['user_id'] }, // Duplicate: already enforced by user_id unique:true
+          //INFO: License verification lookups by regulatory systems
+          // { unique: true, fields: ['license_number'] }, // Duplicate: already enforced by license_number unique:true
+          //INFO: "Show all doctors in Cardiology" — specialty-based doctor filtering
+          { fields: ["specialty_id"] },
+          //INFO: "Show all doctors at Location X" — location-based doctor filtering
+          { fields: ["practice_location_id"] },
+        ],
+      },
+    );
+    return DoctorProfile;
+  }
 }
