@@ -72,7 +72,7 @@ export class UserController {
         ? req.params.id[0]
         : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(new AppError(400, "Invalid ID format"));
       }
 

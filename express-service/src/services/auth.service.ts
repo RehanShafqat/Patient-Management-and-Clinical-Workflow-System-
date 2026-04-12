@@ -10,12 +10,13 @@ import { loginSchema } from "../validations";
 
 export class AuthService {
   login = async (data: z.infer<typeof loginSchema>) => {
-    const user = await User.findOne({
+    const user = await User.scope("withPassword").findOne({
       where: { email: data.email.trim().toLowerCase() },
     });
 
     if (!user) throw new AppError(401, "Invalid email or password");
     if (!user.is_active) throw new AppError(403, "User account is inactive");
+    if (!user.password) throw new AppError(500, "User password is missing");
 
     const isPasswordMatched = await comparePassword(
       data.password,

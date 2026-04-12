@@ -37,7 +37,7 @@ const doctorSchema = baseUser.extend({
   practice_location_id: withRequiredPreprocess(
     z.string().min(1, "Practice location is required"),
   ),
-  licence_number: withRequiredPreprocess(
+  license_number: withRequiredPreprocess(
     z.string().min(1, "License number is required"),
   ),
   availability_schedule: z.json().optional(),
