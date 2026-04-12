@@ -19,16 +19,16 @@ export class Visit extends Model<
   InferAttributes<Visit>,
   InferCreationAttributes<Visit>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare visit_number: string;
-  declare appointment_id: ForeignKey<number>;
-  declare case_id: ForeignKey<number>;
-  declare patient_id: ForeignKey<number>;
-  declare doctor_id: ForeignKey<number>;
+  declare appointment_id: ForeignKey<string>;
+  declare case_id: ForeignKey<string>;
+  declare patient_id: ForeignKey<string>;
+  declare doctor_id: ForeignKey<string>;
   declare visit_date: string;
   declare visit_time: CreationOptional<string | null>;
   declare visit_duration_minutes: CreationOptional<number | null>;
-  declare diagnoses_id: ForeignKey<CreationOptional<number | null>>;
+  declare diagnoses_id: ForeignKey<CreationOptional<string | null>>;
   declare treatment: CreationOptional<string | null>;
   declare treatment_plan: CreationOptional<string | null>;
   declare prescription: CreationOptional<string | null>;
@@ -97,20 +97,20 @@ export class Visit extends Model<
   static initModel(sequelize: Sequelize): typeof Visit {
     Visit.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         visit_number: {
           type: DataTypes.STRING,
           allowNull: false,
           unique: true,
         },
-        appointment_id: { type: DataTypes.INTEGER, allowNull: false },
-        case_id: { type: DataTypes.INTEGER, allowNull: false },
-        patient_id: { type: DataTypes.INTEGER, allowNull: false },
-        doctor_id: { type: DataTypes.INTEGER, allowNull: false },
+        appointment_id: { type: DataTypes.UUID, allowNull: false },
+        case_id: { type: DataTypes.UUID, allowNull: false },
+        patient_id: { type: DataTypes.UUID, allowNull: false },
+        doctor_id: { type: DataTypes.UUID, allowNull: false },
         visit_date: { type: DataTypes.DATEONLY, allowNull: false },
         visit_time: { type: DataTypes.TIME, allowNull: true },
         visit_duration_minutes: { type: DataTypes.INTEGER, allowNull: true },
-        diagnoses_id: { type: DataTypes.INTEGER, allowNull: true },
+        diagnoses_id: { type: DataTypes.UUID, allowNull: true },
         treatment: { type: DataTypes.TEXT, allowNull: true },
         treatment_plan: { type: DataTypes.TEXT, allowNull: true },
         prescription: { type: DataTypes.TEXT, allowNull: true },

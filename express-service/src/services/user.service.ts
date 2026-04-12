@@ -1,18 +1,10 @@
 import z from "zod";
 import { User } from "../models/user.model";
 import { AppError } from "../utils/app-error.util";
-import { createUserSchema } from "../validations/user.validation";
+import { createUserSchema, updateUserSchema } from "../validations/user.validation";
 import { Role } from "../enums";
 import { Permission, UserPermission } from "../models";
 import sequelize from "../config/database.config";
-// type CreateUserInput = {
-//   email: string;
-// } & Record<string, unknown>;
-
-// type UpdateUserInput = {
-//   email?: string;
-// } & Record<string, unknown>;
-
 export class UserService {
   createUser = async (userData: z.infer<typeof createUserSchema>) => {
     return {};
@@ -23,7 +15,7 @@ export class UserService {
   };
 
   getUserById = async (id: string) => {
-    const user = await User.findByPk(Number(id));
+    const user = await User.findByPk(id);
 
     if (!user) {
       throw new AppError(404, "User not found");
@@ -34,9 +26,9 @@ export class UserService {
 
   updateUser = async (
     id: string,
-    updateData: z.infer<typeof createUserSchema>,
+    updateData: z.infer<typeof updateUserSchema>,
   ) => {
-    const user = await User.findByPk(Number(id));
+    const user = await User.findByPk(id);
 
     if (!user) {
       throw new AppError(404, "User not found");
@@ -58,7 +50,7 @@ export class UserService {
   };
 
   deleteUser = async (id: string) => {
-    const user = await User.findByPk(Number(id));
+    const user = await User.findByPk(id);
 
     if (!user) {
       throw new AppError(404, "User not found");

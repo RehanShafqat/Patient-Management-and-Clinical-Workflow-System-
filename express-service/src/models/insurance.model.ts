@@ -12,7 +12,7 @@ export class Insurance extends Model<
   InferAttributes<Insurance>,
   InferCreationAttributes<Insurance>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare insurance_name: string;
   declare insurance_code: string;
   declare is_active: CreationOptional<boolean>;
@@ -49,7 +49,7 @@ export class Insurance extends Model<
   static initModel(sequelize: Sequelize): typeof Insurance {
     Insurance.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         insurance_name: { type: DataTypes.STRING, allowNull: false },
         insurance_code: {
           type: DataTypes.STRING,

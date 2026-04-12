@@ -48,7 +48,7 @@ const doctorSchema = baseUser.extend({
 export const fdoSchema = baseUser.extend({
   role: z.literal(Role.FDO),
   permissions: z
-    .array(z.number().min(1, "Permission cannot be empty"))
+    .array(z.string().uuid("Permission ID must be a valid UUID"))
     .min(1, "At least one permission is required"),
 });
 
@@ -79,3 +79,11 @@ const userRoleGuardSchema = z
 export const createUserSchema = userRoleGuardSchema.pipe(
   z.discriminatedUnion("role", [doctorSchema, fdoSchema]),
 );
+
+export const updateUserSchema = z
+  .object({
+    ...doctorSchema.shape,
+    ...fdoSchema.shape,
+    role: z.enum([Role.DOCTOR, Role.FDO]).optional(),
+  })
+  .partial();

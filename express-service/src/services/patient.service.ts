@@ -15,10 +15,7 @@ export class PatientService {
       where: {
         first_name: patientData.first_name,
         last_name: patientData.last_name,
-        date_of_birth:
-          patientData.date_of_birth instanceof Date
-            ? patientData.date_of_birth.toISOString().split("T")[0]
-            : patientData.date_of_birth,
+        date_of_birth: patientData.date_of_birth,
       },
     });
 
@@ -47,7 +44,7 @@ export class PatientService {
   };
 
   getPatientById = async (id: string) => {
-    const patient = await Patient.findByPk(Number(id));
+    const patient = await Patient.findByPk(id);
     if (!patient) {
       throw new AppError(404, "Patient not found");
     }
@@ -56,7 +53,7 @@ export class PatientService {
   };
 
   updatePatient = async (id: string, updatedData: Record<string, unknown>) => {
-    const patient = await Patient.findByPk(Number(id));
+    const patient = await Patient.findByPk(id);
     if (!patient) {
       throw new AppError(404, "Patient not found");
     }
@@ -67,7 +64,7 @@ export class PatientService {
   };
 
   deletePatient = async (id: string) => {
-    const patient = await Patient.findByPk(Number(id));
+    const patient = await Patient.findByPk(id);
     if (!patient) {
       throw new AppError(404, "Patient not found");
     }

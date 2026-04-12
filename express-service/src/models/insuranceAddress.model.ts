@@ -14,8 +14,8 @@ export class InsuranceAddress extends Model<
   InferAttributes<InsuranceAddress>,
   InferCreationAttributes<InsuranceAddress>
 > {
-  declare id: CreationOptional<number>;
-  declare insurance_id: ForeignKey<number>;
+  declare id: CreationOptional<string>;
+  declare insurance_id: ForeignKey<string>;
   declare address: string;
   declare phone: CreationOptional<string | null>;
   declare is_primary: CreationOptional<boolean>;
@@ -35,8 +35,8 @@ export class InsuranceAddress extends Model<
   static initModel(sequelize: Sequelize): typeof InsuranceAddress {
     InsuranceAddress.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-        insurance_id: { type: DataTypes.INTEGER, allowNull: false },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+        insurance_id: { type: DataTypes.UUID, allowNull: false },
         address: { type: DataTypes.TEXT, allowNull: false },
         phone: { type: DataTypes.STRING, allowNull: true },
         is_primary: {

@@ -3,7 +3,6 @@ import { AuthService } from "../services/auth.service";
 import { ApiResponse } from "../utils/api-response.util";
 import { AppError } from "../utils/app-error.util";
 import { loginSchema } from "../validations";
-
 export class AuthController {
   constructor(private authService: AuthService) {}
 

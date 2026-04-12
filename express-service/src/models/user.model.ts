@@ -14,7 +14,7 @@ export class User extends Model<
   InferAttributes<User>,
   InferCreationAttributes<User>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare role: Role;
   declare first_name: string;
   declare last_name: string;
@@ -65,7 +65,7 @@ export class User extends Model<
   static initModel(sequelize: Sequelize): typeof User {
     User.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         role: {
           type: DataTypes.ENUM(...Object.values(Role)),
           allowNull: false,

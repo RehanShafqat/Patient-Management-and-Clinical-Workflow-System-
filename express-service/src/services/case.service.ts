@@ -13,7 +13,7 @@ export class CaseService {
   };
 
   getCaseById = async (id: string) => {
-    const patientCase = await PatientCase.findByPk(Number(id));
+    const patientCase = await PatientCase.findByPk(id);
 
     if (!patientCase) {
       throw new AppError(404, "Case not found");
@@ -24,12 +24,12 @@ export class CaseService {
 
   getCaseByPatient = async (patientId: string) => {
     return PatientCase.findAll({
-      where: { patient_id: Number(patientId) },
+      where: { patient_id: patientId },
     });
   };
 
   updateCase = async (id: string, updateData: Record<string, unknown>) => {
-    const patientCase = await PatientCase.findByPk(Number(id));
+    const patientCase = await PatientCase.findByPk(id);
 
     if (!patientCase) {
       throw new AppError(404, "Case not found");
@@ -41,7 +41,7 @@ export class CaseService {
   };
 
   deleteCase = async (id: string) => {
-    const patientCase = await PatientCase.findByPk(Number(id));
+    const patientCase = await PatientCase.findByPk(id);
     if (!patientCase) {
       throw new AppError(404, "Case not found");
     }

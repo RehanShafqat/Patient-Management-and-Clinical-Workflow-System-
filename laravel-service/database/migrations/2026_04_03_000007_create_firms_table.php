@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('firms', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('firm_name');
 
             $table->enum('firm_type', array_column(FirmType::cases(), 'value'))->default(FirmType::OTHER->value);

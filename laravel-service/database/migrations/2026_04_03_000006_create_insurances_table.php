@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('insurances', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('insurance_name');
 
             $table->string('insurance_code')->unique();

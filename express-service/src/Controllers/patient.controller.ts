@@ -3,6 +3,7 @@ import { ApiResponse } from "../utils/api-response.util";
 import { PatientService } from "../services/patient.service";
 import { createPatientSchema } from "../validations/patient.validation";
 import { AppError } from "../utils/app-error.util";
+import { isValidUUID } from "../utils/uuid.util";
 
 export class PatientController {
   constructor(private patientService: PatientService = new PatientService()) {}
@@ -40,7 +41,7 @@ export class PatientController {
         ? req.params.id[0]
         : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(new AppError(400, "Invalid patient ID"));
       }
 
@@ -58,7 +59,7 @@ export class PatientController {
         ? req.params.id[0]
         : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(new AppError(400, "Invalid patient ID"));
       }
 

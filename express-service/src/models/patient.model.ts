@@ -15,7 +15,7 @@ export class Patient extends Model<
   InferAttributes<Patient>,
   InferCreationAttributes<Patient>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare first_name: string;
   declare middle_name: CreationOptional<string | null>;
   declare last_name: string;
@@ -132,7 +132,7 @@ export class Patient extends Model<
   static initModel(sequelize: Sequelize): typeof Patient {
     Patient.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         first_name: { type: DataTypes.STRING, allowNull: false },
         middle_name: { type: DataTypes.STRING, allowNull: true },
         last_name: { type: DataTypes.STRING, allowNull: false },

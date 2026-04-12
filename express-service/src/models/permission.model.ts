@@ -12,7 +12,7 @@ export class Permission extends Model<
   InferAttributes<Permission>,
   InferCreationAttributes<Permission>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare permission_name: string;
   declare description: CreationOptional<string | null>;
   declare created_at: CreationOptional<Date>;
@@ -32,7 +32,7 @@ export class Permission extends Model<
   static initModel(sequelize: Sequelize): typeof Permission {
     Permission.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         permission_name: {
           type: DataTypes.STRING,
           allowNull: false,

@@ -10,22 +10,22 @@ return new class extends Migration {
       public function up(): void
       {
             Schema::create('visits', function (Blueprint $table) {
-                  $table->id();
+                  $table->uuid('id')->primary();
                   $table->string('visit_number')->unique();
 
-                  $table->foreignId('appointment_id')->unique()
+                  $table->foreignUuid('appointment_id')->unique()
                         ->constrained('appointments')
                         ->onDelete('restrict');
 
-                  $table->foreignId('case_id')
+                  $table->foreignUuid('case_id')
                         ->constrained('patient_cases')
                         ->onDelete('restrict');
 
-                  $table->foreignId('patient_id')
+                  $table->foreignUuid('patient_id')
                         ->constrained('patients')
                         ->onDelete('restrict');
 
-                  $table->foreignId('doctor_id')
+                  $table->foreignUuid('doctor_id')
                         ->constrained('doctor_profiles')
                         ->onDelete('restrict');
 
@@ -33,7 +33,7 @@ return new class extends Migration {
                   $table->time('visit_time')->nullable();
 
                   $table->integer('visit_duration_minutes')->nullable();
-                  $table->foreignId('diagnoses_id')->nullable()
+                  $table->foreignUuid('diagnoses_id')->nullable()
                         ->constrained('diagnoses')
                         ->onDelete('restrict');
 

@@ -5,13 +5,14 @@ namespace App\Models;
 use App\Enums\AppointmentStatus;
 use App\Enums\AppointmentType;
 use App\Enums\ReminderMethod;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 class Appointment extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasUuids;
 
     protected $fillable = [
         'appointment_number',

@@ -6,12 +6,13 @@ use App\Enums\CaseCategory;
 use App\Enums\CasePriority;
 use App\Enums\CaseStatus;
 use App\Enums\CaseType;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PatientCase extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasUuids;
 
     protected $fillable = [
         'case_number',

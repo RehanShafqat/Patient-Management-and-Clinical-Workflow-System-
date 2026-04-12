@@ -14,14 +14,14 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('appointments', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
 
             $table->string('appointment_number')->unique();
 
-            $table->foreignId('case_id')->constrained('patient_cases')->cascadeOnDelete();
-            $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('case_id')->constrained('patient_cases')->cascadeOnDelete();
+            $table->foreignUuid('patient_id')->constrained()->cascadeOnDelete();
 
-            $table->foreignId('doctor_id')
+            $table->foreignUuid('doctor_id')
                 ->constrained('doctor_profiles')
                 ->cascadeOnDelete();
 
@@ -32,8 +32,8 @@ return new class extends Migration {
             $table->enum('appointment_type', array_column(AppointmentType::cases(), 'value'))
                 ->default(AppointmentType::NEW_PATIENT->value);
 
-            $table->foreignId('specialty_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('practice_location_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('specialty_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('practice_location_id')->constrained()->cascadeOnDelete();
 
             $table->integer('duration_minutes')->default(30);
 
@@ -48,7 +48,7 @@ return new class extends Migration {
             $table->text('reason_for_visit');
 
             // created_by -> users (FDO)
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('created_by')->constrained('users')->cascadeOnDelete();
 
             $table->timestamps();
             $table->softDeletes();

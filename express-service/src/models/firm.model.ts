@@ -5,7 +5,7 @@ import {
 import { FirmType } from '../enums/firmType.enum';
 
 export class Firm extends Model<InferAttributes<Firm>, InferCreationAttributes<Firm>> {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare firm_name: string;
   declare firm_type: FirmType;
   declare address: CreationOptional<string | null>;
@@ -25,7 +25,7 @@ export class Firm extends Model<InferAttributes<Firm>, InferCreationAttributes<F
   static initModel(sequelize: Sequelize): typeof Firm {
     Firm.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         firm_name: { type: DataTypes.STRING, allowNull: false },
         firm_type: { type: DataTypes.ENUM(...Object.values(FirmType)), allowNull: false },
         address: { type: DataTypes.TEXT, allowNull: true },

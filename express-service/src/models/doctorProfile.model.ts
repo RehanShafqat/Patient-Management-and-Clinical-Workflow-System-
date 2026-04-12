@@ -16,10 +16,10 @@ export class DoctorProfile extends Model<
   InferAttributes<DoctorProfile>,
   InferCreationAttributes<DoctorProfile>
 > {
-  declare id: CreationOptional<number>;
-  declare user_id: ForeignKey<number>;
-  declare specialty_id: ForeignKey<number>;
-  declare practice_location_id: ForeignKey<number>;
+  declare id: CreationOptional<string>;
+  declare user_id: ForeignKey<string>;
+  declare specialty_id: ForeignKey<string>;
+  declare practice_location_id: ForeignKey<string>;
   declare license_number: string;
   declare availability_schedule: CreationOptional<Record<string, any> | null>;
   declare bio: CreationOptional<string | null>;
@@ -58,10 +58,10 @@ export class DoctorProfile extends Model<
   static initModel(sequelize: Sequelize): typeof DoctorProfile {
     DoctorProfile.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-        user_id: { type: DataTypes.INTEGER, allowNull: false, unique: true },
-        specialty_id: { type: DataTypes.INTEGER, allowNull: false },
-        practice_location_id: { type: DataTypes.INTEGER, allowNull: false },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+        user_id: { type: DataTypes.UUID, allowNull: false, unique: true },
+        specialty_id: { type: DataTypes.UUID, allowNull: false },
+        practice_location_id: { type: DataTypes.UUID, allowNull: false },
         license_number: {
           type: DataTypes.STRING,
           allowNull: false,

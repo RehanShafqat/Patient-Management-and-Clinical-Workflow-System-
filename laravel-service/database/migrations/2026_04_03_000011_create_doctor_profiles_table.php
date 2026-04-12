@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('doctor_profiles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->unique()->constrained()->onDelete('cascade');
 
-            $table->foreignId('specialty_id')->constrained()->onDelete('restrict');
-            $table->foreignId('practice_location_id')->constrained('practice_locations')->onDelete('restrict');
+            $table->foreignUuid('specialty_id')->constrained()->onDelete('restrict');
+            $table->foreignUuid('practice_location_id')->constrained('practice_locations')->onDelete('restrict');
 
             $table->string('license_number')->unique();
             $table->json('availability_schedule')->nullable();

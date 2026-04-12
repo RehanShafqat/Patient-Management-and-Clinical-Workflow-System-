@@ -12,7 +12,7 @@ export class Specialty extends Model<
   InferAttributes<Specialty>,
   InferCreationAttributes<Specialty>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare specialty_name: string;
   declare description: CreationOptional<string | null>;
   declare is_active: CreationOptional<boolean>;
@@ -41,7 +41,7 @@ export class Specialty extends Model<
   static initModel(sequelize: Sequelize): typeof Specialty {
     Specialty.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         specialty_name: {
           type: DataTypes.STRING,
           allowNull: false,

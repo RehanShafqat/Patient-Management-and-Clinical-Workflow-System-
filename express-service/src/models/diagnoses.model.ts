@@ -12,7 +12,7 @@ export class Diagnoses extends Model<
   InferAttributes<Diagnoses>,
   InferCreationAttributes<Diagnoses>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare icd_code: string;
   declare diagnoses_name: string;
   declare description: CreationOptional<string | null>;
@@ -32,7 +32,7 @@ export class Diagnoses extends Model<
   static initModel(sequelize: Sequelize): typeof Diagnoses {
     Diagnoses.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         icd_code: { type: DataTypes.STRING, allowNull: false, unique: true },
         diagnoses_name: { type: DataTypes.STRING, allowNull: false },
         description: { type: DataTypes.TEXT, allowNull: true },

@@ -21,18 +21,18 @@ export class PatientCase extends Model<
   InferAttributes<PatientCase>,
   InferCreationAttributes<PatientCase>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare case_number: CreationOptional<string>;
-  declare patient_id: ForeignKey<number>;
-  declare practice_location_id: ForeignKey<number>;
+  declare patient_id: ForeignKey<string>;
+  declare practice_location_id: ForeignKey<string>;
   declare category: CaseCategory;
   declare purpose_of_visit: string;
   declare case_type: CaseType;
   declare priority: CreationOptional<CasePriority>;
   declare case_status: CreationOptional<CaseStatus>;
   declare date_of_accident: CreationOptional<string | null>;
-  declare insurance_id: ForeignKey<CreationOptional<number | null>>;
-  declare firm_id: ForeignKey<CreationOptional<number | null>>;
+  declare insurance_id: ForeignKey<CreationOptional<string | null>>;
+  declare firm_id: ForeignKey<CreationOptional<string | null>>;
   declare referred_by: CreationOptional<string | null>;
   declare referred_doctor_name: CreationOptional<string | null>;
   declare opening_date: string;
@@ -75,10 +75,10 @@ export class PatientCase extends Model<
   static initModel(sequelize: Sequelize): typeof PatientCase {
     PatientCase.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         case_number: { type: DataTypes.STRING, allowNull: false, unique: true },
-        patient_id: { type: DataTypes.INTEGER, allowNull: false },
-        practice_location_id: { type: DataTypes.INTEGER, allowNull: false },
+        patient_id: { type: DataTypes.UUID, allowNull: false },
+        practice_location_id: { type: DataTypes.UUID, allowNull: false },
         category: {
           type: DataTypes.ENUM(...Object.values(CaseCategory)),
           allowNull: false,
@@ -99,8 +99,8 @@ export class PatientCase extends Model<
           defaultValue: CaseStatus.ACTIVE,
         },
         date_of_accident: { type: DataTypes.DATEONLY, allowNull: true },
-        insurance_id: { type: DataTypes.INTEGER, allowNull: true },
-        firm_id: { type: DataTypes.INTEGER, allowNull: true },
+        insurance_id: { type: DataTypes.UUID, allowNull: true },
+        firm_id: { type: DataTypes.UUID, allowNull: true },
         referred_by: { type: DataTypes.STRING, allowNull: true },
         referred_doctor_name: { type: DataTypes.STRING, allowNull: true },
         opening_date: { type: DataTypes.DATEONLY, allowNull: false },

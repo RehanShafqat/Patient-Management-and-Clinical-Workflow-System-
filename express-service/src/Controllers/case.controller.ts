@@ -6,6 +6,7 @@ import {
   updateCaseSchema,
 } from "../validations/case.validation";
 import { AppError } from "../utils/app-error.util";
+import { isValidUUID } from "../utils/uuid.util";
 
 export class CaseController {
   constructor(private caseService: CaseService = new CaseService()) {}
@@ -42,9 +43,9 @@ export class CaseController {
         ? req.params.id[0]
         : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(
-          new AppError(400, "Invalid ID format. ID must be a number."),
+          new AppError(400, "Invalid ID format."),
         );
       }
 
@@ -70,9 +71,9 @@ export class CaseController {
         ? req.params.patient_id[0]
         : req.params.patient_id;
 
-      if (isNaN(Number(patientId))) {
+      if (!isValidUUID(patientId)) {
         return next(
-          new AppError(400, "Invalid ID format. ID must be a number."),
+          new AppError(400, "Invalid ID format."),
         );
       }
 
@@ -94,9 +95,9 @@ export class CaseController {
         ? req.params.id[0]
         : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(
-          new AppError(400, "Invalid ID format. ID must be a number."),
+          new AppError(400, "Invalid ID format."),
         );
       }
 

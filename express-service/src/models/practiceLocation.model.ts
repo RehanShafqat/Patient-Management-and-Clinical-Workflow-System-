@@ -12,7 +12,7 @@ export class PracticeLocation extends Model<
   InferAttributes<PracticeLocation>,
   InferCreationAttributes<PracticeLocation>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare location_name: string;
   declare address: CreationOptional<string | null>;
   declare city: CreationOptional<string | null>;
@@ -53,7 +53,7 @@ export class PracticeLocation extends Model<
   static initModel(sequelize: Sequelize): typeof PracticeLocation {
     PracticeLocation.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         location_name: {
           type: DataTypes.STRING,
           allowNull: false,

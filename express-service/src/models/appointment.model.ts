@@ -22,23 +22,23 @@ export class Appointment extends Model<
   InferAttributes<Appointment>,
   InferCreationAttributes<Appointment>
 > {
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare appointment_number: CreationOptional<string>;
-  declare case_id: ForeignKey<number>;
-  declare patient_id: ForeignKey<number>;
-  declare doctor_id: ForeignKey<number>;
+  declare case_id: ForeignKey<string>;
+  declare patient_id: ForeignKey<string>;
+  declare doctor_id: ForeignKey<string>;
   declare appointment_date: string;
   declare appointment_time: string;
   declare appointment_type: AppointmentType;
-  declare specialty_id: ForeignKey<CreationOptional<number | null>>;
-  declare practice_location_id: ForeignKey<CreationOptional<number | null>>;
+  declare specialty_id: ForeignKey<CreationOptional<string | null>>;
+  declare practice_location_id: ForeignKey<CreationOptional<string | null>>;
   declare duration_minutes: CreationOptional<number>;
   declare status: CreationOptional<AppointmentStatus>;
   declare reminder_sent: CreationOptional<boolean>;
   declare reminder_method: CreationOptional<ReminderMethod>;
   declare notes: CreationOptional<string | null>;
   declare reason_for_visit: CreationOptional<string | null>;
-  declare created_by: ForeignKey<CreationOptional<number | null>>;
+  declare created_by: ForeignKey<CreationOptional<string | null>>;
   declare created_at: CreationOptional<Date>;
   declare updated_at: CreationOptional<Date>;
   declare deleted_at: CreationOptional<Date | null>;
@@ -94,23 +94,23 @@ export class Appointment extends Model<
   static initModel(sequelize: Sequelize): typeof Appointment {
     Appointment.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
         appointment_number: {
           type: DataTypes.STRING,
           allowNull: false,
           unique: true,
         },
-        case_id: { type: DataTypes.INTEGER, allowNull: false },
-        patient_id: { type: DataTypes.INTEGER, allowNull: false },
-        doctor_id: { type: DataTypes.INTEGER, allowNull: false },
+        case_id: { type: DataTypes.UUID, allowNull: false },
+        patient_id: { type: DataTypes.UUID, allowNull: false },
+        doctor_id: { type: DataTypes.UUID, allowNull: false },
         appointment_date: { type: DataTypes.DATEONLY, allowNull: false },
         appointment_time: { type: DataTypes.TIME, allowNull: false },
         appointment_type: {
           type: DataTypes.ENUM(...Object.values(AppointmentType)),
           allowNull: false,
         },
-        specialty_id: { type: DataTypes.INTEGER, allowNull: true },
-        practice_location_id: { type: DataTypes.INTEGER, allowNull: true },
+        specialty_id: { type: DataTypes.UUID, allowNull: true },
+        practice_location_id: { type: DataTypes.UUID, allowNull: true },
         duration_minutes: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -133,7 +133,7 @@ export class Appointment extends Model<
         },
         notes: { type: DataTypes.TEXT, allowNull: true },
         reason_for_visit: { type: DataTypes.TEXT, allowNull: true },
-        created_by: { type: DataTypes.INTEGER, allowNull: true },
+        created_by: { type: DataTypes.UUID, allowNull: true },
         created_at: DataTypes.DATE,
         updated_at: DataTypes.DATE,
         deleted_at: DataTypes.DATE,

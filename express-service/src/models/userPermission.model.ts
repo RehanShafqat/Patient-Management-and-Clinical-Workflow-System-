@@ -6,9 +6,9 @@ import type { User } from './user.model';
 import type { Permission } from './permission.model';
 
 export class UserPermission extends Model<InferAttributes<UserPermission>, InferCreationAttributes<UserPermission>> {
-  declare id: CreationOptional<number>;
-  declare user_id: ForeignKey<number>;
-  declare permission_id: ForeignKey<number>;
+  declare id: CreationOptional<string>;
+  declare user_id: ForeignKey<string>;
+  declare permission_id: ForeignKey<string>;
   declare created_at: CreationOptional<Date>;
   declare updated_at: CreationOptional<Date>;
 
@@ -23,9 +23,9 @@ export class UserPermission extends Model<InferAttributes<UserPermission>, Infer
   static initModel(sequelize: Sequelize): typeof UserPermission {
     UserPermission.init(
       {
-        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-        user_id: { type: DataTypes.INTEGER, allowNull: false },
-        permission_id: { type: DataTypes.INTEGER, allowNull: false },
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+        user_id: { type: DataTypes.UUID, allowNull: false },
+        permission_id: { type: DataTypes.UUID, allowNull: false },
         created_at: DataTypes.DATE,
         updated_at: DataTypes.DATE,
       },

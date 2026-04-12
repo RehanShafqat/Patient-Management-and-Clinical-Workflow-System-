@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../utils/api-response.util";
 import { UserService } from "../services/user.service";
-import { createUserSchema } from "../validations/user.validation";
+import { createUserSchema, updateUserSchema } from "../validations/user.validation";
 import { AppError } from "../utils/app-error.util";
+import { isValidUUID } from "../utils/uuid.util";
 
 export class UserController {
   constructor(private userService: UserService = new UserService()) {}
@@ -34,7 +35,7 @@ export class UserController {
         ? req.params.id[0]
         : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(new AppError(400, "Invalid ID format"));
       }
 
@@ -52,11 +53,11 @@ export class UserController {
         ? req.params.id[0]
         : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(new AppError(400, "Invalid ID format"));
       }
 
-      const updateData = createUserSchema.parse(req.body);
+      const updateData = updateUserSchema.parse(req.body);
       const user = await this.userService.updateUser(id, updateData);
 
       return ApiResponse.send(res, { user }, "User updated successfully");
