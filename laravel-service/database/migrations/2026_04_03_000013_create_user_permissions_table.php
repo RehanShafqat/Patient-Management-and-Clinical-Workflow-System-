@@ -19,6 +19,7 @@ return new class extends Migration
 
 
             $table->timestamps();
+
             $table->unique(['user_id', 'permission_id']);
 
             // Indexes (mirrors Express Sequelize model)

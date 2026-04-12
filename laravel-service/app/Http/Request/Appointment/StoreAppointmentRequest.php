@@ -12,7 +12,7 @@ class StoreAppointmentRequest extends FormRequest
     public function authorize(): bool
     {
         // Only FDO and Admin can create appointments
-        return in_array(auth()->user()->role, ['admin', 'fdo']);
+        return in_array(auth()->user()->role->value, ['admin', 'fdo']);
     }
 
     public function rules(): array

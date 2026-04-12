@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Permission;
-use Illuminate\Support\Facades\DB;
+use App\Models\UserPermission;
 
 class UserPermissionSeeder extends Seeder
 {
@@ -16,11 +16,12 @@ class UserPermissionSeeder extends Seeder
 
         foreach ($users as $user) {
             foreach ($permissions as $permission) {
-                DB::table('user_permissions')->insert([
-                    'user_id' => $user->id,
-                    'permission_id' => $permission->id,
-                    'is_granted' => true,
-                ]);
+                UserPermission::firstOrCreate(
+                    [
+                        'user_id'       => $user->id,
+                        'permission_id' => $permission->id,
+                    ],
+                );
             }
         }
     }
