@@ -1,7 +1,7 @@
 import z from "zod";
 import { Patient } from "../models/patient.model";
 import { AppError } from "../utils/app-error.util";
-import { createPatientSchema } from "../validations/patient.validation";
+import { createPatientSchema, updatePatientSchema } from "../validations/patient.validation";
 import { PatientStatus } from "../enums";
 type CreatePatientInput = {
   first_name: string;
@@ -26,10 +26,8 @@ export class PatientService {
     const patient = await Patient.create({
       ...patientData,
       patient_status: patientData.patient_status as PatientStatus,
-      date_of_birth:
-        patientData.date_of_birth instanceof Date
-          ? patientData.date_of_birth.toISOString().split("T")[0]
-          : patientData.date_of_birth,
+      date_of_birth: patientData.date_of_birth as any,
+      registration_date: (patientData.registration_date ?? new Date()) as any,
     });
 
     if (!patient) {
@@ -52,13 +50,13 @@ export class PatientService {
     return patient;
   };
 
-  updatePatient = async (id: string, updatedData: Record<string, unknown>) => {
+  updatePatient = async (id: string, updatedData: z.infer<typeof updatePatientSchema>) => {
     const patient = await Patient.findByPk(id);
     if (!patient) {
       throw new AppError(404, "Patient not found");
     }
 
-    await patient.update(updatedData);
+    await patient.update(updatedData as any);
 
     return patient;
   };

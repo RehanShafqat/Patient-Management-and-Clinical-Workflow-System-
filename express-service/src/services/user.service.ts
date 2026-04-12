@@ -46,16 +46,7 @@ export class UserService {
       if (updateData.email) {
         throw new AppError (400, "Email can not be updated");
       }
-      // if (updateData.email) {
-      //   const existingUser = await User.findOne({
-      //     where: { email: updateData.email },
-      //     transaction: t
-      //   });
-
-      //   if (existingUser && existingUser.id !== user.id) {
-      //     throw new AppError(400, "Email already in use");
-      //   }
-      // }
+ 
 
       // To Check role changes logic
       if (updateData.role && updateData.role !== user.role) {

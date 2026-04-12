@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../utils/api-response.util";
 import { PatientService } from "../services/patient.service";
-import { createPatientSchema } from "../validations/patient.validation";
+import { createPatientSchema, updatePatientSchema } from "../validations/patient.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
 
@@ -28,7 +28,7 @@ export class PatientController {
   getAllPatients = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const patients = await this.patientService.getAllPatients();
-      ApiResponse.send(res, { patients }, "", 200);
+      ApiResponse.send(res, { patients }, "Patients fetched successfully", 200);
     } catch (error) {
       next(error);
     }
@@ -46,7 +46,7 @@ export class PatientController {
       }
 
       const patient = await this.patientService.getPatientById(id);
-      ApiResponse.send(res, { patient }, "", 200);
+      ApiResponse.send(res, { patient }, "Patient fetched successfully", 200);
     } catch (error) {
       next(error);
     }
@@ -63,10 +63,10 @@ export class PatientController {
         return next(new AppError(400, "Invalid patient ID"));
       }
 
-      const updatedData = createPatientSchema.partial().parse(req.body);
+      const updatedData = updatePatientSchema.parse(req.body);
       const patient = await this.patientService.updatePatient(id, updatedData);
 
-      ApiResponse.send(res, { patient }, "", 200);
+      ApiResponse.send(res, { patient }, "Patient updated successfully", 200);
     } catch (error) {
       next(error);
     }
@@ -79,12 +79,12 @@ export class PatientController {
         ? req.params.id[0]
         : req.params.id;
 
-      if (isNaN(Number(id))) {
-        return next(new AppError(400, "Invalid patient ID"));
+      if (!isValidUUID(id)) {
+        return next(new AppError(400, "Invalid patient ID format"));
       }
 
       await this.patientService.deletePatient(id);
-      ApiResponse.send(res, null, "", 204);
+      ApiResponse.send(res, null, "Patient deleted successfully", 200);
     } catch (error) {
       next(error);
     }

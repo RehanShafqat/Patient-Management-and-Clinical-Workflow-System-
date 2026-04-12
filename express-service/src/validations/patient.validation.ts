@@ -50,7 +50,8 @@ const basePatientSchema = z.object({
     z.enum(["active", "inactive", "deceased", "transferred"]),
   ),
 
-  registration_date: z.coerce.date().optional(),
+  registration_date: z.coerce.date().optional()
+  ,
 });
 
 export const createPatientSchema = basePatientSchema
@@ -70,8 +71,10 @@ export const createPatientSchema = basePatientSchema
     },
   );
 
-export const updatePatientSchema = basePatientSchema
-  // .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided",
-  });
+export const updatePatientSchema = z.object({
+ ...basePatientSchema.shape,
+}).partial()
+
+
+
+
