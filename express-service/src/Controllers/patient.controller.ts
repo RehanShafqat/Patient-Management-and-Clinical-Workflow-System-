@@ -4,6 +4,7 @@ import { PatientService } from "../services/patient.service";
 import { createPatientSchema, updatePatientSchema } from "../validations/patient.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
+import { HttpStatusCode, ResponseMessage } from "../enums";
 
 export class PatientController {
   constructor(private patientService: PatientService = new PatientService()) {}
@@ -16,8 +17,8 @@ export class PatientController {
       return ApiResponse.send(
         res,
         { patient },
-        "Patient created successfully",
-        201,
+        ResponseMessage.PATIENT_CREATED,
+        HttpStatusCode.CREATED,
       );
     } catch (error) {
       return next(error);
@@ -28,7 +29,7 @@ export class PatientController {
   getAllPatients = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const patients = await this.patientService.getAllPatients();
-      ApiResponse.send(res, { patients }, "Patients fetched successfully", 200);
+      ApiResponse.send(res, { patients }, ResponseMessage.PATIENTS_FETCHED, HttpStatusCode.OK);
     } catch (error) {
       next(error);
     }
@@ -42,11 +43,11 @@ export class PatientController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(400, "Invalid patient ID"));
+        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_PATIENT_ID));
       }
 
       const patient = await this.patientService.getPatientById(id);
-      ApiResponse.send(res, { patient }, "Patient fetched successfully", 200);
+      ApiResponse.send(res, { patient }, ResponseMessage.PATIENT_FETCHED, HttpStatusCode.OK);
     } catch (error) {
       next(error);
     }
@@ -60,13 +61,13 @@ export class PatientController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(400, "Invalid patient ID"));
+        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_PATIENT_ID));
       }
 
       const updatedData = updatePatientSchema.parse(req.body);
       const patient = await this.patientService.updatePatient(id, updatedData);
 
-      ApiResponse.send(res, { patient }, "Patient updated successfully", 200);
+      ApiResponse.send(res, { patient }, ResponseMessage.PATIENT_UPDATED, HttpStatusCode.OK);
     } catch (error) {
       next(error);
     }
@@ -80,11 +81,11 @@ export class PatientController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(400, "Invalid patient ID format"));
+        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_PATIENT_ID_FORMAT));
       }
 
       await this.patientService.deletePatient(id);
-      ApiResponse.send(res, null, "Patient deleted successfully", 200);
+      ApiResponse.send(res, null, ResponseMessage.PATIENT_DELETED, HttpStatusCode.OK);
     } catch (error) {
       next(error);
     }

@@ -4,6 +4,7 @@ import { UserService } from "../services/user.service";
 import { createUserSchema, updateUserSchema } from "../validations/user.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
+import { HttpStatusCode, ResponseMessage } from "../enums";
 
 export class UserController {
   constructor(private userService: UserService = new UserService()) {}
@@ -13,7 +14,7 @@ export class UserController {
       const userData = createUserSchema.parse(req.body);
       const user = await this.userService.createUser(userData);
 
-      return ApiResponse.send(res, { user }, "User created successfully", 201);
+      return ApiResponse.send(res, { user }, ResponseMessage.USER_CREATED, HttpStatusCode.CREATED);
     } catch (error) {
       return next(error);
     }
@@ -23,7 +24,7 @@ export class UserController {
     try {
       const users = await this.userService.getAllUsers();
 
-      return ApiResponse.send(res, { users }, "Users fetched successfully");
+      return ApiResponse.send(res, { users }, ResponseMessage.USERS_FETCHED);
     } catch (error) {
       return next(error);
     }
@@ -36,12 +37,12 @@ export class UserController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(400, "Invalid ID format"));
+        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT));
       }
 
       const user = await this.userService.getUserById(id);
 
-      return ApiResponse.send(res, { user }, "User fetched successfully");
+      return ApiResponse.send(res, { user }, ResponseMessage.USER_FETCHED);
     } catch (error) {
       return next(error);
     }
@@ -54,13 +55,13 @@ export class UserController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(400, "Invalid ID format"));
+        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT));
       }
 
       const updateData = updateUserSchema.parse(req.body);
       const user = await this.userService.updateUser(id, updateData);
 
-      return ApiResponse.send(res, { user }, "User updated successfully");
+      return ApiResponse.send(res, { user }, ResponseMessage.USER_UPDATED);
     } catch (error) {
       return next(error);
     }
@@ -73,19 +74,14 @@ export class UserController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(400, "Invalid ID format"));
+        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT));
       }
 
       await this.userService.deleteUser(id);
 
-      return ApiResponse.send(res, null, "User deleted successfully");
+      return ApiResponse.send(res, null, ResponseMessage.USER_DELETED);
     } catch (error) {
       return next(error);
     }
   };
-
-
-
-
-  
 }

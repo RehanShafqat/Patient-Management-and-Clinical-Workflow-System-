@@ -7,6 +7,7 @@ import {
 } from "../validations/case.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
+import { HttpStatusCode, ResponseMessage } from "../enums";
 
 export class CaseController {
   constructor(private caseService: CaseService = new CaseService()) {}
@@ -19,8 +20,8 @@ export class CaseController {
       return ApiResponse.send(
         res,
         { patientCase },
-        "Case created successfully",
-        201,
+        ResponseMessage.CASE_CREATED,
+        HttpStatusCode.CREATED,
       );
     } catch (error) {
       return next(error);
@@ -31,7 +32,7 @@ export class CaseController {
     try {
       const cases = await this.caseService.getAllCases();
 
-      return ApiResponse.send(res, { cases }, "Cases fetched successfully");
+      return ApiResponse.send(res, { cases }, ResponseMessage.CASES_FETCHED);
     } catch (error) {
       return next(error);
     }
@@ -45,7 +46,7 @@ export class CaseController {
 
       if (!isValidUUID(id)) {
         return next(
-          new AppError(400, "Invalid ID format."),
+          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT),
         );
       }
 
@@ -54,7 +55,7 @@ export class CaseController {
       return ApiResponse.send(
         res,
         { patientCase },
-        "Case fetched successfully",
+        ResponseMessage.CASE_FETCHED,
       );
     } catch (error) {
       return next(error);
@@ -73,7 +74,7 @@ export class CaseController {
 
       if (!isValidUUID(patientId)) {
         return next(
-          new AppError(400, "Invalid ID format."),
+          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT),
         );
       }
 
@@ -82,7 +83,7 @@ export class CaseController {
       return ApiResponse.send(
         res,
         { cases },
-        "Patient cases fetched successfully",
+        ResponseMessage.PATIENT_CASES_FETCHED,
       );
     } catch (error) {
       return next(error);
@@ -97,7 +98,7 @@ export class CaseController {
 
       if (!isValidUUID(id)) {
         return next(
-          new AppError(400, "Invalid ID format."),
+          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT),
         );
       }
 
@@ -107,8 +108,8 @@ export class CaseController {
       return ApiResponse.send(
         res,
         { patientCase },
-        "Case updated successfully",
-        200,
+        ResponseMessage.CASE_UPDATED,
+        HttpStatusCode.OK,
       );
     } catch (error) {
       return next(error);
@@ -123,13 +124,13 @@ export class CaseController {
 
       if (!isValidUUID(id)) {
         return next(
-          new AppError(400, "Invalid ID format. ID must be a UUID."),
+          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_UUID_FORMAT),
         );
       }
 
       await this.caseService.deleteCase(id);
 
-      return ApiResponse.send(res, null, "Case deleted successfully", 200);
+      return ApiResponse.send(res, null, ResponseMessage.CASE_DELETED, HttpStatusCode.OK);
     } catch (error) {
       return next(error);
     }

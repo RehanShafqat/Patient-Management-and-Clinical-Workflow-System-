@@ -2,7 +2,7 @@ import z from "zod";
 import { Patient } from "../models/patient.model";
 import { AppError } from "../utils/app-error.util";
 import { createPatientSchema, updatePatientSchema } from "../validations/patient.validation";
-import { PatientStatus } from "../enums";
+import { HttpStatusCode, PatientStatus, ResponseMessage } from "../enums";
 type CreatePatientInput = {
   first_name: string;
   last_name: string;
@@ -20,7 +20,7 @@ export class PatientService {
     });
 
     if (existing) {
-      throw new AppError(409, "Patient already exists");
+      throw new AppError(HttpStatusCode.CONFLICT, ResponseMessage.PATIENT_ALREADY_EXISTS);
     }
 
     const patient = await Patient.create({
@@ -31,7 +31,7 @@ export class PatientService {
     });
 
     if (!patient) {
-      throw new AppError(500, "Patient record could not be created");
+      throw new AppError(HttpStatusCode.INTERNAL_SERVER_ERROR, ResponseMessage.PATIENT_CREATION_FAILED);
     }
 
     return patient;
@@ -44,7 +44,7 @@ export class PatientService {
   getPatientById = async (id: string) => {
     const patient = await Patient.findByPk(id);
     if (!patient) {
-      throw new AppError(404, "Patient not found");
+      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.PATIENT_NOT_FOUND);
     }
 
     return patient;
@@ -53,7 +53,7 @@ export class PatientService {
   updatePatient = async (id: string, updatedData: z.infer<typeof updatePatientSchema>) => {
     const patient = await Patient.findByPk(id);
     if (!patient) {
-      throw new AppError(404, "Patient not found");
+      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.PATIENT_NOT_FOUND);
     }
 
     await patient.update(updatedData as any);
@@ -64,7 +64,7 @@ export class PatientService {
   deletePatient = async (id: string) => {
     const patient = await Patient.findByPk(id);
     if (!patient) {
-      throw new AppError(404, "Patient not found");
+      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.PATIENT_NOT_FOUND);
     }
 
     await patient.destroy();

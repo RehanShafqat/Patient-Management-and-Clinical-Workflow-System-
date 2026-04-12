@@ -2,7 +2,7 @@ import z from "zod";
 import { User } from "../models/user.model";
 import { AppError } from "../utils/app-error.util";
 import { createUserSchema, updateUserSchema } from "../validations/user.validation";
-import { Role } from "../enums";
+import { HttpStatusCode, ResponseMessage, Role } from "../enums";
 import { DoctorProfile, Permission, UserPermission } from "../models";
 import sequelize from "../config/database.config";
 import { Transaction } from "sequelize";
@@ -13,7 +13,7 @@ export class UserService {
       where: { email: userData.email }
     });
     if (existingUser) {
-      throw new AppError(400, "User with this email already exists");
+      throw new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.USER_ALREADY_EXISTS);
     }
 
     return await sequelize.transaction(async (t) => {
@@ -30,7 +30,7 @@ export class UserService {
     const user = await User.findByPk(id);
 
     if (!user) {
-      throw new AppError(404, "User not found");
+      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.USER_NOT_FOUND);
     }
 
     return user;
@@ -41,10 +41,10 @@ export class UserService {
       const user = await User.findByPk(id, { transaction: t });
 
       if (!user) {
-        throw new AppError(404, "User not found");
+        throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.USER_NOT_FOUND);
       }
       if (updateData.email) {
-        throw new AppError (400, "Email can not be updated");
+        throw new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.EMAIL_UPDATE_FORBIDDEN);
       }
  
 
@@ -52,11 +52,11 @@ export class UserService {
       if (updateData.role && updateData.role !== user.role) {
         if (updateData.role === Role.DOCTOR) {
           if (!updateData.specialty_id || !updateData.practice_location_id || !updateData.license_number) {
-            throw new AppError(400, "Specialty, practice location, and license number are required when changing role to Doctor");
+            throw new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.DOCTOR_FIELDS_REQUIRED);
           }
         } else if (updateData.role === Role.FDO) {
           if (!updateData.permissions || updateData.permissions.length === 0) {
-            throw new AppError(400, "Permissions are required when changing role to FDO");
+            throw new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.FDO_PERMISSIONS_REQUIRED);
           }
         }
       }
@@ -71,7 +71,7 @@ export class UserService {
     const user = await User.findByPk(id);
 
     if (!user) {
-      throw new AppError(404, "User not found");
+      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.USER_NOT_FOUND);
     }
 
     await user.destroy();
