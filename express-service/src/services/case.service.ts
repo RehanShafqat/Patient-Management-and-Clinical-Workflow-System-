@@ -1,11 +1,15 @@
 import z from "zod";
 import { PatientCase } from "../models/patientCase.model";
 import { AppError } from "../utils/app-error.util";
-import { createCaseSchema } from "../validations";
+import { createCaseSchema, updateCaseSchema } from "../validations";
 
 export class CaseService {
   createCase = async (caseData: z.infer<typeof createCaseSchema>) => {
-    return {};
+    const patientCase = await PatientCase.create(caseData as any);
+    if (!patientCase) {
+      throw new AppError(500, "Case record could not be created");
+    }
+    return patientCase;
   };
 
   getAllCases = async () => {
@@ -28,14 +32,14 @@ export class CaseService {
     });
   };
 
-  updateCase = async (id: string, updateData: Record<string, unknown>) => {
+  updateCase = async (id: string, updateData: z.infer<typeof updateCaseSchema>) => {
     const patientCase = await PatientCase.findByPk(id);
 
     if (!patientCase) {
       throw new AppError(404, "Case not found");
     }
 
-    await patientCase.update(updateData);
+    await patientCase.update(updateData as any);
 
     return patientCase;
   };

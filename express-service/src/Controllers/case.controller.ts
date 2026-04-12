@@ -108,6 +108,7 @@ export class CaseController {
         res,
         { patientCase },
         "Case updated successfully",
+        200,
       );
     } catch (error) {
       return next(error);
@@ -120,15 +121,15 @@ export class CaseController {
         ? req.params.id[0]
         : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(
-          new AppError(400, "Invalid ID format. ID must be a number."),
+          new AppError(400, "Invalid ID format. ID must be a UUID."),
         );
       }
 
       await this.caseService.deleteCase(id);
 
-      return ApiResponse.send(res, null, "Case deleted successfully");
+      return ApiResponse.send(res, null, "Case deleted successfully", 200);
     } catch (error) {
       return next(error);
     }
