@@ -16,14 +16,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('patient_cases', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('case_number')->unique();
 
-            $table->foreignId('patient_id')
+            $table->foreignUuid('patient_id')
                 ->constrained('patients')
                 ->onDelete('restrict');
 
-            $table->foreignId('practice_location_id')
+            $table->foreignUuid('practice_location_id')
                 ->constrained('practice_locations')
                 ->onDelete('restrict');
 
@@ -39,12 +39,12 @@ return new class extends Migration
 
             $table->date('date_of_accident')->nullable();
 
-            $table->foreignId('insurance_id')
+            $table->foreignUuid('insurance_id')
                 ->nullable()
                 ->constrained('insurances')
                 ->onDelete('restrict');
 
-            $table->foreignId('firm_id')
+            $table->foreignUuid('firm_id')
                 ->nullable()
                 ->constrained('firms')
                 ->onDelete('restrict');
@@ -59,6 +59,16 @@ return new class extends Migration
             $table->timestamps();
 
             $table->softDeletes();
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('patient_id');
+            $table->index(['patient_id', 'case_status']);
+            $table->index('practice_location_id');
+            $table->index('case_status');
+            $table->index('priority');
+            $table->index('insurance_id');
+            $table->index('firm_id');
+            $table->index('opening_date');
         });
     }
 

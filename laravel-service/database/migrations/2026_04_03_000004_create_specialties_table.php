@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('specialties', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('specialty_name')->unique();
 
             $table->text('description')->nullable();
@@ -20,6 +20,9 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('is_active');
         });
     }
 

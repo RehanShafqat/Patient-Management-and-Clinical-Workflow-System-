@@ -12,14 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_permissions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
 
-            $table->foreignId('permission_id')->constrained()->onDelete('cascade');
-            $table->boolean('is_granted')->default(true); // whether this permission is granted to the user
+            $table->foreignUuid('permission_id')->constrained()->onDelete('cascade');
+
 
             $table->timestamps();
+
             $table->unique(['user_id', 'permission_id']);
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('user_id');
+            $table->index('permission_id');
         });
     }
 

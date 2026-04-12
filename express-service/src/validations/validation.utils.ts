@@ -5,15 +5,14 @@ export const withRequiredPreprocess = <T extends z.ZodTypeAny>(schema: T) =>
     // keep Date intact
     if (value instanceof Date) return value;
 
+    // trim strings before emptiness check so whitespace-only values become undefined
+    if (typeof value === "string") {
+      value = value.trim();
+    }
+
     // convert empty values to undefined (NOT "")
     if (value === null || value === undefined || value === "") {
       return undefined;
     }
-
-    // trim strings
-    if (typeof value === "string") {
-      return value.trim();
-    }
-
     return value;
   }, schema);

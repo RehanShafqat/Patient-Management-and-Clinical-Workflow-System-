@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->enum('role', array_column(Role::cases(), 'value'))->default(Role::FDO->value);
             $table->string('first_name');
             $table->string('last_name');
@@ -25,6 +25,10 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes (mirrors Express Sequelize model)
+            $table->index('role');
+            $table->index(['role', 'is_active']);
         });
     }
 

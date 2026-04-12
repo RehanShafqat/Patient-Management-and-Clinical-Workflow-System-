@@ -1,0 +1,72 @@
+import z from "zod";
+import { Patient } from "../models/patient.model";
+import { AppError } from "../utils/app-error.util";
+import { createPatientSchema, updatePatientSchema } from "../validations/patient.validation";
+import { HttpStatusCode, PatientStatus, ResponseMessage } from "../enums";
+type CreatePatientInput = {
+  first_name: string;
+  last_name: string;
+  date_of_birth: Date;
+} & Record<string, unknown>;
+
+export class PatientService {
+  createPatient = async (patientData: z.infer<typeof createPatientSchema>) => {
+    const existing = await Patient.findOne({
+      where: {
+        first_name: patientData.first_name,
+        last_name: patientData.last_name,
+        date_of_birth: patientData.date_of_birth,
+      },
+    });
+
+    if (existing) {
+      throw new AppError(HttpStatusCode.CONFLICT, ResponseMessage.PATIENT_ALREADY_EXISTS);
+    }
+
+    const patient = await Patient.create({
+      ...patientData,
+      patient_status: patientData.patient_status as PatientStatus,
+      date_of_birth: patientData.date_of_birth as any,
+      registration_date: (patientData.registration_date ?? new Date()) as any,
+    });
+
+    if (!patient) {
+      throw new AppError(HttpStatusCode.INTERNAL_SERVER_ERROR, ResponseMessage.PATIENT_CREATION_FAILED);
+    }
+
+    return patient;
+  };
+
+  getAllPatients = async () => {
+    return Patient.findAll();
+  };
+
+  getPatientById = async (id: string) => {
+    const patient = await Patient.findByPk(id);
+    if (!patient) {
+      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.PATIENT_NOT_FOUND);
+    }
+
+    return patient;
+  };
+
+  updatePatient = async (id: string, updatedData: z.infer<typeof updatePatientSchema>) => {
+    const patient = await Patient.findByPk(id);
+    if (!patient) {
+      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.PATIENT_NOT_FOUND);
+    }
+
+    await patient.update(updatedData as any);
+
+    return patient;
+  };
+
+  deletePatient = async (id: string) => {
+    const patient = await Patient.findByPk(id);
+    if (!patient) {
+      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.PATIENT_NOT_FOUND);
+    }
+
+    await patient.destroy();
+  };
+}

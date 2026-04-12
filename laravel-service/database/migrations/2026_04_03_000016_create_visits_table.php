@@ -10,22 +10,22 @@ return new class extends Migration {
       public function up(): void
       {
             Schema::create('visits', function (Blueprint $table) {
-                  $table->id();
+                  $table->uuid('id')->primary();
                   $table->string('visit_number')->unique();
 
-                  $table->foreignId('appointment_id')->unique()
+                  $table->foreignUuid('appointment_id')->unique()
                         ->constrained('appointments')
                         ->onDelete('restrict');
 
-                  $table->foreignId('case_id')
+                  $table->foreignUuid('case_id')
                         ->constrained('patient_cases')
                         ->onDelete('restrict');
 
-                  $table->foreignId('patient_id')
+                  $table->foreignUuid('patient_id')
                         ->constrained('patients')
                         ->onDelete('restrict');
 
-                  $table->foreignId('doctor_id')
+                  $table->foreignUuid('doctor_id')
                         ->constrained('doctor_profiles')
                         ->onDelete('restrict');
 
@@ -33,11 +33,12 @@ return new class extends Migration {
                   $table->time('visit_time')->nullable();
 
                   $table->integer('visit_duration_minutes')->nullable();
-                  $table->foreignId('diagnoses_id')->nullable()
+                  $table->foreignUuid('diagnoses_id')->nullable()
                         ->constrained('diagnoses')
                         ->onDelete('restrict');
 
-                  $table->text('treatment');
+                  // nullable: treatment is filled in later by the doctor via Visit CRUD
+                  $table->text('treatment')->nullable();
                   $table->text('treatment_plan')->nullable();
 
                   $table->text('prescription')->nullable();
@@ -60,6 +61,15 @@ return new class extends Migration {
                   $table->timestamps();
 
                   $table->softDeletes();
+
+                  // Indexes (mirrors Express Sequelize model)
+                  $table->index(['doctor_id', 'visit_date']);
+                  $table->index(['patient_id', 'visit_date']);
+                  $table->index('case_id');
+                  $table->index('visit_status');
+                  $table->index('diagnoses_id');
+                  $table->index(['follow_up_required', 'follow_up_date']);
+                  $table->index('referral_made');
             });
       }
 

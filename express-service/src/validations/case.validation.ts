@@ -10,11 +10,11 @@ import { CaseType } from "../enums/caseType.enum";
 export const createCaseSchema = z
   .object({
     patient_id: withRequiredPreprocess(
-      z.coerce.number().int().positive("Patient ID must be a positive number"),
+      z.string().uuid({ message: "Patient ID must be a valid UUID" }),
     ),
 
     practice_location_id: withRequiredPreprocess(
-      z.coerce.number().int().positive("Practice location ID must be valid"),
+      z.string().uuid({ message: "Practice location ID must be a valid UUID" }),
     ),
 
     category: withRequiredPreprocess(z.enum(enumToArray(CaseCategory))),
@@ -48,15 +48,15 @@ export const createCaseSchema = z
         "Accident date cannot be in the future",
       ),
 
-    // For Optional Numbers: convert null/empty to undefined
+    // For Optional UUIDs: convert null/empty to undefined
     insurance_id: z.preprocess(
       (val) => (val === "" || val === null ? undefined : val),
-      z.coerce.number().int().positive().optional(),
+      z.string().uuid({ message: "Insurance ID must be a valid UUID" }).optional(),
     ),
 
     firm_id: z.preprocess(
       (val) => (val === "" || val === null ? undefined : val),
-      z.coerce.number().int().positive().optional(),
+      z.string().uuid({ message: "Firm ID must be a valid UUID" }).optional(),
     ),
 
     referred_by: withRequiredPreprocess(z.string().max(100).optional()),
@@ -94,3 +94,7 @@ export const createCaseSchema = z
       path: ["closing_date"],
     },
   );
+
+export const updateCaseSchema = z.object({
+  ...createCaseSchema
+}).partial();

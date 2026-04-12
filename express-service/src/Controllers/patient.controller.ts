@@ -1,45 +1,24 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../utils/api-response.util";
+import { PatientService } from "../services/patient.service";
+import { createPatientSchema, updatePatientSchema } from "../validations/patient.validation";
 import { AppError } from "../utils/app-error.util";
-import { Patient } from "../models/patient.model";
-import { createPatientSchema } from "../validations/patient.validation";
+import { isValidUUID } from "../utils/uuid.util";
+import { HttpStatusCode, ResponseMessage } from "../enums";
 
 export class PatientController {
-  constructor() {}
+  constructor(private patientService: PatientService = new PatientService()) {}
 
   createPatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Validate request body
       const patientData = createPatientSchema.parse(req.body);
-      // console.log("BODY", patientData);
-
-      // Check for duplicate patient (firstName + lastName + dateOfBirth)
-      const existing = await Patient.findOne({
-        where: {
-          first_name: patientData.first_name,
-          last_name: patientData.last_name,
-          date_of_birth: patientData.date_of_birth,
-        },
-      });
-
-      if (existing) {
-        return next(new AppError(409, "Patient already exists"));
-      }
-
-      // Create new patient
-      const patient = await Patient.create(patientData);
-
-      if (!patient) {
-        return next(new AppError(500, "Patient record could not be created"));
-      }
-
-      // console.log("Patient created:", patient);
+      const patient = await this.patientService.createPatient(patientData);
 
       return ApiResponse.send(
         res,
         { patient },
-        "Patient created successfully",
-        201,
+        ResponseMessage.PATIENT_CREATED,
+        HttpStatusCode.CREATED,
       );
     } catch (error) {
       return next(error);
@@ -49,8 +28,8 @@ export class PatientController {
   // Get all patients
   getAllPatients = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const patients = await Patient.findAll();
-      ApiResponse.send(res, { patients }, "", 200);
+      const patients = await this.patientService.getAllPatients();
+      ApiResponse.send(res, { patients }, ResponseMessage.PATIENTS_FETCHED, HttpStatusCode.OK);
     } catch (error) {
       next(error);
     }
@@ -59,15 +38,16 @@ export class PatientController {
   // Get patient by ID
   getPatientById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Number(req.params.id);
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-      if (isNaN(id)) {
-        return next(new AppError(400, "Invalid patient ID"));
+      if (!isValidUUID(id)) {
+        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_PATIENT_ID));
       }
 
-      const patient = await Patient.findByPk(id);
-      if (!patient) return next(new AppError(404, "Patient not found"));
-      ApiResponse.send(res, { patient }, "", 200);
+      const patient = await this.patientService.getPatientById(id);
+      ApiResponse.send(res, { patient }, ResponseMessage.PATIENT_FETCHED, HttpStatusCode.OK);
     } catch (error) {
       next(error);
     }
@@ -76,19 +56,18 @@ export class PatientController {
   // Update patient
   updatePatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Number(req.params.id);
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-      if (isNaN(id)) {
-        return next(new AppError(400, "Invalid patient ID"));
+      if (!isValidUUID(id)) {
+        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_PATIENT_ID));
       }
 
-      const patient = await Patient.findByPk(id);
-      if (!patient) return next(new AppError(404, "Patient not found"));
+      const updatedData = updatePatientSchema.parse(req.body);
+      const patient = await this.patientService.updatePatient(id, updatedData);
 
-      const updatedData = createPatientSchema.partial().parse(req.body); // allow partial updates
-      await patient.update(updatedData);
-
-      ApiResponse.send(res, { patient }, "", 200);
+      ApiResponse.send(res, { patient }, ResponseMessage.PATIENT_UPDATED, HttpStatusCode.OK);
     } catch (error) {
       next(error);
     }
@@ -97,17 +76,16 @@ export class PatientController {
   // Soft delete patient
   deletePatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Number(req.params.id);
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-      if (isNaN(id)) {
-        return next(new AppError(400, "Invalid patient ID"));
+      if (!isValidUUID(id)) {
+        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_PATIENT_ID_FORMAT));
       }
 
-      const patient = await Patient.findByPk(id);
-      if (!patient) return next(new AppError(404, "Patient not found"));
-
-      await patient.destroy(); // soft delete if Sequelize `paranoid: true`
-      ApiResponse.send(res, null, "", 204);
+      await this.patientService.deletePatient(id);
+      ApiResponse.send(res, null, ResponseMessage.PATIENT_DELETED, HttpStatusCode.OK);
     } catch (error) {
       next(error);
     }

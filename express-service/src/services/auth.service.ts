@@ -1,7 +1,7 @@
 import type { SignOptions } from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../config/env.config";
-import { Roles } from "../enums";
+import { HttpStatusCode, ResponseMessage, Role } from "../enums";
 import { User, DoctorProfile, UserPermission, Permission } from "../models";
 import { AppError } from "../utils/app-error.util";
 import { createJwtToken } from "../utils/jwt.util";
@@ -10,22 +10,23 @@ import { loginSchema } from "../validations";
 
 export class AuthService {
   login = async (data: z.infer<typeof loginSchema>) => {
-    const user = await User.findOne({
+    const user = await User.scope("withPassword").findOne({
       where: { email: data.email.trim().toLowerCase() },
     });
 
-    if (!user) throw new AppError(401, "Invalid email or password");
-    if (!user.is_active) throw new AppError(403, "User account is inactive");
+    if (!user) throw new AppError(HttpStatusCode.UNAUTHORIZED, ResponseMessage.INVALID_CREDENTIALS);
+    if (!user.is_active) throw new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.ACCOUNT_INACTIVE);
+    if (!user.password) throw new AppError(HttpStatusCode.INTERNAL_SERVER_ERROR, ResponseMessage.PASSWORD_MISSING);
 
     const isPasswordMatched = await comparePassword(
       data.password,
       user.password,
     );
     if (!isPasswordMatched)
-      throw new AppError(401, "Invalid email or password");
+      throw new AppError(HttpStatusCode.UNAUTHORIZED, ResponseMessage.INVALID_CREDENTIALS);
 
-    if (!Object.values(Roles).includes(user.role as Roles)) {
-      throw new AppError(403, "User role is not allowed");
+    if (!Object.values(Role).includes(user.role as Role)) {
+      throw new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.ROLE_NOT_ALLOWED);
     }
 
     const accessToken = createJwtToken(
@@ -48,23 +49,24 @@ export class AuthService {
     };
 
     //INFO: Role-specific additions
-    if (user.role === Roles.DOCTOR) {
+    if (user.role === Role.DOCTOR) {
       const profile = await DoctorProfile.findOne({
         where: { user_id: user.id },
       });
       return { ...basePayload, profile };
     }
 
-    if (user.role === Roles.FDO) {
+    if (user.role === Role.FDO) {
       console.log("Hello");
 
       const userPermissions = await UserPermission.findAll({
-        where: { user_id: user.id, is_granted: true },
+        where: { user_id: user.id },
         include: [{ model: Permission, attributes: ["permission_name"] }],
       });
-      const permissions = userPermissions.map(
-        (up) => up.permission.permission_name,
-      );
+      const permissions = null;
+      // = userPermissions.map(
+      //   (up) => up.permission.permission_name,
+      // );
       return { ...basePayload, permissions };
     }
 
@@ -75,8 +77,8 @@ export class AuthService {
   getMe = async (userId: string) => {
     const user = await User.findByPk(userId);
 
-    if (!user) throw new AppError(404, "User not found");
-    if (!user.is_active) throw new AppError(403, "User account is inactive");
+    if (!user) throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.USER_NOT_FOUND);
+    if (!user.is_active) throw new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.ACCOUNT_INACTIVE);
 
     return {
       id: String(user.id),

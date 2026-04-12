@@ -1,21 +1,27 @@
 import { Request, Response, NextFunction } from "express";
-import { PatientCase } from "../models/patientCase.model";
-import { createCaseSchema } from "../validations/case.validation";
 import { ApiResponse } from "../utils/api-response.util";
+import { CaseService } from "../services/case.service";
+import {
+  createCaseSchema,
+  updateCaseSchema,
+} from "../validations/case.validation";
 import { AppError } from "../utils/app-error.util";
+import { isValidUUID } from "../utils/uuid.util";
+import { HttpStatusCode, ResponseMessage } from "../enums";
 
 export class CaseController {
+  constructor(private caseService: CaseService = new CaseService()) {}
+
   createCase = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const caseData = createCaseSchema.parse(req.body);
-
-      const patientCase = await PatientCase.create(caseData);
+      const patientCase = await this.caseService.createCase(caseData);
 
       return ApiResponse.send(
         res,
         { patientCase },
-        "Case created successfully",
-        201,
+        ResponseMessage.CASE_CREATED,
+        HttpStatusCode.CREATED,
       );
     } catch (error) {
       return next(error);
@@ -24,9 +30,9 @@ export class CaseController {
 
   getAllCases = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const cases = await PatientCase.findAll();
+      const cases = await this.caseService.getAllCases();
 
-      return ApiResponse.send(res, { cases }, "Cases fetched successfully");
+      return ApiResponse.send(res, { cases }, ResponseMessage.CASES_FETCHED);
     } catch (error) {
       return next(error);
     }
@@ -34,18 +40,22 @@ export class CaseController {
 
   getCaseById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-      const patientCase = await PatientCase.findByPk(Number(id));
-
-      if (!patientCase) {
-        return next(new AppError(404, "Case not found"));
+      if (!isValidUUID(id)) {
+        return next(
+          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT),
+        );
       }
+
+      const patientCase = await this.caseService.getCaseById(id);
 
       return ApiResponse.send(
         res,
         { patientCase },
-        "Case fetched successfully",
+        ResponseMessage.CASE_FETCHED,
       );
     } catch (error) {
       return next(error);
@@ -58,22 +68,22 @@ export class CaseController {
     next: NextFunction,
   ) => {
     try {
-      const { patient_id } = req.params;
+      const patientId = Array.isArray(req.params.patient_id)
+        ? req.params.patient_id[0]
+        : req.params.patient_id;
 
-      if (isNaN(Number(patient_id))) {
+      if (!isValidUUID(patientId)) {
         return next(
-          new AppError(400, "Invalid ID format. ID must be a number."),
+          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT),
         );
       }
 
-      const cases = await PatientCase.findAll({
-        where: { patient_id: Number(patient_id) },
-      });
+      const cases = await this.caseService.getCaseByPatient(patientId);
 
       return ApiResponse.send(
         res,
         { cases },
-        "Patient cases fetched successfully",
+        ResponseMessage.PATIENT_CASES_FETCHED,
       );
     } catch (error) {
       return next(error);
@@ -82,28 +92,24 @@ export class CaseController {
 
   updateCase = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(
-          new AppError(400, "Invalid ID format. ID must be a number."),
+          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT),
         );
       }
 
-      const patientCase = await PatientCase.findByPk(Number(id));
-
-      if (!patientCase) {
-        return next(new AppError(404, "Case not found"));
-      }
-
-      const updateData = createCaseSchema.parse(req.body);
-
-      await patientCase.update(updateData);
+      const updateData = updateCaseSchema.parse(req.body);
+      const patientCase = await this.caseService.updateCase(id, updateData);
 
       return ApiResponse.send(
         res,
         { patientCase },
-        "Case updated successfully",
+        ResponseMessage.CASE_UPDATED,
+        HttpStatusCode.OK,
       );
     } catch (error) {
       return next(error);
@@ -112,23 +118,19 @@ export class CaseController {
 
   deleteCase = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-      if (isNaN(Number(id))) {
+      if (!isValidUUID(id)) {
         return next(
-          new AppError(400, "Invalid ID format. ID must be a number."),
+          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_UUID_FORMAT),
         );
       }
 
-      const patientCase = await PatientCase.findByPk(Number(id));
+      await this.caseService.deleteCase(id);
 
-      if (!patientCase) {
-        return next(new AppError(404, "Case not found"));
-      }
-
-      await patientCase.destroy(); // soft delete
-
-      return ApiResponse.send(res, null, "Case deleted successfully");
+      return ApiResponse.send(res, null, ResponseMessage.CASE_DELETED, HttpStatusCode.OK);
     } catch (error) {
       return next(error);
     }

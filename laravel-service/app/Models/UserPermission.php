@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class UserPermission extends Model
 {
+    use HasUuids;
+
     protected $fillable = [
         'user_id',
         'permission_id',
-        'is_granted',
     ];
 
     // Belongs to the FDO user

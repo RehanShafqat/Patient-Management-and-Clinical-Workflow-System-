@@ -1,166 +1,234 @@
 import {
-  Table,
-  Column,
   Model,
-  DataType,
-  HasMany,
-  BeforeCreate,
-  BeforeUpdate,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-} from "sequelize-typescript";
-import { PatientCase } from "./patientCase.model";
+  DataTypes,
+  Sequelize,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+  NonAttribute,
+} from "sequelize";
 import * as crypto from "crypto";
 import { Gender } from "../enums/gender.enum";
+import { PatientStatus } from "../enums/patientStatus.enum";
 
-@Table({
-  tableName: "patients",
-  paranoid: true, // soft delete
-  timestamps: true,
-})
-export class Patient extends Model {
-  @Column({ type: DataType.STRING, allowNull: false })
-  first_name!: string;
+export class Patient extends Model<
+  InferAttributes<Patient>,
+  InferCreationAttributes<Patient>
+> {
+  declare id: CreationOptional<string>;
+  declare first_name: string;
+  declare middle_name: CreationOptional<string | null>;
+  declare last_name: string;
+  declare date_of_birth: string;
+  declare gender: Gender;
+  declare ssn: CreationOptional<string | null>;
+  declare email: CreationOptional<string | null>;
+  declare phone: CreationOptional<string | null>;
+  declare mobile: CreationOptional<string | null>;
+  declare address: CreationOptional<string | null>;
+  declare city: CreationOptional<string | null>;
+  declare state: CreationOptional<string | null>;
+  declare zip_code: CreationOptional<string | null>;
+  declare country: CreationOptional<string | null>;
+  declare emergency_contact_name: CreationOptional<string | null>;
+  declare emergency_contact_phone: CreationOptional<string | null>;
+  declare primary_physician: CreationOptional<string | null>;
+  declare insurance_provider: CreationOptional<string | null>;
+  declare insurance_policy_number: CreationOptional<string | null>;
+  declare preferred_language: CreationOptional<string>;
+  declare patient_status: CreationOptional<PatientStatus>;
+  declare registration_date: CreationOptional<Date>;
+  declare created_at: CreationOptional<Date>;
+  declare updated_at: CreationOptional<Date>;
+  declare deleted_at: CreationOptional<Date | null>;
 
-  @Column({ type: DataType.STRING, allowNull: true })
-  middle_name!: string;
+  declare cases?: NonAttribute<import("./patientCase.model").PatientCase[]>;
+  declare appointments?: NonAttribute<
+    import("./appointment.model").Appointment[]
+  >;
+  declare visits?: NonAttribute<import("./visit.model").Visit[]>;
 
-  @Column({ type: DataType.STRING, allowNull: false })
-  last_name!: string;
-
-  @Column({ type: DataType.DATEONLY, allowNull: false })
-  date_of_birth!: string;
-
-  @Column({
-    type: DataType.ENUM(...Object.values(Gender)), // Spreads the values: ["male", "female", ...]
-    allowNull: false,
-  })
-  gender!: Gender;
-
-  @Column({ type: DataType.STRING, allowNull: true, unique: true })
-  ssn!: string; // stored encrypted
-
-  @Column({ type: DataType.STRING, allowNull: true, unique: true })
-  email!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  phone!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  mobile!: string;
-
-  @Column({ type: DataType.TEXT, allowNull: true })
-  address!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  city!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  state!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  zip_code!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  country!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  emergency_contact_name!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  emergency_contact_phone!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  primary_physician!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  insurance_provider!: string;
-
-  @Column({ type: DataType.STRING, allowNull: true })
-  insurance_policy_number!: string;
-
-  @Column({ type: DataType.STRING, defaultValue: "English" })
-  preferred_language!: string;
-
-  @Column({
-    type: DataType.ENUM("Active", "Inactive", "Deceased", "Transferred"),
-    defaultValue: "Active",
-  })
-  patient_status!: string;
-
-  @Column({ type: DataType.DATE, allowNull: false })
-  registration_date!: Date;
-
-  @CreatedAt
-  created_at!: Date;
-
-  @UpdatedAt
-  updated_at!: Date;
-
-  @DeletedAt
-  deleted_at!: Date;
-
-  // Computed age — never stored in DB
-  get age(): number {
+  //INFO: Virtual field — computed from date_of_birth, never persisted
+  get age(): NonAttribute<number> {
     const today = new Date();
     const birth = new Date(this.date_of_birth);
-    return today.getFullYear() - birth.getFullYear();
-  }
-
-  // Encrypt SSN automatically before insert
-  @BeforeCreate
-  static encryptSsnOnCreate(instance: Patient) {
-    if (instance.ssn) {
-      instance.ssn = Patient.encryptSSN(instance.ssn);
+    let years = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+      years--;
     }
-    // Set registration_date automatically on creation
-    instance.registration_date = new Date();
+    return years;
   }
 
-  // Encrypt SSN automatically before update
-  @BeforeUpdate
-  static encryptSsnOnUpdate(instance: Patient) {
-    // Only encrypt if SSN was changed and is not already encrypted
-    if (instance.ssn && !instance.ssn.includes(":")) {
-      instance.ssn = Patient.encryptSSN(instance.ssn);
-    }
-  }
-
-  // SSN encryption helper
   static encryptSSN(ssn: string): string {
     const secret = process.env.SSN_ENCRYPTION_KEY;
 
-    if (!secret || secret.length !== 32) {
+    if (!secret) {
+      throw new Error("SSN_ENCRYPTION_KEY is missing in .env");
+    }
+
+    const key = Buffer.from(secret, "hex");
+
+    if (key.length !== 32) {
       throw new Error(
-        "SSN_ENCRYPTION_KEY must be a 32-character string in .env",
+        "SSN_ENCRYPTION_KEY must be 64 hex characters (32 bytes)",
       );
     }
 
     const iv = crypto.randomBytes(16);
-    // Use 'utf8' to ensure the buffer is created correctly from the string
-    const key = Buffer.from(secret, "utf8");
+
     const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
 
-    const encrypted = Buffer.concat([cipher.update(ssn), cipher.final()]);
+    const encrypted = Buffer.concat([
+      cipher.update(ssn, "utf8"),
+      cipher.final(),
+    ]);
 
     return iv.toString("hex") + ":" + encrypted.toString("hex");
   }
 
-  // SSN decryption helper — call explicitly only when you need to show SSN
   static decryptSSN(encrypted: string): string {
+    const secret = process.env.SSN_ENCRYPTION_KEY;
+
+    if (!secret) {
+      throw new Error("SSN_ENCRYPTION_KEY is missing in .env");
+    }
+
+    if (!encrypted.includes(":")) {
+      return encrypted;
+    }
+
+    const key = Buffer.from(secret, "hex");
+
     const [ivHex, encryptedHex] = encrypted.split(":");
+
     const iv = Buffer.from(ivHex, "hex");
-    const key = Buffer.from(process.env.SSN_ENCRYPTION_KEY as string);
+
     const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+
     const decrypted = Buffer.concat([
       decipher.update(Buffer.from(encryptedHex, "hex")),
       decipher.final(),
     ]);
-    return decrypted.toString();
+
+    return decrypted.toString("utf8");
   }
 
-  // One patient has many cases
-  @HasMany(() => PatientCase)
-  cases!: PatientCase[];
+  static associate(models: Record<string, any>): void {
+    Patient.hasMany(models.PatientCase, {
+      foreignKey: "patient_id",
+      as: "cases",
+    });
+    Patient.hasMany(models.Appointment, {
+      foreignKey: "patient_id",
+      as: "appointments",
+    });
+    Patient.hasMany(models.Visit, { foreignKey: "patient_id", as: "visits" });
+  }
+
+  static initModel(sequelize: Sequelize): typeof Patient {
+    Patient.init(
+      {
+        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+        first_name: { type: DataTypes.STRING, allowNull: false },
+        middle_name: { type: DataTypes.STRING, allowNull: true },
+        last_name: { type: DataTypes.STRING, allowNull: false },
+        date_of_birth: { type: DataTypes.DATEONLY, allowNull: false },
+        gender: {
+          type: DataTypes.ENUM(...Object.values(Gender)),
+          allowNull: false,
+        },
+        ssn: { type: DataTypes.STRING, allowNull: true, unique: true },
+        email: { type: DataTypes.STRING, allowNull: true, unique: true },
+        phone: { type: DataTypes.STRING, allowNull: true },
+        mobile: { type: DataTypes.STRING, allowNull: true },
+        address: { type: DataTypes.TEXT, allowNull: true },
+        city: { type: DataTypes.STRING, allowNull: true },
+        state: { type: DataTypes.STRING, allowNull: true },
+        zip_code: { type: DataTypes.STRING, allowNull: true },
+        country: { type: DataTypes.STRING, allowNull: true },
+        emergency_contact_name: { type: DataTypes.STRING, allowNull: true },
+        emergency_contact_phone: { type: DataTypes.STRING, allowNull: true },
+        primary_physician: { type: DataTypes.STRING, allowNull: true },
+        insurance_provider: { type: DataTypes.STRING, allowNull: true },
+        insurance_policy_number: { type: DataTypes.STRING, allowNull: true },
+        preferred_language: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          defaultValue: "English",
+        },
+        patient_status: {
+          type: DataTypes.ENUM(...Object.values(PatientStatus)),
+          allowNull: false,
+          defaultValue: PatientStatus.ACTIVE,
+        },
+        registration_date: { type: DataTypes.DATE, allowNull: false },
+        created_at: DataTypes.DATE,
+        updated_at: DataTypes.DATE,
+        deleted_at: DataTypes.DATE,
+      },
+      {
+        sequelize,
+        tableName: "patients",
+        timestamps: true,
+        paranoid: true,
+        underscored: true,
+        createdAt: "created_at",
+        updatedAt: "updated_at",
+        deletedAt: "deleted_at",
+        hooks: {
+          beforeCreate: (patient: Patient) => {
+            if (patient.ssn && !patient.ssn.includes(":")) {
+              patient.ssn = Patient.encryptSSN(patient.ssn);
+            }
+            if (!patient.registration_date) {
+              patient.registration_date = new Date();
+            }
+          },
+          beforeUpdate: (patient: Patient) => {
+            if (
+              patient.changed("ssn") &&
+              patient.ssn &&
+              !patient.ssn.includes(":")
+            ) {
+              patient.ssn = Patient.encryptSSN(patient.ssn);
+            }
+          },
+        },
+        defaultScope: {
+          //INFO: SSN is never exposed in API responses by default
+          attributes: { exclude: ["ssn"] },
+        },
+        scopes: {
+          withSSN: { attributes: { include: ["ssn"] } },
+        },
+        indexes: [
+          //INFO: Prevent duplicate patient records with same first/last name and DOB
+          {
+            unique: true,
+            fields: ["first_name", "last_name", "date_of_birth"],
+            name: "unique_patient",
+          },
+          //INFO: Patient search by name — the most common front-desk operation
+          { fields: ["last_name", "first_name"] },
+          //INFO: Unique patient email for communication and portal login
+          // { unique: true, fields: ['email'] }, // Duplicate: already enforced by email unique:true
+          //INFO: Unique encrypted SSN for identity verification
+          // { unique: true, fields: ['ssn'] }, // Duplicate: already enforced by ssn unique:true
+          //INFO: DOB used in age-range reports and patient identification
+          { fields: ["date_of_birth"] },
+          //INFO: Status filter on every patient list view (Active/Inactive/etc.)
+          { fields: ["patient_status"] },
+          //INFO: Phone lookup when patients call in for appointment scheduling
+          { fields: ["phone"] },
+          //INFO: Date-range queries for registration reports and analytics
+          { fields: ["registration_date"] },
+        ],
+      },
+    );
+    return Patient;
+  }
 }
