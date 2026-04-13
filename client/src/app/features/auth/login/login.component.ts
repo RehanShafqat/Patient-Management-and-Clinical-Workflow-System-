@@ -17,6 +17,7 @@ export class LoginComponent implements OnInit {
   isLoading = false;
   showPassword = false;
   authService = inject(AuthService);
+
   loginForm = new FormBuilder().group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
@@ -57,3 +58,5 @@ export class LoginComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 }
+
+

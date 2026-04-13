@@ -3,7 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { LoginRequest, LoginResponse, AuthUser } from '../../models/auth.model';
+import {
+  LoginRequest,
+  LoginResponse,
+  AuthUser,
+  LogoutResponse,
+} from '../../models/auth.model';
 import { ApiResponse } from '../../models';
 @Injectable({
   providedIn: 'root',
@@ -20,7 +25,7 @@ export class AuthService {
     return this.checkAuthOnInit();
   }
 
-  // ------------------- Check Auth on App Init -------------------------------
+  // Check Auth on App Init
   checkAuthOnInit(): Observable<void> {
     return this.http.get<ApiResponse<any>>(`${this.apiUrl}/auth/me`).pipe(
       tap((response) => {
@@ -36,7 +41,6 @@ export class AuthService {
     );
   }
 
-  // ------------------- Login -------------------------------
   login(credentials: LoginRequest): Observable<ApiResponse<LoginResponse>> {
     return this.http
       .post<
@@ -49,13 +53,17 @@ export class AuthService {
       );
   }
 
-  // ------------------- Logout -------------------------------
-  logout(): void {
-    this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
+  logout(): Observable<LogoutResponse> {
+    return this.http
+      .post<LogoutResponse>(
+        `${this.apiUrl}/auth/logout`,
+        {},
+        { withCredentials: true },
+      )
+      .pipe(tap(() => this.currentUserSubject.next(null)));
   }
 
-  // -------------------  Helpers -------------------------------
+  //  Helper functions
 
   getCurrentUser(): AuthUser {
     return this.currentUserSubject.value!;

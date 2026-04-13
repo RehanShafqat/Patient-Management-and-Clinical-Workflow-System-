@@ -1,6 +1,7 @@
 export enum ResponseMessage {
   // Auth
   LOGIN_SUCCESS = "Login successful",
+  LOGOUT_SUCCESS = "Logout successful",
   INVALID_CREDENTIALS = "Invalid email or password",
   ACCOUNT_INACTIVE = "User account is inactive",
   PASSWORD_MISSING = "User password is missing",

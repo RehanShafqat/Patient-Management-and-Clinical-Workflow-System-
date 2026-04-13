@@ -16,4 +16,10 @@ interface AuthUser {
   created_at?: string;
 }
 
-export type { LoginRequest, LoginResponse, AuthUser };
+interface LogoutResponse {
+  success: boolean;
+  message: string;
+  redirectTo?: string;
+}
+
+export type { LoginRequest, LoginResponse, AuthUser, LogoutResponse };

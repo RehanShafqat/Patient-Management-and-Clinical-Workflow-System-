@@ -6,5 +6,15 @@ export const setAuthToken = (res: Response, accessToken: string) => {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
     sameSite: "strict",
+    path: "/",
+  });
+};
+
+export const clearAuthToken = (res: Response) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
   });
 };
