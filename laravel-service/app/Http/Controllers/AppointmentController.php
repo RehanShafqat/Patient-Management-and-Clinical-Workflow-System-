@@ -17,11 +17,10 @@ class AppointmentController extends Controller
 {
     public function __construct(
         private AppointmentService $appointmentService
-    ) {
-    }
+    ) {}
 
     // LIST
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request)
     {
         $appointments = $this->appointmentService->getAll($request, auth()->user());
 
@@ -35,21 +34,21 @@ class AppointmentController extends Controller
         if (auth()->user()->role->value === 'doctor') {
             $doctorId = auth()->user()->doctorProfile?->id;
             if ($appointment->doctor_id !== $doctorId) {
-                return response()->json(['message' => 'Unauthorized.'], 403);
+                return response()->failure('Unauthorized.', 403);
             }
         }
 
         $appointment = $this->appointmentService->getById($appointment);
 
-        return response()->json(new AppointmentResource($appointment));
+        return response()->success(new AppointmentResource($appointment));
     }
 
-    // STORE 
+    // STORE
     public function store(StoreAppointmentRequest $request): JsonResponse
     {
         // Role check — only FDO and Admin
         if (!in_array(auth()->user()->role->value, ['admin', 'fdo'])) {
-            return response()->json(['message' => 'Unauthorized.'], 403);
+            return response()->failure('Unauthorized.', 403);
         }
 
         try {
@@ -60,15 +59,13 @@ class AppointmentController extends Controller
                 auth()->id()
             );
 
-            return response()->json([
-                'message' => 'Appointment scheduled successfully.',
-                'appointment' => new AppointmentResource($appointment),
-            ], 201);
-
+            return response()->success(
+                ['appointment' => new AppointmentResource($appointment)],
+                'Appointment scheduled successfully.',
+                201
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], $e->getCode() ?: 500);
+            return response()->failure($e->getMessage(), $e->getCode() ?: 500);
         }
     }
 
@@ -85,15 +82,12 @@ class AppointmentController extends Controller
                 $role
             );
 
-            return response()->json([
-                'message' => 'Appointment updated successfully.',
-                'appointment' => new AppointmentResource($appointment),
-            ]);
-
+            return response()->success(
+                ['appointment' => new AppointmentResource($appointment)],
+                'Appointment updated successfully.'
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], $e->getCode() ?: 500);
+            return response()->failure($e->getMessage(), $e->getCode() ?: 500);
         }
     }
 
@@ -101,28 +95,27 @@ class AppointmentController extends Controller
     public function cancel(Appointment $appointment): JsonResponse
     {
         if (auth()->user()->role->value === 'doctor') {
-            return response()->json(['message' => 'Doctors cannot cancel appointments.'], 403);
+            return response()->failure('Doctors cannot cancel appointments.', 403);
         }
 
         try {
             $this->appointmentService->cancel($appointment);
 
-            return response()->json(['message' => 'Appointment cancelled successfully.']);
-
+            return response()->success([], 'Appointment cancelled successfully.');
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 500);
+            return response()->failure($e->getMessage(), $e->getCode() ?: 500);
         }
     }
 
-    // DELETE (soft) 
+    // DELETE (soft)
     public function destroy(Appointment $appointment): JsonResponse
     {
         if (auth()->user()->role->value !== 'admin') {
-            return response()->json(['message' => 'Only admins can delete appointments.'], 403);
+            return response()->failure('Only admins can delete appointments.', 403);
         }
 
         $this->appointmentService->delete($appointment);
 
-        return response()->json(['message' => 'Appointment deleted successfully.']);
+        return response()->success([], 'Appointment deleted successfully.');
     }
 }
