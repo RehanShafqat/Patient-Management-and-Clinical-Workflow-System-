@@ -29,37 +29,25 @@ class AppExceptionHandler
     private function RegisterValidationExceptionHandler(Exceptions $exceptions): void
     {
         $exceptions->render(function (ValidationException $e, Request $request) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 422);
+            return response()->failure($e->getMessage(), 422);
         });
     }
     private function RegisterAuthenticationExceptionHandler(Exceptions $exceptions): void
     {
         $exceptions->render(function (AuthenticationException $e, Request $request) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated.',
-            ], 401);
+            return response()->failure('Unauthenticated.', 401);
         });
     }
     private function RegisterHttpExceptionHandler(Exceptions $exceptions): void
     {
         $exceptions->render(function (HttpException $e, Request $request) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage() ?: 'HTTP error.',
-            ], $e->getStatusCode());
+            return response()->failure($e->getMessage() ?: 'HTTP error.', $e->getStatusCode());
         });
     }
     private function RegisterNotFoundExceptionHandler(Exceptions $exceptions): void
     {
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Resource not found.',
-            ], 404);
+            return response()->failure('Resource not found.', 404);
         });
     }
     private function RegisterQueryExceptionHandler(Exceptions $exceptions): void
@@ -70,22 +58,17 @@ class AppExceptionHandler
                 // INFO: Using regex for column matching
                 preg_match("/for key '(.+?)'/", $e->getMessage(), $matches);
                 $column = $matches[1] ?? 'unknown';
-                return response()->json([
-                    'success' => false,
-                    'message' => "$column already exists",
-                ], 409);
+                return response()->failure("$column already exists", 409);
             }
         });
     }
     private function RegisterDefaultHandler(Exceptions $exceptions): void
     {
         $exceptions->render(function (Throwable $e, Request $request) {
-            return response()->json([
-                'success' => false,
-                'message' => app()->isProduction()
-                    ? 'Something went wrong.'
-                    : $e->getMessage(),
-            ], 500);
+            return response()->failure(
+                app()->isProduction() ? 'Something went wrong.' : $e->getMessage(),
+                500
+            );
         });
     }
 }

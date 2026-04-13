@@ -61,7 +61,7 @@ export class AuthService {
 
       const userPermissions = await UserPermission.findAll({
         where: { user_id: user.id },
-        include: [{ model: Permission, attributes: ["permission_name"] }],
+        include: [{ model: Permission, as: "permission", attributes: ["permission_name"] }],
       });
       const permissions = null;
       // = userPermissions.map(
