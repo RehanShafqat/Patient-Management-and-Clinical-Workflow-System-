@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import routes from "./routes";
-import { errorHandler } from "./middlewares/error.middleware";
+import { errorHandler } from "./Middlewares/error.middleware";
 import { env } from "./config/env.config";
 import { AppError } from "./utils/app-error.util";
 import logger from "./config/logger.config";

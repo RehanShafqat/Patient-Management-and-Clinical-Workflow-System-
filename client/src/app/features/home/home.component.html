@@ -1,0 +1,532 @@
+<!-- ===== NAVBAR ===== -->
+<div class="navbar bg-base-100 shadow-sm px-6 sticky top-0 z-50">
+  <div class="navbar-start">
+    <a
+      routerLink="/"
+      class="text-xl font-bold text-primary tracking-tight cursor-pointer"
+      >ClinicalCurator</a
+    >
+  </div>
+
+  <div class="navbar-center hidden lg:flex">
+    <ul class="menu menu-horizontal px-1 gap-1">
+      <li *ngFor="let link of navLinks; let i = index">
+        <a
+          [class.text-primary]="i === 0"
+          [class.border-b-2]="i === 0"
+          [class.border-primary]="i === 0"
+          [class.rounded-none]="i === 0"
+          [class.text-base-content]="i !== 0"
+          [class.opacity-60]="i !== 0"
+          class="font-medium hover:opacity-100 transition-opacity"
+        >
+          {{ link }}
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="navbar-end gap-3">
+    <a routerLink="/login" class="btn btn-primary btn-sm font-medium"
+      >Sign In</a
+    >
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="bg-base-100 px-8 py-20 lg:px-20">
+  <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-14">
+    <!-- Left copy -->
+    <div class="flex-1 max-w-lg">
+      <div
+        class="badge badge-primary badge-outline text-xs font-semibold tracking-widest mb-6 gap-2 py-3 px-4"
+      >
+        <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+        ENTERPRISE GRADE MEDICAL INTELLIGENCE
+      </div>
+
+      <h1 class="text-5xl font-extrabold leading-tight mb-4">
+        <span class="text-base-content">Precision in<br />Practice.</span><br />
+        <span class="text-base-content opacity-40"
+          >Excellence in<br />Care.</span
+        >
+      </h1>
+
+      <p
+        class="text-base-content opacity-60 text-base leading-relaxed mb-8 max-w-sm"
+      >
+        The ultimate workspace for clinical decision support. Transform complex
+        medical data into actionable insights with our high-precision editorial
+        platform.
+      </p>
+
+      <div class="flex gap-4 flex-wrap">
+        <button routerLink="/login" class="btn btn-primary px-6 gap-2">
+          Get Started
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"
+            />
+          </svg>
+        </button>
+        <button class="btn btn-outline px-6" routerLink="#">
+          Request Demo
+        </button>
+      </div>
+    </div>
+
+    <!-- Right visual -->
+    <div class="flex-1 flex justify-center relative">
+      <div class="relative w-full max-w-md">
+        <!-- Teal card -->
+        <div
+          class="rounded-2xl shadow-2xl bg-gradient-to-br from-teal-400 via-teal-500 to-cyan-600 w-full aspect-[4/3] flex items-center justify-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-24 w-24 text-white opacity-30"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="0.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+        </div>
+
+        <!-- Floating metric badge -->
+        <div
+          class="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-xl p-3 flex items-center gap-3 border border-base-200"
+        >
+          <div
+            class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs text-base-content opacity-50 font-medium">
+              Active Analysis
+            </p>
+            <p class="text-sm font-bold text-base-content">Precision Metrics</p>
+            <p class="text-xs text-emerald-500 font-semibold">
+              98.6% DIAGNOSTIC ACCURACY
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRUST LOGOS ===== -->
+<section class="bg-base-200 py-12 px-8">
+  <div class="max-w-5xl mx-auto text-center">
+    <p
+      class="text-xs font-bold tracking-widest text-base-content opacity-40 mb-8 uppercase"
+    >
+      Empowering World-Class Healthcare Institutions
+    </p>
+    <div class="flex flex-wrap justify-center items-center gap-10 lg:gap-16">
+      <span
+        *ngFor="let org of orgs"
+        class="text-base-content opacity-30 font-bold text-lg tracking-tight hover:opacity-60 transition-opacity cursor-pointer"
+      >
+        {{ org }}
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="bg-base-100 py-24 px-8 lg:px-20">
+  <div class="max-w-6xl mx-auto">
+    <div class="mb-12">
+      <h2 class="text-4xl font-extrabold text-base-content mb-3">
+        Advanced Medical Modules
+      </h2>
+      <p class="text-base-content opacity-50 text-base max-w-sm">
+        Purpose-built tools designed to eliminate cognitive load and focus on
+        what matters most: patient outcomes.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <!-- ── Patient Registry ── -->
+      <div
+        class="card border border-base-200 shadow-sm hover:shadow-md transition-shadow p-8 bg-base-100"
+      >
+        <div class="card-body p-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-primary bg-opacity-10 flex items-center justify-center mb-5"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
+              />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-base-content mb-2">
+            Patient Registry
+          </h3>
+          <p class="text-base-content opacity-55 text-sm leading-relaxed mb-6">
+            Comprehensive longitudinal patient tracking with integrated genomic
+            data and multi-center history synchronization.
+          </p>
+          <div class="flex gap-2 flex-wrap">
+            <span
+              class="badge badge-ghost border border-base-300 text-xs font-medium"
+              >Unified Records</span
+            >
+            <span
+              class="badge badge-ghost border border-base-300 text-xs font-medium"
+              >HL7/FHIR Integrated</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Case Management (dark) ── -->
+      <div
+        class="card bg-primary text-primary-content shadow-lg hover:shadow-xl transition-shadow p-8"
+      >
+        <div class="card-body p-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-white bg-opacity-15 flex items-center justify-center mb-5"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Case Management</h3>
+          <p class="text-white opacity-70 text-sm leading-relaxed mb-8">
+            Collaborative workflow engine for complex, multi-disciplinary team
+            rounds.
+          </p>
+          <a
+            class="text-sm font-semibold flex items-center gap-2 cursor-pointer hover:gap-3 transition-all"
+          >
+            Explore Module
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── Doctor Portals ── -->
+      <div
+        class="card border border-base-200 shadow-sm hover:shadow-md transition-shadow p-8 bg-base-100"
+      >
+        <div class="card-body p-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-primary bg-opacity-10 flex items-center justify-center mb-5"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-base-content mb-2">
+            Doctor Portals
+          </h3>
+          <p class="text-base-content opacity-55 text-sm leading-relaxed mb-6">
+            Personalized dashboards featuring real-time telemetry, peer review
+            tools, and automated editorial summaries.
+          </p>
+          <div class="flex items-center justify-between">
+            <div class="flex -space-x-2">
+              <div
+                *ngFor="let color of avatarColors"
+                class="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-gradient-to-br"
+                [ngClass]="color"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3.5 w-3.5 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <span class="text-sm font-bold text-base-content opacity-50"
+              >4,200+ Specialists</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Security & Compliance ── -->
+      <div
+        class="card border border-base-200 shadow-sm hover:shadow-md transition-shadow p-8 bg-base-100"
+      >
+        <div class="card-body p-0">
+          <div
+            class="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center mb-5"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-base-content mb-2">
+            Security & Compliance
+          </h3>
+          <p class="text-base-content opacity-55 text-sm leading-relaxed mb-6">
+            Enterprise-grade security is baked into every layer of
+            ClinicalCurator. We exceed international standards for medical data
+            protection.
+          </p>
+          <div class="flex gap-6">
+            <div *ngFor="let cert of certs" class="text-center">
+              <p class="text-xs font-extrabold text-base-content">
+                {{ cert.label }}
+              </p>
+              <p
+                class="text-xs text-base-content opacity-40 font-medium uppercase tracking-wide"
+              >
+                {{ cert.sub }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA SECTION ===== -->
+<section class="bg-primary py-24 px-8 relative overflow-hidden">
+  <!-- Subtle grid overlay -->
+  <div
+    class="absolute inset-0 opacity-10 pointer-events-none"
+    style="
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 40px,
+          rgba(255, 255, 255, 0.3) 40px,
+          rgba(255, 255, 255, 0.3) 41px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 40px,
+          rgba(255, 255, 255, 0.3) 40px,
+          rgba(255, 255, 255, 0.3) 41px
+        );
+    "
+  ></div>
+
+  <div class="max-w-3xl mx-auto text-center relative z-10">
+    <h2
+      class="text-4xl lg:text-5xl font-extrabold text-white mb-5 leading-tight"
+    >
+      Ready to elevate your<br />clinical precision?
+    </h2>
+    <p
+      class="text-white opacity-60 text-base mb-10 max-w-lg mx-auto leading-relaxed"
+    >
+      Join the next generation of healthcare providers using high-precision
+      editorial tools to drive medical excellence.
+    </p>
+    <div class="flex gap-4 justify-center flex-wrap">
+      <button
+        class="btn bg-white text-primary hover:bg-base-200 font-bold px-8 border-0 shadow-lg"
+        routerLink="#"
+      >
+        Get Started Now
+      </button>
+      <button
+        class="btn btn-outline border-white border-opacity-40 text-white hover:bg-white hover:bg-opacity-10 hover:border-white hover:text-white font-semibold px-8"
+      >
+        Schedule a Call
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="bg-base-100 pt-16 pb-8 px-8 lg:px-20 border-t border-base-200">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+      <!-- Brand blurb -->
+      <div class="col-span-2">
+        <p class="text-xl font-bold text-base-content mb-3">ClinicalCurator</p>
+        <p
+          class="text-base-content opacity-40 text-sm leading-relaxed max-w-xs"
+        >
+          Redefining medical software through the lens of precision editorial
+          standards. Built for the most demanding clinical environments on
+          earth.
+        </p>
+      </div>
+
+      <!-- Link columns -->
+      <div *ngFor="let col of footerCols">
+        <p
+          class="font-bold text-xs tracking-widest text-base-content opacity-50 uppercase mb-4"
+        >
+          {{ col.heading }}
+        </p>
+        <ul class="space-y-2.5">
+          <li *ngFor="let link of col.links">
+            <a
+              class="text-sm text-base-content opacity-50 hover:opacity-100 transition-opacity cursor-pointer"
+            >
+              {{ link }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="divider my-0"></div>
+
+    <div
+      class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6"
+    >
+      <p class="text-xs text-base-content opacity-30">
+        © 2024 ClinicalCurator Intelligence. High Precision Medical Editorial.
+      </p>
+
+      <!-- Social icons -->
+      <div class="flex gap-3">
+        <!-- LinkedIn -->
+        <button
+          class="btn btn-ghost btn-xs btn-circle text-base-content opacity-30 hover:opacity-80"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M19 0h-14C2.239 0 0 2.239 0 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5V5c0-2.761-2.238-5-5-5zM8 19H5V8h3v11zM6.5 6.732a1.75 1.75 0 110-3.5 1.75 1.75 0 010 3.5zM20 19h-3v-5.604c0-3.368-4-3.113-4 0V19h-3V8h3v1.765C14.396 7.179 20 6.988 20 12.476V19z"
+            />
+          </svg>
+        </button>
+        <!-- Globe -->
+        <button
+          class="btn btn-ghost btn-xs btn-circle text-base-content opacity-30 hover:opacity-80"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+            />
+          </svg>
+        </button>
+        <!-- Email -->
+        <button
+          class="btn btn-ghost btn-xs btn-circle text-base-content opacity-30 hover:opacity-80"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</footer>

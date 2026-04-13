@@ -20,7 +20,7 @@ export class AuthService {
     return this.checkAuthOnInit();
   }
 
-  // ------------------- Check Auth on App Init -------------------------------
+  // Check Auth on App Init
   checkAuthOnInit(): Observable<void> {
     return this.http.get<ApiResponse<any>>(`${this.apiUrl}/auth/me`).pipe(
       tap((response) => {
@@ -36,7 +36,7 @@ export class AuthService {
     );
   }
 
-  // ------------------- Login -------------------------------
+  // Login
   login(credentials: LoginRequest): Observable<ApiResponse<LoginResponse>> {
     return this.http
       .post<
@@ -49,13 +49,15 @@ export class AuthService {
       );
   }
 
-  // ------------------- Logout -------------------------------
-  logout(): void {
-    this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
+  // Logout
+  logout(): any {
+    return this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe(() => {
+      this.currentUserSubject.next(null);
+      this.router.navigate(['/login']);
+    });
   }
 
-  // -------------------  Helpers -------------------------------
+  //  Helpers
 
   getCurrentUser(): AuthUser {
     return this.currentUserSubject.value!;
