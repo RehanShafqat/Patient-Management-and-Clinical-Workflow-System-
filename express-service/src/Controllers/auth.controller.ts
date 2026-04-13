@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/api-response.util";
 import { AppError } from "../utils/app-error.util";
 import { loginSchema } from "../validations";
 import { HttpStatusCode, ResponseMessage } from "../enums";
+import { clearAuthToken, setAuthToken } from "../utils/cookie.util";
 
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -12,7 +13,8 @@ export class AuthController {
     try {
       loginSchema.parse(req.body);
       const result = await this.authService.login(req.body);
-      res.cookie("accessToken", result.accessToken, { httpOnly: true });
+      setAuthToken(res, result.accessToken);
+
       ApiResponse.send(
         res,
         { user: result.user },
@@ -48,7 +50,7 @@ export class AuthController {
 
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.clearCookie("accessToken");
+      clearAuthToken(res);
       ApiResponse.send(
         res,
         null,

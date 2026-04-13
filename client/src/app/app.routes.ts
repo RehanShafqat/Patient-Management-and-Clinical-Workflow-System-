@@ -7,9 +7,11 @@ import {
 } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  // Default redirect
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-
+  {
+    path: '',
+    loadComponent: () =>
+      import('./features/home/home.component').then((m) => m.HomeComponent),
+  },
   // Public — no guard
   {
     path: 'login',
@@ -18,6 +20,9 @@ export const routes: Routes = [
         (m) => m.LoginComponent,
       ),
   },
+
+  // Default redirect
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
 
   // Admin routes
   {
