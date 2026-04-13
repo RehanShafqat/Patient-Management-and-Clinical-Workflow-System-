@@ -37,7 +37,8 @@ return new class extends Migration {
                         ->constrained('diagnoses')
                         ->onDelete('restrict');
 
-                  $table->text('treatment');
+                  // nullable: treatment is filled in later by the doctor via Visit CRUD
+                  $table->text('treatment')->nullable();
                   $table->text('treatment_plan')->nullable();
 
                   $table->text('prescription')->nullable();

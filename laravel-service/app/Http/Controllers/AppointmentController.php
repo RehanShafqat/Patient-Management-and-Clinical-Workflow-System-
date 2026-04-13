@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
+use App\Enums\Role;
 
 class AppointmentController extends Controller
 {
@@ -31,7 +32,7 @@ class AppointmentController extends Controller
     public function show(Appointment $appointment): JsonResponse
     {
         // Doctor can only view their own appointments
-        if (auth()->user()->role === 'doctor') {
+        if (auth()->user()->role->value === 'doctor') {
             $doctorId = auth()->user()->doctorProfile?->id;
             if ($appointment->doctor_id !== $doctorId) {
                 return response()->json(['message' => 'Unauthorized.'], 403);
@@ -47,7 +48,7 @@ class AppointmentController extends Controller
     public function store(StoreAppointmentRequest $request): JsonResponse
     {
         // Role check — only FDO and Admin
-        if (!in_array(auth()->user()->role, ['admin', 'fdo'])) {
+        if (!in_array(auth()->user()->role->value, ['admin', 'fdo'])) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
@@ -76,7 +77,7 @@ class AppointmentController extends Controller
     {
         try {
             $validated = $request->validated();
-            $role = auth()->user()->role;
+            $role = auth()->user()->role->value;
 
             $appointment = $this->appointmentService->update(
                 $appointment,
@@ -99,7 +100,7 @@ class AppointmentController extends Controller
     // CANCEL
     public function cancel(Appointment $appointment): JsonResponse
     {
-        if (auth()->user()->role === 'doctor') {
+        if (auth()->user()->role->value === 'doctor') {
             return response()->json(['message' => 'Doctors cannot cancel appointments.'], 403);
         }
 
@@ -116,7 +117,7 @@ class AppointmentController extends Controller
     // DELETE (soft) 
     public function destroy(Appointment $appointment): JsonResponse
     {
-        if (auth()->user()->role !== 'admin') {
+        if (auth()->user()->role->value !== 'admin') {
             return response()->json(['message' => 'Only admins can delete appointments.'], 403);
         }
 

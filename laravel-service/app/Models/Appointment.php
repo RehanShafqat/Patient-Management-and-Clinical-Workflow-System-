@@ -8,6 +8,7 @@ use App\Enums\ReminderMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
+use App\Models\Visit;
 
 class Appointment extends Model
 {
@@ -34,7 +35,7 @@ class Appointment extends Model
 
     protected $casts = [
         'appointment_date' => 'date',
-        'appointment_time' => 'datetime:H:i',
+        'appointment_time' => 'string',
         'reminder_sent' => 'boolean',
         'appointment_type' => AppointmentType::class,
         'status' => AppointmentStatus::class,
@@ -42,24 +43,26 @@ class Appointment extends Model
     ];
 
     // Auto-generate appointment_number before creating
-    protected static function booted(): void
+    protected static function boot(): void
     {
+        parent::boot();
+
         static::creating(function ($appointment) {
-            $year = now()->format('Y');
-            $sequence = str_pad(
-                Appointment::withTrashed()->whereYear('created_at', $year)->count() + 1,
-                6,
-                '0',
-                STR_PAD_LEFT
-            );
-            $appointment->appointment_number = "APT-{$year}-{$sequence}";
+            if (!$appointment->appointment_number) {
+                $year = now()->format('Y');
+                $count = \Illuminate\Support\Facades\DB::table('appointments')
+                    ->whereYear('created_at', $year)
+                    ->count();
+
+                $appointment->appointment_number = "APT-{$year}-" . str_pad($count + 1, 6, '0', STR_PAD_LEFT);
+            }
         });
 
         // Auto-create visit when status changes to Completed
         static::updated(function ($appointment) {
             if (
                 $appointment->isDirty('status') &&
-                $appointment->status === 'Completed' &&
+                $appointment->status === AppointmentStatus::COMPLETED &&
                 !$appointment->visit
             ) {
                 Visit::createFromAppointment($appointment);
