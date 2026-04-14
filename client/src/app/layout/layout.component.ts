@@ -4,6 +4,7 @@ import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
 import { AuthUser } from '../core/models/auth.model';
 import { NAV_ITEMS, NavItem } from './navbar.config';
+import { ThemeService } from '../core/services/theme.service';
 
 @Component({
   selector: 'app-layout',
@@ -18,6 +19,7 @@ export class LayoutComponent implements OnInit {
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  public themeService = inject(ThemeService);
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
