@@ -12,7 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
 use App\Enums\Role;
-
+use App\Enums\FdoPermission;
+use App\Enums\HttpStatus;
 class AppointmentController extends Controller
 {
     public function __construct(
@@ -46,9 +47,11 @@ class AppointmentController extends Controller
     // STORE
     public function store(StoreAppointmentRequest $request): JsonResponse
     {
-        // Role check — only FDO and Admin
-        if (!in_array(auth()->user()->role->value, ['admin', 'fdo'])) {
-            return response()->failure('Unauthorized.', 403);
+        $user = auth()->user();
+        if (user->role->value === Role::FDO) {
+            if (!user->hasPermission(FdoPermission::CREATE_APPOINTMENT->value)) {
+                return response()->failure('You dont have permission to create appointment.', HttpStatus::FORBIDDEN->value);
+            }
         }
 
         try {
@@ -58,6 +61,7 @@ class AppointmentController extends Controller
                 $validated,
                 auth()->id()
             );
+
 
             return response()->success(
                 ['appointment' => new AppointmentResource($appointment)],

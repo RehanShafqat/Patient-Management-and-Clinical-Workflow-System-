@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Enums\Role;
+use App\Enums\FdoPermission;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -89,5 +90,20 @@ class User extends Authenticatable
     public function isFdo(): bool
     {
         return $this->role === Role::FDO;
+    }
+    public function hasFdoPermission(FdoPermission $permission): bool
+    {
+        if (!$this->isFdo()) {
+            return false;
+        }
+
+        $permissionName = $permission->value;
+
+
+        return $this->userPermissions()
+            ->whereHas('permission', function ($query) use ($permissionName) {
+                $query->where('permission_name', $permissionName);
+            })
+            ->exists();
     }
 }
