@@ -1,13 +1,18 @@
 import {
-  HttpErrorResponse,
   HttpEvent,
   HttpInterceptorFn,
   HttpResponse,
 } from '@angular/common/http';
 import { catchError, map, throwError } from 'rxjs';
-import { ToastService } from '../services/toast/toast.service';
+import { ToastService } from '../services/toast.service';
 import { inject } from '@angular/core';
-import { ApiResponse } from '../models';
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
 export const apiResponseInterceptor: HttpInterceptorFn = (req, next) => {
   const toastService = inject(ToastService);
   return next(req).pipe(

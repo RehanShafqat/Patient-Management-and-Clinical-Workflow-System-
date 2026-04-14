@@ -2,14 +2,15 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../environments/environment';
 import {
   LoginRequest,
   LoginResponse,
   AuthUser,
   LogoutResponse,
-} from '../../models/auth.model';
-import { ApiResponse } from '../../models';
+} from '../models/auth.model';
+
+import { ApiResponse } from '../interceptors/api-response.interceptor';
 @Injectable({
   providedIn: 'root',
 })

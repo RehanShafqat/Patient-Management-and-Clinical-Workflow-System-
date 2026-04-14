@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-doctor-dashboard',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './doctor-dashboard.component.html',
-  styleUrl: './doctor-dashboard.component.css'
+  styleUrls: ['./doctor-dashboard.component.css'],
 })
-export class DoctorDashboardComponent {
-
-}
+export class DoctorDashboardComponent {}

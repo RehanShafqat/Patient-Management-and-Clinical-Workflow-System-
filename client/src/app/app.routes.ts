@@ -10,9 +10,10 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/home/home.component').then((m) => m.HomeComponent),
+      import('./features/home/landing/landing.component').then(
+        (m) => m.LandingComponent,
+      ),
   },
-  // Public — no guard
   {
     path: 'login',
     loadComponent: () =>
@@ -20,11 +21,6 @@ export const routes: Routes = [
         (m) => m.LoginComponent,
       ),
   },
-
-  // Default redirect
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-
-  // Admin routes
   {
     path: 'admin',
     canActivate: [adminGuard],
@@ -38,18 +34,44 @@ export const routes: Routes = [
             (m) => m.AdminDashboardComponent,
           ),
       },
-      // {
-      //     path: 'create-user',
-      //     loadComponent: () =>
-      //         import('./features/auth/create-user/create-user.component')
-      //         .then(m => m.CreateUserComponent)
-      // },
-      // Add patients, cases, appointments here later
+      {
+        path: 'create-user',
+        loadComponent: () =>
+          import('./features/admin/create-user/create-user.component').then(
+            (m) => m.CreateUserComponent,
+          ),
+      },
+      {
+        path: 'patients',
+        loadComponent: () =>
+          import('./features/patients/patient-list/patient-list.component').then(
+            (m) => m.PatientListComponent,
+          ),
+      },
+      {
+        path: 'cases',
+        loadComponent: () =>
+          import('./features/cases/case-list/case-list.component').then(
+            (m) => m.CaseListComponent,
+          ),
+      },
+      {
+        path: 'appointments',
+        loadComponent: () =>
+          import('./features/appointments/appointment-list/appointment-list.component').then(
+            (m) => m.AppointmentListComponent,
+          ),
+      },
+      {
+        path: 'visits',
+        loadComponent: () =>
+          import('./features/visits/visit-list/visit-list.component').then(
+            (m) => m.VisitListComponent,
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
-
-  // Doctor routes
   {
     path: 'doctor',
     canActivate: [doctorGuard],
@@ -63,12 +85,30 @@ export const routes: Routes = [
             (m) => m.DoctorDashboardComponent,
           ),
       },
-      // Add appointments, visits, patients here later
+      {
+        path: 'appointments',
+        loadComponent: () =>
+          import('./features/appointments/appointment-list/appointment-list.component').then(
+            (m) => m.AppointmentListComponent,
+          ),
+      },
+      {
+        path: 'visits',
+        loadComponent: () =>
+          import('./features/visits/visit-list/visit-list.component').then(
+            (m) => m.VisitListComponent,
+          ),
+      },
+      {
+        path: 'patients',
+        loadComponent: () =>
+          import('./features/patients/patient-list/patient-list.component').then(
+            (m) => m.PatientListComponent,
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
-
-  // FDO routes
   {
     path: 'fdo',
     canActivate: [fdoGuard],
@@ -82,11 +122,29 @@ export const routes: Routes = [
             (m) => m.FdoDashboardComponent,
           ),
       },
-      // Add patients, cases, appointments here later
+      {
+        path: 'patients',
+        loadComponent: () =>
+          import('./features/patients/patient-list/patient-list.component').then(
+            (m) => m.PatientListComponent,
+          ),
+      },
+      {
+        path: 'cases',
+        loadComponent: () =>
+          import('./features/cases/case-list/case-list.component').then(
+            (m) => m.CaseListComponent,
+          ),
+      },
+      {
+        path: 'appointments',
+        loadComponent: () =>
+          import('./features/appointments/appointment-list/appointment-list.component').then(
+            (m) => m.AppointmentListComponent,
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
-
-  // Catch-all
-  { path: '**', redirectTo: 'login' },
+  { path: '**', redirectTo: '' },
 ];

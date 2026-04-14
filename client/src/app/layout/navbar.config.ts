@@ -1,7 +1,7 @@
 export interface NavItem {
   label: string;
   route: string;
-  icon: string; // DaisyUI uses inline SVG or heroicons
+  icon: string; 
 }
 
 export const NAV_ITEMS: Record<string, NavItem[]> = {

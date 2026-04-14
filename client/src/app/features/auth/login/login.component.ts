@@ -6,10 +6,11 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { AuthService } from '../../../core/services/auth/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
 })
@@ -58,5 +59,3 @@ export class LoginComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 }
-
-
