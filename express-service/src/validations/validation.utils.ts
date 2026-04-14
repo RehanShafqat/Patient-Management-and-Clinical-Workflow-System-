@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidUUID } from "../utils/uuid.util";
 
 export const withRequiredPreprocess = <T extends z.ZodTypeAny>(schema: T) =>
   z.preprocess((value) => {
@@ -16,3 +17,8 @@ export const withRequiredPreprocess = <T extends z.ZodTypeAny>(schema: T) =>
     }
     return value;
   }, schema);
+
+export const isValidSpecialtyId = (id: string): boolean => {
+  const numericIdPattern = /^\d+$/;
+  return isValidUUID(id) || numericIdPattern.test(id);
+};

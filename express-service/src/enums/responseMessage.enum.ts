@@ -40,6 +40,15 @@ export enum ResponseMessage {
   CASE_NOT_FOUND = "Case not found",
   CASE_CREATION_FAILED = "Case record could not be created",
 
+  // Specialty
+  SPECIALTY_CREATED = "Specialty Created",
+  SPECIALTY_NOT_FOUND = "Specialty not found",
+  SPECIALTIES_FETCHED = "Specialties fetched successfully",
+  SPECIALTY_FETCHED = "Specialty fetched successfully",
+  SPECIALTY_UPDATED = "Specialty updated successfully",
+  SPECIALTY_DELETED = "Specialty deleted successfully",
+  SPECIALTY_CREATION_FAILED = "Specialty record could not be created",
+
   // Validation
   INVALID_ID_FORMAT = "Invalid ID format.",
   INVALID_PATIENT_ID = "Invalid patient ID",
