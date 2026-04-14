@@ -14,13 +14,14 @@ use Illuminate\Routing\Controller;
 use App\Enums\Role;
 use App\Enums\FdoPermission;
 use App\Enums\HttpStatus;
+
 class AppointmentController extends Controller
 {
     public function __construct(
         private AppointmentService $appointmentService
     ) {}
 
-    // LIST
+    // List
     public function index(Request $request)
     {
         $appointments = $this->appointmentService->getAll($request, auth()->user());
@@ -28,11 +29,11 @@ class AppointmentController extends Controller
         return AppointmentResource::collection($appointments);
     }
 
-    // SHOW
+    // Show
     public function show(Appointment $appointment): JsonResponse
     {
         // Doctor can only view their own appointments
-        if (auth()->user()->role->value === 'doctor') {
+        if (auth()->user()->role->value === Role::DOCTOR->value) {
             $doctorId = auth()->user()->doctorProfile?->id;
             if ($appointment->doctor_id !== $doctorId) {
                 return response()->failure('Unauthorized.', 403);
@@ -44,12 +45,12 @@ class AppointmentController extends Controller
         return response()->success(new AppointmentResource($appointment));
     }
 
-    // STORE
+    // Create
     public function store(StoreAppointmentRequest $request): JsonResponse
     {
         $user = auth()->user();
-        if (user->role->value === Role::FDO) {
-            if (!user->hasPermission(FdoPermission::CREATE_APPOINTMENT->value)) {
+        if ($user->role->value === Role::FDO->value) {
+            if (!$user->hasPermission(FdoPermission::CREATE_APPOINTMENT->value)) {
                 return response()->failure('You dont have permission to create appointment.', HttpStatus::FORBIDDEN->value);
             }
         }
@@ -73,7 +74,7 @@ class AppointmentController extends Controller
         }
     }
 
-    // UPDATE
+    // Update
     public function update(UpdateAppointmentRequest $request, Appointment $appointment): JsonResponse
     {
         try {
@@ -95,10 +96,10 @@ class AppointmentController extends Controller
         }
     }
 
-    // CANCEL
+    // Cancel
     public function cancel(Appointment $appointment): JsonResponse
     {
-        if (auth()->user()->role->value === 'doctor') {
+        if (auth()->user()->role->value === Role::DOCTOR->value) {
             return response()->failure('Doctors cannot cancel appointments.', 403);
         }
 
@@ -111,10 +112,10 @@ class AppointmentController extends Controller
         }
     }
 
-    // DELETE (soft)
+    // Delete
     public function destroy(Appointment $appointment): JsonResponse
     {
-        if (auth()->user()->role->value !== 'admin') {
+        if (auth()->user()->role->value !== Role::ADMIN->value) {
             return response()->failure('Only admins can delete appointments.', 403);
         }
 

@@ -4,6 +4,7 @@
 namespace App\Services;
 
 use App\Enums\AppointmentStatus;
+use App\Enums\Role;
 use App\Models\Appointment;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class AppointmentService
             ]);
 
         // Doctor sees only their own appointments
-        if ($user->role->value === 'doctor') {
+        if ($user->role->value === Role::DOCTOR->value) {
             $query->where('doctor_id', $user->doctorProfile?->id);
         }
 
@@ -134,7 +135,7 @@ class AppointmentService
         }
 
         // Non-admin cannot update a completed appointment
-        if ($appointment->status === AppointmentStatus::COMPLETED && $role !== 'admin') {
+        if ($appointment->status === AppointmentStatus::COMPLETED && $role !== Role::ADMIN->value) {
             throw new \Exception('Cannot update a completed appointment.', 422);
         }
 
@@ -153,7 +154,7 @@ class AppointmentService
             );
 
             // Auto-mark as rescheduled when date/time changes (FDO or Admin)
-            if ($role !== 'doctor') {
+            if ($role !== Role::DOCTOR->value) {
                 $data['status'] = AppointmentStatus::RESCHEDULED->value;
             }
         }

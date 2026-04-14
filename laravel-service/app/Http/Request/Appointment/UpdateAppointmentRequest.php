@@ -4,6 +4,7 @@ namespace App\Http\Request\Appointment;
 
 use App\Enums\AppointmentStatus;
 use App\Enums\AppointmentType;
+use App\Enums\Role;
 use App\Enums\ReminderMethod;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
@@ -17,7 +18,7 @@ class UpdateAppointmentRequest extends FormRequest
 
     public function rules(): array
     {
-        if (auth()->user()->role->value === 'doctor') {
+        if (auth()->user()->role->value === Role::DOCTOR->value) {
             return [
                 'status' => [
                     'required',

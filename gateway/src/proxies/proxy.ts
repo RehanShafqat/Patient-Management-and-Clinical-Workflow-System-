@@ -1,4 +1,3 @@
-// proxies/proxy.ts
 import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import { routes } from "../config/routes.config";
 import { Router } from "express";

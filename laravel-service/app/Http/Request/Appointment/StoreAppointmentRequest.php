@@ -4,6 +4,7 @@ namespace App\Http\Request\Appointment;
 
 use App\Enums\AppointmentType;
 use App\Enums\ReminderMethod;
+use App\Enums\Role;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
@@ -12,7 +13,7 @@ class StoreAppointmentRequest extends FormRequest
     public function authorize(): bool
     {
         // Only FDO and Admin can create appointments
-        return in_array(auth()->user()->role->value, ['admin', 'fdo']);
+        return in_array(auth()->user()->role->value, [Role::ADMIN->value, Role::FDO->value]);
     }
 
     public function rules(): array
