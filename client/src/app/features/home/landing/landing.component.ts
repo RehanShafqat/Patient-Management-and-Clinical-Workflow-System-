@@ -1,15 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { DashboardRoutingModule } from '../dashbaord/dashboard-routing.module';
+import { DashboardRoutingModule } from '../../dashbaord/dashboard-routing.module';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-landing',
+  standalone: true,
   imports: [CommonModule, DashboardRoutingModule, RouterLink],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
+  templateUrl: './landing.component.html',
+  styleUrls: ['./landing.component.css'],
 })
-export class HomeComponent {
+export class LandingComponent {
   navLinks = ['Solutions', 'Security', 'Research', 'Enterprise'];
 
   orgs = [

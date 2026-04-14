@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
-import { AuthService } from '../core/services/auth/auth.service';
+import { AuthService } from '../core/services/auth.service';
 import { AuthUser } from '../core/models/auth.model';
 import { NAV_ITEMS, NavItem } from './navbar.config';
 
@@ -16,10 +16,8 @@ export class LayoutComponent implements OnInit {
   navItems: NavItem[] = [];
   sidebarOpen = true;
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-  ) {}
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();

@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-fdo-dashboard',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './fdo-dashboard.component.html',
-  styleUrl: './fdo-dashboard.component.css'
+  styleUrls: ['./fdo-dashboard.component.css'],
 })
-export class FdoDashboardComponent {
-
-}
+export class FdoDashboardComponent {}
