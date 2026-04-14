@@ -1,6 +1,6 @@
 import { Router } from "express";
 // import { checkAccessToken } from "../Middlewares/auth.middleware";
-import { SpecialtyController } from "../Controllers/specialty.controller";
+import { SpecialtyController } from "../controllers/specialty.controller";
 
 const specialtyRouter = Router();
 const specialtyController = new SpecialtyController();

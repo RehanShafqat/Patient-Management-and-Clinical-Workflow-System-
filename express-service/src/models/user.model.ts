@@ -8,7 +8,7 @@ import {
   NonAttribute,
 } from "sequelize";
 import { hashPassword } from "../utils/bcrypt.util";
-import { Role } from "../enums";
+import { FdoPermission, Role } from "../enums";
 
 export class User extends Model<
   InferAttributes<User>,
@@ -46,6 +46,22 @@ export class User extends Model<
   isFdo(): boolean {
     return this.role === Role.FDO;
   }
+  isPermissionAllowed(permissions: FdoPermission[]): boolean {
+    if (this.isAdmin()) {
+      return true;
+    }
+    if (
+      !this.isFdo() ||
+      !this.userPermissions ||
+      this.userPermissions.length === 0
+    ) {
+      return false;
+    }
+    const userPermissionSet = new Set(
+      this.userPermissions.map((up) => up.permission?.permission_name),
+    );
+    return permissions.every((p) => userPermissionSet.has(p));
+  }
 
   static associate(models: Record<string, any>): void {
     User.hasOne(models.DoctorProfile, {
@@ -65,7 +81,11 @@ export class User extends Model<
   static initModel(sequelize: Sequelize): typeof User {
     User.init(
       {
-        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+        id: {
+          type: DataTypes.UUID,
+          primaryKey: true,
+          defaultValue: DataTypes.UUIDV4,
+        },
         role: {
           type: DataTypes.ENUM(...Object.values(Role)),
           allowNull: false,

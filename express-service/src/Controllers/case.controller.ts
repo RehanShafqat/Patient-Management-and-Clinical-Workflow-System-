@@ -7,13 +7,19 @@ import {
 } from "../validations/case.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
-import { HttpStatusCode, ResponseMessage } from "../enums";
+import { FdoPermission, HttpStatusCode, ResponseMessage } from "../enums";
+import { checkFdoHasPermission } from "../utils/checkFdoPermission.util";
 
 export class CaseController {
   constructor(private caseService: CaseService = new CaseService()) {}
 
   createCase = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!checkFdoHasPermission(req.user!, FdoPermission.CREATE_CASE)) {
+        return next(
+          new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
+        );
+      }
       const caseData = createCaseSchema.parse(req.body);
       const patientCase = await this.caseService.createCase(caseData);
 
@@ -30,6 +36,11 @@ export class CaseController {
 
   getAllCases = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_CASES)) {
+        return next(
+          new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
+        );
+      }
       const cases = await this.caseService.getAllCases();
 
       return ApiResponse.send(res, { cases }, ResponseMessage.CASES_FETCHED);
@@ -40,13 +51,21 @@ export class CaseController {
 
   getCaseById = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_CASES)) {
+        return next(
+          new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
+        );
+      }
       const id = Array.isArray(req.params.id)
         ? req.params.id[0]
         : req.params.id;
 
       if (!isValidUUID(id)) {
         return next(
-          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT),
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_ID_FORMAT,
+          ),
         );
       }
 
@@ -68,13 +87,21 @@ export class CaseController {
     next: NextFunction,
   ) => {
     try {
+      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_CASES)) {
+        return next(
+          new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
+        );
+      }
       const patientId = Array.isArray(req.params.patient_id)
         ? req.params.patient_id[0]
         : req.params.patient_id;
 
       if (!isValidUUID(patientId)) {
         return next(
-          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT),
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_ID_FORMAT,
+          ),
         );
       }
 
@@ -92,13 +119,21 @@ export class CaseController {
 
   updateCase = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!checkFdoHasPermission(req.user!, FdoPermission.UPDATE_CASE)) {
+        return next(
+          new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
+        );
+      }
       const id = Array.isArray(req.params.id)
         ? req.params.id[0]
         : req.params.id;
 
       if (!isValidUUID(id)) {
         return next(
-          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT),
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_ID_FORMAT,
+          ),
         );
       }
 
@@ -124,13 +159,21 @@ export class CaseController {
 
       if (!isValidUUID(id)) {
         return next(
-          new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_UUID_FORMAT),
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_UUID_FORMAT,
+          ),
         );
       }
 
       await this.caseService.deleteCase(id);
 
-      return ApiResponse.send(res, null, ResponseMessage.CASE_DELETED, HttpStatusCode.OK);
+      return ApiResponse.send(
+        res,
+        null,
+        ResponseMessage.CASE_DELETED,
+        HttpStatusCode.OK,
+      );
     } catch (error) {
       return next(error);
     }
