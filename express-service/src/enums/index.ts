@@ -11,6 +11,7 @@ import { PatientStatus } from "./patientStatus.enum";
 import { ReminderMethod } from "./reminderMethod.enum";
 import { ResponseMessage } from "./responseMessage.enum";
 import { Role } from "./role.enum";
+import { FdoPermission } from "./fdoPermission.enum";
 import { VisitStatus } from "./visitStatus.enum";
 
 const enums = {
@@ -22,6 +23,7 @@ const enums = {
   ReminderMethod,
   ResponseMessage,
   Role,
+  FdoPermission,
 
   VisitStatus,
   Gender,
@@ -40,6 +42,7 @@ export {
   ReminderMethod,
   ResponseMessage,
   Role,
+  FdoPermission,
   VisitStatus,
   Gender,
   CaseCategory,
