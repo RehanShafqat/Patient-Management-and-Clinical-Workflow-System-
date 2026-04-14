@@ -7,6 +7,7 @@ export enum ResponseMessage {
   PASSWORD_MISSING = "User password is missing",
   ROLE_NOT_ALLOWED = "User role is not allowed",
   UNAUTHORIZED = "Unauthorized",
+  FORBIDDEN = "You are not authorized to perform this action",
 
   // User
   USER_CREATED = "User created successfully",

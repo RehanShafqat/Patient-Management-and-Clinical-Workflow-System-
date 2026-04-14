@@ -9,8 +9,7 @@ const patientController = new PatientController();
 patientRouter.post(
   "/",
   checkAccessToken,
-  // checkAccessToken
-
+  checkRoleMiddleware([Role.FDO]),
   patientController.createPatient,
 );
 patientRouter.get(

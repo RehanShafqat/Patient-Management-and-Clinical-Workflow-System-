@@ -1,10 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../utils/api-response.util";
 import { PatientService } from "../services/patient.service";
-import { createPatientSchema, updatePatientSchema } from "../validations/patient.validation";
+import {
+  createPatientSchema,
+  updatePatientSchema,
+} from "../validations/patient.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
-import { HttpStatusCode, ResponseMessage } from "../enums";
+import { FdoPermission, HttpStatusCode, ResponseMessage } from "../enums";
+import { checkFdoHasPermission } from "../utils/checkFdoPermission.util";
 
 export class PatientController {
   constructor(private patientService: PatientService = new PatientService()) {}
@@ -13,7 +17,11 @@ export class PatientController {
     try {
       const patientData = createPatientSchema.parse(req.body);
       const patient = await this.patientService.createPatient(patientData);
-
+      if (!checkFdoHasPermission(req.user!, FdoPermission.CREATE_PATIENT)) {
+        return next(
+          new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
+        );
+      }
       return ApiResponse.send(
         res,
         { patient },
@@ -28,8 +36,18 @@ export class PatientController {
   // Get all patients
   getAllPatients = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_PATIENTS)) {
+        return next(
+          new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
+        );
+      }
       const patients = await this.patientService.getAllPatients();
-      ApiResponse.send(res, { patients }, ResponseMessage.PATIENTS_FETCHED, HttpStatusCode.OK);
+      ApiResponse.send(
+        res,
+        { patients },
+        ResponseMessage.PATIENTS_FETCHED,
+        HttpStatusCode.OK,
+      );
     } catch (error) {
       next(error);
     }
@@ -38,16 +56,31 @@ export class PatientController {
   // Get patient by ID
   getPatientById = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_PATIENTS)) {
+        return next(
+          new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
+        );
+      }
       const id = Array.isArray(req.params.id)
         ? req.params.id[0]
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_PATIENT_ID));
+        return next(
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_PATIENT_ID,
+          ),
+        );
       }
 
       const patient = await this.patientService.getPatientById(id);
-      ApiResponse.send(res, { patient }, ResponseMessage.PATIENT_FETCHED, HttpStatusCode.OK);
+      ApiResponse.send(
+        res,
+        { patient },
+        ResponseMessage.PATIENT_FETCHED,
+        HttpStatusCode.OK,
+      );
     } catch (error) {
       next(error);
     }
@@ -56,18 +89,33 @@ export class PatientController {
   // Update patient
   updatePatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!checkFdoHasPermission(req.user!, FdoPermission.UPDATE_PATIENT)) {
+        return next(
+          new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
+        );
+      }
       const id = Array.isArray(req.params.id)
         ? req.params.id[0]
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_PATIENT_ID));
+        return next(
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_PATIENT_ID,
+          ),
+        );
       }
 
       const updatedData = updatePatientSchema.parse(req.body);
       const patient = await this.patientService.updatePatient(id, updatedData);
 
-      ApiResponse.send(res, { patient }, ResponseMessage.PATIENT_UPDATED, HttpStatusCode.OK);
+      ApiResponse.send(
+        res,
+        { patient },
+        ResponseMessage.PATIENT_UPDATED,
+        HttpStatusCode.OK,
+      );
     } catch (error) {
       next(error);
     }
@@ -81,11 +129,21 @@ export class PatientController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_PATIENT_ID_FORMAT));
+        return next(
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_PATIENT_ID_FORMAT,
+          ),
+        );
       }
 
       await this.patientService.deletePatient(id);
-      ApiResponse.send(res, null, ResponseMessage.PATIENT_DELETED, HttpStatusCode.OK);
+      ApiResponse.send(
+        res,
+        null,
+        ResponseMessage.PATIENT_DELETED,
+        HttpStatusCode.OK,
+      );
     } catch (error) {
       next(error);
     }

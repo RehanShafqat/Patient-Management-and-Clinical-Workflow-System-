@@ -5,6 +5,7 @@ declare global {
     export interface Request {
       userId?: string;
       userRole?: string;
+      user?: import("../models/user.model").User;
     }
   }
 }
