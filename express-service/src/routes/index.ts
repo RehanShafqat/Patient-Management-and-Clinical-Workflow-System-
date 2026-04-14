@@ -3,12 +3,13 @@ import authRoutes from "./auth.routes";
 import patientRoutes from "./patient.routes";
 import caseRoutes from "./case.routes";
 import userRoutes from "./user.routes";
+import specialtyRoutes from "./specialty.routes";
 const router = Router();
 
-// router.use("/users", userRoutes);
 router.use("/auth", authRoutes);
 router.use("/patients", patientRoutes);
 router.use("/cases", caseRoutes);
 router.use("/users", userRoutes);
+router.use("/specialties", specialtyRoutes);
 
 export default router;

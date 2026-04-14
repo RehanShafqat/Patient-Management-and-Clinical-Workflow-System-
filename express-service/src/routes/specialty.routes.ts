@@ -1,14 +1,34 @@
 import { Router } from "express";
-import { checkAccessToken } from "../Middlewares/auth.middleware";
+// import { checkAccessToken } from "../Middlewares/auth.middleware";
 import { SpecialtyController } from "../Controllers/specialty.controller";
 
 const specialtyRouter = Router();
-const specialtyontroller = SpecialtyController;
+const specialtyController = new SpecialtyController();
 
-specialtyRouter.get("/", checkAccessToken);
-specialtyRouter.post("/", checkAccessToken);
-specialtyRouter.get("/id", checkAccessToken);
-specialtyRouter.put("/id", checkAccessToken);
-specialtyRouter.delete("/id", checkAccessToken);
+specialtyRouter.get(
+  "/",
+  // checkAccessToken,
+  specialtyController.getAllSpecialties,
+);
+specialtyRouter.post(
+  "/",
+  // checkAccessToken,
+  specialtyController.createSpecialty,
+);
+specialtyRouter.get(
+  "/:id",
+  // checkAccessToken,
+  specialtyController.getSpecialtyById,
+);
+specialtyRouter.put(
+  "/:id",
+  // checkAccessToken,
+  specialtyController.updateSpecialty,
+);
+specialtyRouter.delete(
+  "/:id",
+  // checkAccessToken,
+  specialtyController.deleteSpecialty,
+);
 
 export default specialtyRouter;
