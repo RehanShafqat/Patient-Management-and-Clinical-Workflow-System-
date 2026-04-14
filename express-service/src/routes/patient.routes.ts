@@ -1,13 +1,16 @@
 import { Router } from "express";
-import { PatientController } from "../Controllers/patient.controller";
-import { checkAccessToken } from "../Middlewares/auth.middleware";
-
+import { PatientController } from "../controllers/patient.controller";
+import { checkAccessToken } from "../middlewares/auth.middleware";
+import { checkRoleMiddleware } from "../middlewares/checkRole.middleware";
+import { Role } from "../enums";
 const patientRouter = Router();
 const patientController = new PatientController();
 
 patientRouter.post(
   "/",
-  // checkAccessToken,
+  checkAccessToken,
+  // checkAccessToken
+
   patientController.createPatient,
 );
 patientRouter.get(
