@@ -1,23 +1,10 @@
 import { Request } from "express";
+import { PaginationLinks, PaginationMeta } from "../types";
 
 export interface PaginatedResult<T> {
-  current_page: number;
   data: T[];
-  first_page_url: string | null;
-  from: number | null;
-  last_page: number;
-  last_page_url: string | null;
-  links: {
-    url: string | null;
-    label: string;
-    active: boolean;
-  }[];
-  next_page_url: string | null;
-  path: string;
-  per_page: number;
-  prev_page_url: string | null;
-  to: number | null;
-  total: number;
+  links: PaginationLinks;
+  meta: PaginationMeta;
 }
 
 export function getPaginatedResponse<T>(
@@ -25,7 +12,7 @@ export function getPaginatedResponse<T>(
   total: number,
   page: number,
   limit: number,
-  req: Request
+  req: Request,
 ): PaginatedResult<T> {
   const last_page = Math.ceil(total / limit) || 1;
   const current_page = Math.min(page, last_page);
@@ -48,40 +35,53 @@ export function getPaginatedResponse<T>(
     return url.toString();
   };
 
-  const links = [];
-  links.push({
-    url: current_page > 1 ? buildUrl(current_page - 1) : null,
+  const first = buildUrl(1);
+  const last = buildUrl(last_page);
+  const prev = current_page > 1 ? buildUrl(current_page - 1) : null;
+  const next = current_page < last_page ? buildUrl(current_page + 1) : null;
+  const links: PaginationLinks = {
+    first,
+    last,
+    prev,
+    next,
+  };
+
+  const pageLinks: PaginationMeta["links"] = [];
+  pageLinks.push({
+    url: prev,
     label: "&laquo; Previous",
+    page: current_page > 1 ? current_page - 1 : null,
     active: false,
   });
 
   for (let i = 1; i <= last_page; i++) {
-    links.push({
+    pageLinks.push({
       url: buildUrl(i),
       label: i.toString(),
+      page: i,
       active: i === current_page,
     });
   }
 
-  links.push({
-    url: current_page < last_page ? buildUrl(current_page + 1) : null,
+  pageLinks.push({
+    url: next,
     label: "Next &raquo;",
+    page: current_page < last_page ? current_page + 1 : null,
     active: false,
   });
 
   return {
-    current_page,
     data,
-    first_page_url: buildUrl(1),
-    from,
-    last_page,
-    last_page_url: buildUrl(last_page),
     links,
-    next_page_url: current_page < last_page ? buildUrl(current_page + 1) : null,
-    path: baseUrl,
-    per_page: limit,
-    prev_page_url: current_page > 1 ? buildUrl(current_page - 1) : null,
-    to,
-    total,
+    meta: {
+      current_page,
+      from,
+      last_page,
+      links: pageLinks,
+      path: baseUrl,
+      per_page: limit,
+      to,
+      total,
+    },
   };
 }

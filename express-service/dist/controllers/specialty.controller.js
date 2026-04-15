@@ -23,10 +23,11 @@ class SpecialtyController {
         };
         this.getAllSpecialties = async (req, res, next) => {
             try {
-                const { page, per_page } = specialty_validation_1.paginationQuerySchema.parse(req.query);
-                const { rows: specialties, count: total } = await this.specialtyService.getAllSpecialties(page, per_page);
+                const query = specialty_validation_1.paginationQuerySchema.parse(req.query);
+                const { page, per_page, ...filters } = query;
+                const { rows: specialties, count: total } = await this.specialtyService.getAllSpecialties(page, per_page, filters);
                 const paginated = (0, pagination_util_1.getPaginatedResponse)(specialties, total, page, per_page, req);
-                api_response_util_1.ApiResponse.send(res, paginated, enums_1.ResponseMessage.SPECIALTIES_FETCHED, enums_1.HttpStatusCode.OK);
+                api_response_util_1.ApiResponse.send(res, paginated.data, enums_1.ResponseMessage.SPECIALTIES_FETCHED, enums_1.HttpStatusCode.OK, paginated.links, paginated.meta);
             }
             catch (error) {
                 return next(error);

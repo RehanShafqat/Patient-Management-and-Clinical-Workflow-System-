@@ -4,6 +4,7 @@ exports.paginationQuerySchema = exports.updatePatientSchema = exports.createPati
 const zod_1 = require("zod");
 const validation_utils_1 = require("./validation.utils");
 const gender_enum_1 = require("../enums/gender.enum");
+const patientStatus_enum_1 = require("../enums/patientStatus.enum");
 // phone regex (supports +, country code, dashes, spaces)
 const phoneRegex = /^(\+?\d{1,3}[-.\s]?)?\d{1,4}[-.\s]?\d{3}[-.\s]?\d{4}$/;
 const basePatientSchema = zod_1.z.object({
@@ -57,5 +58,13 @@ exports.updatePatientSchema = zod_1.z
 exports.paginationQuerySchema = zod_1.z.object({
     page: zod_1.z.coerce.number().int().positive().default(1),
     per_page: zod_1.z.coerce.number().int().min(1).max(100).default(15),
+    search: validation_utils_1.optionalTrimmedString,
+    gender: (0, validation_utils_1.preprocessOptionalNativeEnum)(gender_enum_1.Gender),
+    patient_status: (0, validation_utils_1.preprocessOptionalNativeEnum)(patientStatus_enum_1.PatientStatus),
+    city: validation_utils_1.optionalTrimmedString,
+    state: validation_utils_1.optionalTrimmedString,
+    country: validation_utils_1.optionalTrimmedString,
+    registration_date_from: validation_utils_1.optionalDateQuery,
+    registration_date_to: validation_utils_1.optionalDateQuery,
 });
 //# sourceMappingURL=patient.validation.js.map

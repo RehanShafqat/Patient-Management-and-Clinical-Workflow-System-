@@ -26,7 +26,10 @@ exports.createCaseSchema = zod_1.z
         .preprocess((val) => (val === "" || val === null ? undefined : val), zod_1.z.coerce.date().optional())
         .refine((date) => !date || date <= new Date(), "Accident date cannot be in the future"),
     // For Optional UUIDs: convert null/empty to undefined
-    insurance_id: zod_1.z.preprocess((val) => (val === "" || val === null ? undefined : val), zod_1.z.string().uuid({ message: "Insurance ID must be a valid UUID" }).optional()),
+    insurance_id: zod_1.z.preprocess((val) => (val === "" || val === null ? undefined : val), zod_1.z
+        .string()
+        .uuid({ message: "Insurance ID must be a valid UUID" })
+        .optional()),
     firm_id: zod_1.z.preprocess((val) => (val === "" || val === null ? undefined : val), zod_1.z.string().uuid({ message: "Firm ID must be a valid UUID" }).optional()),
     referred_by: (0, validation_utils_1.withRequiredPreprocess)(zod_1.z.string().max(100).optional()),
     referred_doctor_name: (0, validation_utils_1.withRequiredPreprocess)(zod_1.z.string().max(100).optional()),
@@ -45,11 +48,25 @@ exports.createCaseSchema = zod_1.z
     message: "Closing date must be after opening date",
     path: ["closing_date"],
 });
-exports.updateCaseSchema = zod_1.z.object({
-    ...exports.createCaseSchema
-}).partial();
+exports.updateCaseSchema = zod_1.z
+    .object({
+    ...exports.createCaseSchema,
+})
+    .partial();
 exports.paginationQuerySchema = zod_1.z.object({
     page: zod_1.z.coerce.number().int().positive().default(1),
     per_page: zod_1.z.coerce.number().int().min(1).max(100).default(15),
+    search: validation_utils_1.optionalTrimmedString,
+    case_number: validation_utils_1.optionalTrimmedString,
+    patient_id: validation_utils_1.optionalUuidQuery,
+    practice_location_id: validation_utils_1.optionalUuidQuery,
+    insurance_id: validation_utils_1.optionalUuidQuery,
+    firm_id: validation_utils_1.optionalUuidQuery,
+    category: (0, validation_utils_1.preprocessOptionalEnum)((0, enum_util_1.enumToArray)(caseCategory_enum_1.CaseCategory)),
+    case_type: (0, validation_utils_1.preprocessOptionalEnum)((0, enum_util_1.enumToArray)(caseType_enum_1.CaseType)),
+    priority: (0, validation_utils_1.preprocessOptionalEnum)((0, enum_util_1.enumToArray)(casePriority_enum_1.CasePriority)),
+    case_status: (0, validation_utils_1.preprocessOptionalEnum)((0, enum_util_1.enumToArray)(caseStatus_enum_1.CaseStatus)),
+    opening_date_from: validation_utils_1.optionalDateQuery,
+    opening_date_to: validation_utils_1.optionalDateQuery,
 });
 //# sourceMappingURL=case.validation.js.map

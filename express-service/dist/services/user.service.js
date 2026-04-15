@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
+const sequelize_1 = require("sequelize");
 const user_model_1 = require("../models/user.model");
 const app_error_util_1 = require("../utils/app-error.util");
 const enums_1 = require("../enums");
@@ -23,9 +24,26 @@ class UserService {
                 return await this.handleRoleSpecificData(user, userData, t);
             });
         };
-        this.getAllUsers = async (page = 1, limit = 15) => {
+        this.getAllUsers = async (page = 1, limit = 15, filters = {}) => {
             const offset = (page - 1) * limit;
+            const where = {};
+            if (filters.search) {
+                const search = `%${filters.search.trim()}%`;
+                where[sequelize_1.Op.or] = [
+                    { first_name: { [sequelize_1.Op.like]: search } },
+                    { last_name: { [sequelize_1.Op.like]: search } },
+                    { email: { [sequelize_1.Op.like]: search } },
+                    { phone: { [sequelize_1.Op.like]: search } },
+                ];
+            }
+            if (filters.role) {
+                where.role = filters.role;
+            }
+            if (typeof filters.is_active === "boolean") {
+                where.is_active = filters.is_active;
+            }
             return user_model_1.User.findAndCountAll({
+                where,
                 limit,
                 offset,
                 order: [["created_at", "DESC"]],

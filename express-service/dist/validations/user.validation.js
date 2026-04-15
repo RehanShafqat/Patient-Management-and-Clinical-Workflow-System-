@@ -69,5 +69,8 @@ exports.updateUserSchema = zod_1.z
 exports.paginationQuerySchema = zod_1.z.object({
     page: zod_1.z.coerce.number().int().positive().default(1),
     per_page: zod_1.z.coerce.number().int().min(1).max(100).default(15),
+    search: validation_utils_1.optionalTrimmedString,
+    role: (0, validation_utils_1.preprocessOptionalNativeEnum)(enums_1.Role),
+    is_active: validation_utils_1.optionalBooleanQuery,
 });
 //# sourceMappingURL=user.validation.js.map

@@ -19,38 +19,50 @@ function getPaginatedResponse(data, total, page, limit, req) {
         url.searchParams.set("page", p.toString());
         return url.toString();
     };
-    const links = [];
-    links.push({
-        url: current_page > 1 ? buildUrl(current_page - 1) : null,
+    const first = buildUrl(1);
+    const last = buildUrl(last_page);
+    const prev = current_page > 1 ? buildUrl(current_page - 1) : null;
+    const next = current_page < last_page ? buildUrl(current_page + 1) : null;
+    const links = {
+        first,
+        last,
+        prev,
+        next,
+    };
+    const pageLinks = [];
+    pageLinks.push({
+        url: prev,
         label: "&laquo; Previous",
+        page: current_page > 1 ? current_page - 1 : null,
         active: false,
     });
     for (let i = 1; i <= last_page; i++) {
-        links.push({
+        pageLinks.push({
             url: buildUrl(i),
             label: i.toString(),
+            page: i,
             active: i === current_page,
         });
     }
-    links.push({
-        url: current_page < last_page ? buildUrl(current_page + 1) : null,
+    pageLinks.push({
+        url: next,
         label: "Next &raquo;",
+        page: current_page < last_page ? current_page + 1 : null,
         active: false,
     });
     return {
-        current_page,
         data,
-        first_page_url: buildUrl(1),
-        from,
-        last_page,
-        last_page_url: buildUrl(last_page),
         links,
-        next_page_url: current_page < last_page ? buildUrl(current_page + 1) : null,
-        path: baseUrl,
-        per_page: limit,
-        prev_page_url: current_page > 1 ? buildUrl(current_page - 1) : null,
-        to,
-        total,
+        meta: {
+            current_page,
+            from,
+            last_page,
+            links: pageLinks,
+            path: baseUrl,
+            per_page: limit,
+            to,
+            total,
+        },
     };
 }
 //# sourceMappingURL=pagination.util.js.map

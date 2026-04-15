@@ -14,7 +14,8 @@ class CaseController {
         this.caseService = caseService;
         this.createCase = async (req, res, next) => {
             try {
-                if (!(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.CREATE_CASE)) {
+                if (req.userRole === enums_1.Role.FDO &&
+                    !(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.CREATE_CASE)) {
                     return next(new app_error_util_1.AppError(enums_1.HttpStatusCode.FORBIDDEN, enums_1.ResponseMessage.FORBIDDEN));
                 }
                 const caseData = case_validation_1.createCaseSchema.parse(req.body);
@@ -27,13 +28,15 @@ class CaseController {
         };
         this.getAllCases = async (req, res, next) => {
             try {
-                if (!(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.VIEW_CASES)) {
+                if (req.userRole === enums_1.Role.FDO &&
+                    !(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.VIEW_CASES)) {
                     return next(new app_error_util_1.AppError(enums_1.HttpStatusCode.FORBIDDEN, enums_1.ResponseMessage.FORBIDDEN));
                 }
-                const { page, per_page } = case_validation_1.paginationQuerySchema.parse(req.query);
-                const { rows: cases, count: total } = await this.caseService.getAllCases(page, per_page);
+                const query = case_validation_1.paginationQuerySchema.parse(req.query);
+                const { page, per_page, ...filters } = query;
+                const { rows: cases, count: total } = await this.caseService.getAllCases(page, per_page, filters);
                 const paginated = (0, pagination_util_1.getPaginatedResponse)(cases, total, page, per_page, req);
-                api_response_util_1.ApiResponse.send(res, paginated, enums_1.ResponseMessage.CASES_FETCHED, enums_1.HttpStatusCode.OK);
+                api_response_util_1.ApiResponse.send(res, paginated.data, enums_1.ResponseMessage.CASES_FETCHED, enums_1.HttpStatusCode.OK, paginated.links, paginated.meta);
             }
             catch (error) {
                 return next(error);
@@ -41,7 +44,8 @@ class CaseController {
         };
         this.getCaseById = async (req, res, next) => {
             try {
-                if (!(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.VIEW_CASES)) {
+                if (req.userRole === enums_1.Role.FDO &&
+                    !(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.VIEW_CASES)) {
                     return next(new app_error_util_1.AppError(enums_1.HttpStatusCode.FORBIDDEN, enums_1.ResponseMessage.FORBIDDEN));
                 }
                 const id = Array.isArray(req.params.id)
@@ -59,7 +63,8 @@ class CaseController {
         };
         this.getCaseByPatient = async (req, res, next) => {
             try {
-                if (!(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.VIEW_CASES)) {
+                if (req.userRole === enums_1.Role.FDO &&
+                    !(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.VIEW_CASES)) {
                     return next(new app_error_util_1.AppError(enums_1.HttpStatusCode.FORBIDDEN, enums_1.ResponseMessage.FORBIDDEN));
                 }
                 const patientId = Array.isArray(req.params.patient_id)
@@ -77,7 +82,8 @@ class CaseController {
         };
         this.updateCase = async (req, res, next) => {
             try {
-                if (!(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.UPDATE_CASE)) {
+                if (req.userRole === enums_1.Role.FDO &&
+                    !(0, checkFdoPermission_util_1.checkFdoHasPermission)(req.user, enums_1.FdoPermission.UPDATE_CASE)) {
                     return next(new app_error_util_1.AppError(enums_1.HttpStatusCode.FORBIDDEN, enums_1.ResponseMessage.FORBIDDEN));
                 }
                 const id = Array.isArray(req.params.id)

@@ -40,10 +40,11 @@ export class SpecialtyController {
     next: NextFunction,
   ) => {
     try {
-      const { page, per_page } = paginationQuerySchema.parse(req.query);
+      const query = paginationQuerySchema.parse(req.query);
+      const { page, per_page, ...filters } = query;
 
       const { rows: specialties, count: total } =
-        await this.specialtyService.getAllSpecialties(page, per_page);
+        await this.specialtyService.getAllSpecialties(page, per_page, filters);
 
       const paginated = getPaginatedResponse(
         specialties,
@@ -55,9 +56,11 @@ export class SpecialtyController {
 
       ApiResponse.send(
         res,
-        paginated,
+        paginated.data,
         ResponseMessage.SPECIALTIES_FETCHED,
         HttpStatusCode.OK,
+        paginated.links,
+        paginated.meta,
       );
     } catch (error) {
       return next(error);

@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { withRequiredPreprocess } from "./validation.utils";
+import {
+  optionalBooleanQuery,
+  optionalTrimmedString,
+  preprocessOptionalNativeEnum,
+  withRequiredPreprocess,
+} from "./validation.utils";
 import { Role } from "../enums";
 
 const baseUser = z.object({
@@ -91,4 +96,7 @@ export const updateUserSchema = z
 export const paginationQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   per_page: z.coerce.number().int().min(1).max(100).default(15),
+  search: optionalTrimmedString,
+  role: preprocessOptionalNativeEnum(Role),
+  is_active: optionalBooleanQuery,
 });

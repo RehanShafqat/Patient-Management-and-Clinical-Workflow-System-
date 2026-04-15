@@ -23,10 +23,11 @@ class UserController {
         };
         this.getAllUsers = async (req, res, next) => {
             try {
-                const { page, per_page } = user_validation_1.paginationQuerySchema.parse(req.query);
-                const { rows: users, count: total } = await this.userService.getAllUsers(page, per_page);
+                const query = user_validation_1.paginationQuerySchema.parse(req.query);
+                const { page, per_page, ...filters } = query;
+                const { rows: users, count: total } = await this.userService.getAllUsers(page, per_page, filters);
                 const paginated = (0, pagination_util_1.getPaginatedResponse)(users, total, page, per_page, req);
-                api_response_util_1.ApiResponse.send(res, paginated, enums_1.ResponseMessage.USERS_FETCHED, enums_1.HttpStatusCode.OK);
+                api_response_util_1.ApiResponse.send(res, paginated.data, enums_1.ResponseMessage.USERS_FETCHED, enums_1.HttpStatusCode.OK, paginated.links, paginated.meta);
             }
             catch (error) {
                 next(error);
