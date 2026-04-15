@@ -1,1 +1,185 @@
-<p>patient-list works!</p>
+<section class="space-y-6 p-6 md:p-8">
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-base-content">Patients</h1>
+      <p class="text-sm text-base-content/60 mt-1">
+        {{ totalCount }} records found
+      </p>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-base-300 bg-base-100 p-4 md:p-5">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <label class="form-control md:col-span-2">
+        <span
+          class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+        >
+          Search
+        </span>
+        <input
+          type="text"
+          class="input input-bordered"
+          placeholder="Search by name, contact, or physician"
+          [value]="searchQuery"
+          (input)="onSearch($any($event.target).value)"
+        />
+      </label>
+
+      <label class="form-control">
+        <span
+          class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+        >
+          Status
+        </span>
+        <select
+          class="select select-bordered capitalize"
+          [value]="selectedStatus"
+          (change)="onStatusChange($any($event.target).value)"
+        >
+          <option
+            *ngFor="let option of statusOptions"
+            [value]="option"
+            class="capitalize"
+          >
+            {{ option }}
+          </option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <app-entity-table
+    [columns]="columns"
+    [rows]="pagedRows"
+    [loading]="loading"
+    [totalCount]="totalCount"
+    [pageSize]="pageSize"
+    [pageOffset]="pageOffset"
+    (rowSelected)="onRowSelected($event)"
+    (updateRequested)="openUpdateModal($event)"
+    (deleteRequested)="openDeleteModal($event)"
+    (pageChanged)="onPageChange($event)"
+  />
+</section>
+
+<div class="modal" [class.modal-open]="isUpdateModalOpen">
+  <div class="modal-box max-w-2xl">
+    <h3 class="text-lg font-semibold">Update Patient</h3>
+    <p class="text-sm text-base-content/70 mt-1">
+      Edit patient details and save your changes.
+    </p>
+
+    <form
+      [formGroup]="updateForm"
+      class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2"
+    >
+      <label class="form-control">
+        <span class="label-text">First Name</span>
+        <input
+          class="input input-bordered"
+          formControlName="first_name"
+          type="text"
+        />
+      </label>
+
+      <label class="form-control">
+        <span class="label-text">Last Name</span>
+        <input
+          class="input input-bordered"
+          formControlName="last_name"
+          type="text"
+        />
+      </label>
+
+      <label class="form-control">
+        <span class="label-text">Date of Birth</span>
+        <input
+          class="input input-bordered"
+          formControlName="date_of_birth"
+          type="date"
+        />
+      </label>
+
+      <label class="form-control">
+        <span class="label-text">Contact</span>
+        <input
+          class="input input-bordered"
+          formControlName="contact"
+          type="text"
+        />
+      </label>
+
+      <label class="form-control">
+        <span class="label-text">Status</span>
+        <select
+          class="select select-bordered capitalize"
+          formControlName="status"
+        >
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="critical">Critical</option>
+          <option value="discharged">Discharged</option>
+        </select>
+      </label>
+
+      <label class="form-control">
+        <span class="label-text">Primary Physician</span>
+        <input
+          class="input input-bordered"
+          formControlName="primary_physician"
+          type="text"
+        />
+      </label>
+
+      <label class="form-control md:col-span-2">
+        <span class="label-text">Email</span>
+        <input
+          class="input input-bordered"
+          formControlName="email"
+          type="email"
+        />
+      </label>
+    </form>
+
+    <div class="modal-action">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="isSaving"
+        (click)="closeUpdateModal()"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="isSaving"
+        (click)="saveUpdate()"
+      >
+        {{ isSaving ? "Saving..." : "Save Changes" }}
+      </button>
+    </div>
+  </div>
+  <button
+    type="button"
+    class="modal-backdrop"
+    [disabled]="isSaving"
+    (click)="closeUpdateModal()"
+  >
+    close
+  </button>
+</div>
+
+<app-confirm-dialog
+  [open]="isDeleteModalOpen"
+  [title]="'Delete Patient'"
+  [message]="
+    'Delete ' +
+    (selectedPatient?.name || 'this patient') +
+    '? This action cannot be undone.'
+  "
+  [confirmLabel]="'Delete'"
+  [loading]="isDeleting"
+  (openChange)="isDeleteModalOpen = $event"
+  (confirmed)="confirmDelete()"
+/>

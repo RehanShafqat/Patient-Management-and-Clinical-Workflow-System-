@@ -1,0 +1,9 @@
+.teal-glow {
+  box-shadow: 0 0 12px rgba(13, 148, 136, 0.3);
+}
+
+.form-input-focus:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 8px rgba(13, 148, 136, 0.2);
+  outline: none;
+}

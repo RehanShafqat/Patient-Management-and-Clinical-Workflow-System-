@@ -1,7 +1,6 @@
 <div
-  class="min-h-screen relative flex items-center justify-center px-4 py-12"
+  class="min-h-screen relative flex items-center justify-center px-4 py-12 bg-base-200"
   style="
-    background-color: #f0f2f7;
     background-image:
       linear-gradient(rgba(180, 185, 210, 0.35) 1px, transparent 1px),
       linear-gradient(90deg, rgba(180, 185, 210, 0.35) 1px, transparent 1px);
@@ -12,13 +11,12 @@
     class="card lg:card-side bg-base-100 shadow-2xl w-full max-w-4xl overflow-hidden rounded-2xl"
   >
     <div
-      class="lg:w-[52%] flex flex-col justify-between p-10 min-h-[520px]"
-      style="background-color: #2d39b0"
+      class="lg:w-[52%] flex flex-col justify-between p-10 min-h-[520px] bg-primary text-primary-content"
     >
       <div class="flex items-center gap-3">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-7 w-7 text-white"
+          class="h-7 w-7"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -33,42 +31,28 @@
                m-6 9l2 2 4-4"
           />
         </svg>
-        <span class="text-white font-bold text-lg tracking-tight"
-          >Curator Health</span
-        >
+        <span class="font-bold text-lg tracking-tight">Curator Health</span>
       </div>
 
       <div class="my-10">
-        <h1
-          class="text-3xl lg:text-4xl font-extrabold text-white leading-snug mb-4"
-        >
+        <h1 class="text-3xl lg:text-4xl font-extrabold leading-snug mb-4">
           High-Precision<br />
-          <span style="color: rgba(255, 255, 255, 0.55)"
-            >Clinical Editorial.</span
-          >
+          <span class="text-primary-content/60">Clinical Editorial.</span>
         </h1>
-        <p
-          class="text-sm leading-relaxed"
-          style="color: rgba(255, 255, 255, 0.6)"
-        >
+        <p class="text-sm leading-relaxed text-primary-content/70">
           Access the enterprise health workspace<br />
           designed for clarity, security, and the<br />
           modern clinician.
         </p>
       </div>
 
-      <div
-        class="rounded-xl p-4 flex items-center gap-4"
-        style="background-color: rgba(255, 255, 255, 0.15)"
-      >
+      <div class="rounded-xl p-4 flex items-center gap-4 bg-primary-content/15">
         <div
-          class="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden"
-          style="background: linear-gradient(135deg, #3a4fd7, #1a237e)"
+          class="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-primary-content/25"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 text-white"
-            style="opacity: 0.8"
+            class="h-6 w-6 text-primary-content/80"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -81,16 +65,13 @@
         </div>
 
         <div>
-          <p class="text-white font-bold text-sm">
-            Enterprise Identity Verified
-          </p>
+          <p class="font-bold text-sm">Enterprise Identity Verified</p>
           <div class="flex items-center gap-1.5 mt-1">
             <span
               class="w-2 h-2 rounded-full bg-emerald-400 inline-block"
             ></span>
             <span
-              class="text-xs font-semibold tracking-widest uppercase"
-              style="color: rgba(255, 255, 255, 0.5)"
+              class="text-xs font-semibold tracking-widest uppercase text-primary-content/60"
             >
               Certified Clinical Interface
             </span>
@@ -99,12 +80,12 @@
       </div>
     </div>
 
-    <div class="flex-1 flex flex-col justify-between p-10 bg-white">
+    <div class="flex-1 flex flex-col justify-between p-10 bg-base-100">
       <div>
         <h2 class="text-3xl font-extrabold text-base-content mb-2">
           Welcome Back
         </h2>
-        <p class="text-sm mb-8" style="color: rgba(0, 0, 0, 0.45)">
+        <p class="text-sm mb-8 text-base-content/60">
           Please enter your credentials to access the clinical registry.
         </p>
 
@@ -112,8 +93,7 @@
           <div class="form-control mb-5">
             <label class="label pb-1 pt-0" for="email">
               <span
-                class="label-text text-xs font-bold tracking-widest uppercase"
-                style="color: rgba(0, 0, 0, 0.45)"
+                class="label-text text-xs font-bold tracking-widest uppercase text-base-content/60"
               >
                 Institutional Email
               </span>
@@ -147,8 +127,7 @@
           <div class="form-control mb-5">
             <label class="label pb-1 pt-0" for="password">
               <span
-                class="label-text text-xs font-bold tracking-widest uppercase"
-                style="color: rgba(0, 0, 0, 0.45)"
+                class="label-text text-xs font-bold tracking-widest uppercase text-base-content/60"
               >
                 Password
               </span>
@@ -174,8 +153,7 @@
               <button
                 type="button"
                 (click)="togglePassword()"
-                class="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity"
-                style="color: rgba(0, 0, 0, 0.4)"
+                class="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-80 transition-opacity text-base-content/50"
               >
                 @if (!showPassword) {
                   <svg
@@ -246,10 +224,7 @@
                 type="checkbox"
                 class="checkbox checkbox-sm rounded border-base-300"
               />
-              <span
-                class="label-text text-sm"
-                style="color: rgba(0, 0, 0, 0.55)"
-              >
+              <span class="label-text text-sm text-base-content/70">
                 Remember this terminal session
               </span>
             </label>
@@ -257,8 +232,7 @@
 
           <button
             type="submit"
-            class="btn w-full text-white font-bold text-base rounded-xl gap-2 border-0"
-            style="background-color: #2d39b0"
+            class="btn btn-primary w-full font-bold text-base rounded-xl gap-2 border-0"
             [disabled]="isLoading"
           >
             @if (isLoading) {
@@ -276,20 +250,18 @@
         <div
           class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
         >
-          <span class="text-xs font-medium" style="color: rgba(0, 0, 0, 0.3)">
+          <span class="text-xs font-medium text-base-content/40">
             System Version 4.12.0-Editorial
           </span>
           <div class="flex gap-5">
             <a
               href="#help-center"
-              class="text-xs font-semibold"
-              style="color: rgba(0, 0, 0, 0.45)"
+              class="text-xs font-semibold text-base-content/60 hover:text-primary"
               >Help Center</a
             >
             <a
               href="#security-policy"
-              class="text-xs font-semibold"
-              style="color: rgba(0, 0, 0, 0.45)"
+              class="text-xs font-semibold text-base-content/60 hover:text-primary"
               >Security Policy</a
             >
           </div>
@@ -299,8 +271,7 @@
   </div>
 
   <p
-    class="absolute bottom-6 left-0 right-0 text-center text-xs tracking-widest uppercase font-semibold pointer-events-none"
-    style="color: rgba(100, 110, 160, 0.45)"
+    class="absolute bottom-6 left-0 right-0 text-center text-xs tracking-widest uppercase font-semibold pointer-events-none text-base-content/50"
   >
     Protected by Curator Health Enterprise Security Infrastructure
   </p>

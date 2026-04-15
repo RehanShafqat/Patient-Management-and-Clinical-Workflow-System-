@@ -1,6 +1,26 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import {
+  CanActivateChildFn,
+  CanActivateFn,
+  Router,
+  UrlTree,
+} from '@angular/router';
 import { AuthService } from '../services/auth.service';
+
+const getRoleDashboardUrl = (
+  authService: AuthService,
+  router: Router,
+): UrlTree => {
+  if (!authService.isLoggedIn()) {
+    return router.parseUrl('/login');
+  }
+
+  if (authService.isAdmin()) return router.parseUrl('/admin/dashboard');
+  if (authService.isDoctor()) return router.parseUrl('/doctor/dashboard');
+  if (authService.isFdo()) return router.parseUrl('/fdo/dashboard');
+
+  return router.parseUrl('/login');
+};
 
 export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -9,8 +29,8 @@ export const authGuard: CanActivateFn = () => {
   if (authService.isLoggedIn()) {
     return true;
   }
-  router.navigate(['/login']);
-  return false;
+
+  return router.parseUrl('/login');
 };
 
 export const adminGuard: CanActivateFn = () => {
@@ -21,8 +41,7 @@ export const adminGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/login']);
-  return false;
+  return getRoleDashboardUrl(authService, router);
 };
 
 export const doctorGuard: CanActivateFn = () => {
@@ -33,8 +52,7 @@ export const doctorGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/login']);
-  return false;
+  return getRoleDashboardUrl(authService, router);
 };
 
 export const fdoGuard: CanActivateFn = () => {
@@ -45,6 +63,12 @@ export const fdoGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/login']);
-  return false;
+  return getRoleDashboardUrl(authService, router);
 };
+
+export const adminChildGuard: CanActivateChildFn = (route, state) =>
+  adminGuard(route, state);
+export const doctorChildGuard: CanActivateChildFn = (route, state) =>
+  doctorGuard(route, state);
+export const fdoChildGuard: CanActivateChildFn = (route, state) =>
+  fdoGuard(route, state);

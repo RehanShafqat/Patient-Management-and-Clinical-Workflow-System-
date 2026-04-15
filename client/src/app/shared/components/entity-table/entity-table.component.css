@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+::ng-deep .ngx-datatable.material {
+  border: 1px solid hsl(var(--b3));
+  border-radius: 0.75rem;
+  background: hsl(var(--b1));
+}
+
+::ng-deep .ngx-datatable.material .datatable-header {
+  border-bottom: 1px solid hsl(var(--b3));
+}
+
+::ng-deep .ngx-datatable.material .datatable-header .datatable-header-cell {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, hsl(var(--bc)) 70%, transparent);
+}
+
+::ng-deep .ngx-datatable.material .datatable-body-row {
+  border-bottom: 1px solid hsl(var(--b3));
+  cursor: pointer;
+}
+
+::ng-deep .ngx-datatable.material .datatable-body-row:hover {
+  background: color-mix(in srgb, hsl(var(--b2)) 75%, white);
+}

@@ -1,0 +1,106 @@
+<header
+  class="fixed top-0 right-0 left-64 flex justify-between items-center h-16 px-8 bg-white/80 backdrop-blur-md z-40"
+>
+  <div class="flex-1 max-w-xl">
+    <div class="relative flex items-center">
+      <span class="material-symbols-outlined absolute left-3 text-slate-400"
+        >search</span
+      >
+      <input
+        class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-slate-500"
+        placeholder="Search patients, records, or clinical tasks..."
+        type="text"
+      />
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    @if (currentUser$ | async; as user) {
+      <span
+        class="badge badge-sm badge-primary badge-outline bg-base-100 capitalize"
+      >
+        {{ user.role }}
+      </span>
+      <div class="flex items-center gap-3 pl-4 border-slate-200">
+        <div class="text-right">
+          <p class="text-xs font-bold text-on-background leading-none">
+            {{ user.first_name }} {{ user.last_name }}
+          </p>
+          <p class="text-[10px] text-slate-500 mt-1">{{ user.email }}</p>
+        </div>
+        <div class="dropdown dropdown-end">
+          <button
+            type="button"
+            tabindex="0"
+            class="btn btn-ghost btn-circle avatar w-9 h-9 rounded-full bg-teal-100 overflow-hidden border border-teal-200"
+          >
+            <img
+              class="w-full h-full object-cover"
+              data-alt="professional headshot of a female doctor in a clinical setting with warm lighting"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkLZOuNWVhF5qhJoIcsN6L0QDHxi-m4mXUHMhB-_ORzwtLmONFrMALedtUwXmEuXJh_V78hmZre0bOGeQBSuGPL0BJfK4v7kwKhOjqTnT_pGH8SlIOnKC1gny2opOF41P715Z5ohOZjQy7DcrU-4hvyxEl8jz5tdkAi8F0NPRubboIg8wPPbycZQoVbncXR3h8m--2EVdezokWjW_LU-eCSzxNkGPsiNnDyasvle02cv2tyx2fiyNYNU6QcBlE30rd5KB-1ei4qR9-"
+            />
+          </button>
+          <ul
+            tabindex="0"
+            class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 shadow border border-base-300"
+          >
+            <li class="pointer-events-none">
+              <div class="flex flex-col gap-1 px-2 py-2">
+                <span class="font-semibold text-xs text-base-content">
+                  {{ user.first_name }} {{ user.last_name }}
+                </span>
+                <span class="badge badge-xs badge-primary w-fit capitalize">
+                  {{ user.role }}
+                </span>
+                <span class="text-[11px] text-primary break-all">{{
+                  user.email
+                }}</span>
+              </div>
+            </li>
+            <li><hr class="my-1 border-base-300" /></li>
+            <li>
+              <button type="button" (click)="openLogoutConfirm()">
+                Logout
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    }
+  </div>
+</header>
+
+<dialog #logoutConfirmModal class="modal">
+  <div class="modal-box max-w-sm">
+    <h3 class="font-semibold text-base">Confirm Logout</h3>
+    <p class="py-3 text-sm text-slate-600">
+      Are you sure you want to log out from your account?
+    </p>
+    <div class="modal-action">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="isLoggingOut"
+        (click)="closeLogoutConfirm()"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn btn-error text-white"
+        [disabled]="isLoggingOut"
+        (click)="logout()"
+      >
+        {{ isLoggingOut ? "Logging out..." : "Logout" }}
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button
+      type="button"
+      [disabled]="isLoggingOut"
+      (click)="closeLogoutConfirm()"
+    >
+      close
+    </button>
+  </form>
+</dialog>

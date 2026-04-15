@@ -32,6 +32,8 @@ export class AuthService {
       tap((response) => {
         const apiResponse = response as ApiResponse<any>;
         const user = apiResponse?.data.user;
+        console.log(user);
+
         this.currentUserSubject.next(user ?? null);
       }),
       map(() => void 0),
