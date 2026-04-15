@@ -49,6 +49,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'patients/:id',
+        loadComponent: () =>
+          import('./features/patients/patient-detail/patient-detail.component').then(
+            (m) => m.PatientDetailComponent,
+          ),
+      },
+      {
         path: 'cases',
         loadComponent: () =>
           import('./features/cases/case-list/case-list.component').then(
@@ -106,6 +113,13 @@ export const routes: Routes = [
             (m) => m.PatientFormComponent,
           ),
       },
+      {
+        path: 'patients/:id',
+        loadComponent: () =>
+          import('./features/patients/patient-detail/patient-detail.component').then(
+            (m) => m.PatientDetailComponent,
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
@@ -127,6 +141,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/patients/patient-form/patient-form.component').then(
             (m) => m.PatientFormComponent,
+          ),
+      },
+      {
+        path: 'patients/:id',
+        loadComponent: () =>
+          import('./features/patients/patient-detail/patient-detail.component').then(
+            (m) => m.PatientDetailComponent,
           ),
       },
       {
