@@ -1,0 +1,79 @@
+<ngx-datatable
+  class="material striped bootstrap no-scrollbar"
+  [rows]="rows"
+  [columnMode]="'force'"
+  [headerHeight]="56"
+  [footerHeight]="56"
+  [rowHeight]="64"
+  [scrollbarH]="true"
+  [externalPaging]="true"
+  [count]="totalCount"
+  [offset]="pageOffset"
+  [limit]="pageSize"
+  [loadingIndicator]="loading"
+  (activate)="onRowActivate($event)"
+  (page)="onPage($event)"
+>
+  <ngx-datatable-column
+    *ngFor="let col of columns"
+    [name]="col.name"
+    [prop]="col.prop"
+    [sortable]="true"
+    [minWidth]="col.minWidth ?? 140"
+    [width]="col.width ?? 180"
+  >
+    <ng-template ngx-datatable-cell-template let-value="value">
+      <ng-container [ngSwitch]="col.type">
+        <span
+          *ngSwitchCase="'status'"
+          class="badge badge-sm capitalize"
+          [ngClass]="statusBadgeClass(value)"
+        >
+          {{ value }}
+        </span>
+        <span *ngSwitchCase="'date'">{{ value | date: "MMM d, y" }}</span>
+        <span *ngSwitchDefault>{{ value }}</span>
+      </ng-container>
+    </ng-template>
+  </ngx-datatable-column>
+
+  <ngx-datatable-column
+    name="Actions"
+    [sortable]="false"
+    [draggable]="false"
+    [resizeable]="false"
+    [canAutoResize]="false"
+    [width]="110"
+  >
+    <ng-template ngx-datatable-cell-template let-row="row">
+      <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          tabindex="0"
+          class="btn btn-ghost btn-xs btn-circle"
+        >
+          <span class="material-symbols-outlined text-sm">more_vert</span>
+        </button>
+        <ul
+          tabindex="0"
+          class="menu menu-sm dropdown-content z-50 mt-1 w-36 rounded-box border border-base-300 bg-base-100 p-2 shadow"
+        >
+          <li>
+            <button type="button" (click)="onUpdate($event, row)">
+              Update
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              class="text-error"
+              (click)="onDelete($event, row)"
+            >
+              Delete
+            </button>
+          </li>
+        </ul>
+      </div>
+    </ng-template>
+  </ngx-datatable-column>
+</ngx-datatable>

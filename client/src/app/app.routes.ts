@@ -51,8 +51,8 @@ export const routes: Routes = [
       {
         path: 'patients',
         loadComponent: () =>
-          import('./features/patients/patient-form/patient-form.component').then(
-            (m) => m.PatientFormComponent,
+          import('./features/patients/patient-list/patient-list.component').then(
+            (m) => m.PatientListComponent,
           ),
       },
       {
@@ -118,8 +118,8 @@ export const routes: Routes = [
       {
         path: 'patients',
         loadComponent: () =>
-          import('./features/patients/patient-form/patient-form.component').then(
-            (m) => m.PatientFormComponent,
+          import('./features/patients/patient-list/patient-list.component').then(
+            (m) => m.PatientListComponent,
           ),
       },
       {
@@ -150,8 +150,8 @@ export const routes: Routes = [
       {
         path: 'patients',
         loadComponent: () =>
-          import('./features/patients/patient-form/patient-form.component').then(
-            (m) => m.PatientFormComponent,
+          import('./features/patients/patient-list/patient-list.component').then(
+            (m) => m.PatientListComponent,
           ),
       },
       {
