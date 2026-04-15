@@ -2,9 +2,13 @@ import { Routes } from '@angular/router';
 import {
   authGuard,
   adminGuard,
+  adminChildGuard,
   doctorGuard,
+  doctorChildGuard,
   fdoGuard,
+  fdoChildGuard,
 } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 export const routes: Routes = [
   {
@@ -16,14 +20,17 @@ export const routes: Routes = [
   },
   {
     path: 'login',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./features/auth/login/login.component').then(
         (m) => m.LoginComponent,
       ),
   },
+  //INFO: Admin routes
   {
     path: 'admin',
     canActivate: [adminGuard],
+    canActivateChild: [adminChildGuard],
     loadComponent: () =>
       import('./layout/layout.component').then((m) => m.LayoutComponent),
     children: [
@@ -79,9 +86,11 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
+  //INFO: Doctor routes
   {
     path: 'doctor',
     canActivate: [doctorGuard],
+    canActivateChild: [doctorChildGuard],
     loadComponent: () =>
       import('./layout/layout.component').then((m) => m.LayoutComponent),
     children: [
@@ -123,9 +132,11 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
+  //INFO: FDO routes
   {
     path: 'fdo',
     canActivate: [fdoGuard],
+    canActivateChild: [fdoChildGuard],
     loadComponent: () =>
       import('./layout/layout.component').then((m) => m.LayoutComponent),
     children: [

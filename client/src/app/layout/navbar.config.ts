@@ -1,13 +1,14 @@
 export interface NavItem {
   label: string;
   route: string;
-  icon: string; 
+  icon: string;
 }
 
 export const NAV_ITEMS: Record<string, NavItem[]> = {
   admin: [
     { label: 'Dashboard', route: '/admin/dashboard', icon: 'grid' },
-    { label: 'Manage Users', route: '/admin/create-user', icon: 'users' },
+    { label: 'FDOs', route: '/admin/fdo', icon: 'person' },
+    { label: 'Doctors', route: '/admin/doctors', icon: 'person' },
     { label: 'Patients', route: '/admin/patients', icon: 'person' },
     { label: 'Cases', route: '/admin/cases', icon: 'folder' },
     { label: 'Appointments', route: '/admin/appointments', icon: 'calendar' },
