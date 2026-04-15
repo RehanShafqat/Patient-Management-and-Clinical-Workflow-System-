@@ -4,10 +4,12 @@ import { SpecialtyService } from "../services/specialty.service";
 import {
   createSpecialtySchema,
   updateSpecialtySchema,
+  paginationQuerySchema,
 } from "../validations/specialty.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
 import { HttpStatusCode, ResponseMessage } from "../enums";
+import { getPaginatedResponse } from "../utils/pagination.util";
 import { isValidSpecialtyId } from "../validations/validation.utils";
 
 export class SpecialtyController {
@@ -38,12 +40,27 @@ export class SpecialtyController {
     next: NextFunction,
   ) => {
     try {
-      const specialties = await this.specialtyService.getAllSpecialties();
+      const query = paginationQuerySchema.parse(req.query);
+      const { page, per_page, ...filters } = query;
 
-      return ApiResponse.send(
+      const { rows: specialties, count: total } =
+        await this.specialtyService.getAllSpecialties(page, per_page, filters);
+
+      const paginated = getPaginatedResponse(
+        specialties,
+        total,
+        page,
+        per_page,
+        req,
+      );
+
+      ApiResponse.send(
         res,
-        { specialties },
+        paginated.data,
         ResponseMessage.SPECIALTIES_FETCHED,
+        HttpStatusCode.OK,
+        paginated.links,
+        paginated.meta,
       );
     } catch (error) {
       return next(error);

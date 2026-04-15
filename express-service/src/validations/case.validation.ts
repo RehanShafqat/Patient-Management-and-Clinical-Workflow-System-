@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { withRequiredPreprocess } from "./validation.utils";
+import {
+  optionalDateQuery,
+  optionalTrimmedString,
+  optionalUuidQuery,
+  preprocessOptionalEnum,
+  withRequiredPreprocess,
+} from "./validation.utils";
 import { enumToArray } from "../utils/enum.util";
 
 import { CaseCategory } from "../enums/caseCategory.enum";
@@ -51,7 +57,10 @@ export const createCaseSchema = z
     // For Optional UUIDs: convert null/empty to undefined
     insurance_id: z.preprocess(
       (val) => (val === "" || val === null ? undefined : val),
-      z.string().uuid({ message: "Insurance ID must be a valid UUID" }).optional(),
+      z
+        .string()
+        .uuid({ message: "Insurance ID must be a valid UUID" })
+        .optional(),
     ),
 
     firm_id: z.preprocess(
@@ -95,6 +104,25 @@ export const createCaseSchema = z
     },
   );
 
-export const updateCaseSchema = z.object({
-  ...createCaseSchema
-}).partial();
+export const updateCaseSchema = z
+  .object({
+    ...createCaseSchema,
+  })
+  .partial();
+
+export const paginationQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  per_page: z.coerce.number().int().min(1).max(100).default(15),
+  search: optionalTrimmedString,
+  case_number: optionalTrimmedString,
+  patient_id: optionalUuidQuery,
+  practice_location_id: optionalUuidQuery,
+  insurance_id: optionalUuidQuery,
+  firm_id: optionalUuidQuery,
+  category: preprocessOptionalEnum(enumToArray(CaseCategory)),
+  case_type: preprocessOptionalEnum(enumToArray(CaseType)),
+  priority: preprocessOptionalEnum(enumToArray(CasePriority)),
+  case_status: preprocessOptionalEnum(enumToArray(CaseStatus)),
+  opening_date_from: optionalDateQuery,
+  opening_date_to: optionalDateQuery,
+});

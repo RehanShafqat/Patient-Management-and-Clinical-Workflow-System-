@@ -35,7 +35,6 @@ interface PatientRow extends PatientRecord {
     ConfirmDialogComponent,
   ],
   templateUrl: './patient-list.component.html',
-  styleUrls: ['./patient-list.component.css'],
 })
 export class PatientListComponent implements OnInit {
   private readonly http = inject(HttpClient);

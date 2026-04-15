@@ -6,30 +6,38 @@ export interface NavItem {
 
 export const NAV_ITEMS: Record<string, NavItem[]> = {
   admin: [
-    { label: 'Dashboard', route: '/admin/dashboard', icon: 'grid' },
+    { label: 'Dashboard', route: '/admin/dashboard', icon: 'grid_view' },
     { label: 'FDOs', route: '/admin/fdo', icon: 'person' },
     { label: 'Doctors', route: '/admin/doctors', icon: 'person' },
     { label: 'Patients', route: '/admin/patients', icon: 'person' },
     { label: 'Cases', route: '/admin/cases', icon: 'folder' },
-    { label: 'Appointments', route: '/admin/appointments', icon: 'calendar' },
-    { label: 'Visits', route: '/admin/visits', icon: 'clipboard' },
+    {
+      label: 'Appointments',
+      route: '/admin/appointments',
+      icon: 'calendar_month',
+    },
+    { label: 'Visits', route: '/admin/visits', icon: 'assignment' },
   ],
 
   doctor: [
-    { label: 'Dashboard', route: '/doctor/dashboard', icon: 'grid' },
+    { label: 'Dashboard', route: '/doctor/dashboard', icon: 'grid_view' },
     {
       label: 'My Appointments',
       route: '/doctor/appointments',
-      icon: 'calendar',
+      icon: 'calendar_month',
     },
-    { label: 'My Visits', route: '/doctor/visits', icon: 'clipboard' },
+    { label: 'My Visits', route: '/doctor/visits', icon: 'assignment' },
     { label: 'Patients', route: '/doctor/patients', icon: 'person' },
   ],
 
   fdo: [
-    { label: 'Dashboard', route: '/fdo/dashboard', icon: 'grid' },
+    { label: 'Dashboard', route: '/fdo/dashboard', icon: 'grid_view' },
     { label: 'Patients', route: '/fdo/patients', icon: 'person' },
     { label: 'Cases', route: '/fdo/cases', icon: 'folder' },
-    { label: 'Appointments', route: '/fdo/appointments', icon: 'calendar' },
+    {
+      label: 'Appointments',
+      route: '/fdo/appointments',
+      icon: 'calendar_month',
+    },
   ],
 };

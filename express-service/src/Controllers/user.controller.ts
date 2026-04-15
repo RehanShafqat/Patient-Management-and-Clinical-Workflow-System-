@@ -1,10 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../utils/api-response.util";
 import { UserService } from "../services/user.service";
-import { createUserSchema, updateUserSchema } from "../validations/user.validation";
+import {
+  createUserSchema,
+  updateUserSchema,
+  paginationQuerySchema,
+} from "../validations/user.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
 import { HttpStatusCode, ResponseMessage } from "../enums";
+import { getPaginatedResponse } from "../utils/pagination.util";
 
 export class UserController {
   constructor(private userService: UserService = new UserService()) {}
@@ -14,7 +19,12 @@ export class UserController {
       const userData = createUserSchema.parse(req.body);
       const user = await this.userService.createUser(userData);
 
-      return ApiResponse.send(res, { user }, ResponseMessage.USER_CREATED, HttpStatusCode.CREATED);
+      return ApiResponse.send(
+        res,
+        { user },
+        ResponseMessage.USER_CREATED,
+        HttpStatusCode.CREATED,
+      );
     } catch (error) {
       return next(error);
     }
@@ -22,11 +32,27 @@ export class UserController {
 
   getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const users = await this.userService.getAllUsers();
+      const query = paginationQuerySchema.parse(req.query);
+      const { page, per_page, ...filters } = query;
 
-      return ApiResponse.send(res, { users }, ResponseMessage.USERS_FETCHED);
+      const { rows: users, count: total } = await this.userService.getAllUsers(
+        page,
+        per_page,
+        filters,
+      );
+
+      const paginated = getPaginatedResponse(users, total, page, per_page, req);
+
+      ApiResponse.send(
+        res,
+        paginated.data,
+        ResponseMessage.USERS_FETCHED,
+        HttpStatusCode.OK,
+        paginated.links,
+        paginated.meta,
+      );
     } catch (error) {
-      return next(error);
+      next(error);
     }
   };
 
@@ -37,7 +63,12 @@ export class UserController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT));
+        return next(
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_ID_FORMAT,
+          ),
+        );
       }
 
       const user = await this.userService.getUserById(id);
@@ -55,7 +86,12 @@ export class UserController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT));
+        return next(
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_ID_FORMAT,
+          ),
+        );
       }
 
       const updateData = updateUserSchema.parse(req.body);
@@ -74,7 +110,12 @@ export class UserController {
         : req.params.id;
 
       if (!isValidUUID(id)) {
-        return next(new AppError(HttpStatusCode.BAD_REQUEST, ResponseMessage.INVALID_ID_FORMAT));
+        return next(
+          new AppError(
+            HttpStatusCode.BAD_REQUEST,
+            ResponseMessage.INVALID_ID_FORMAT,
+          ),
+        );
       }
 
       await this.userService.deleteUser(id);

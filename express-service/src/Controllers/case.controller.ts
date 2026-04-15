@@ -4,18 +4,23 @@ import { CaseService } from "../services/case.service";
 import {
   createCaseSchema,
   updateCaseSchema,
+  paginationQuerySchema,
 } from "../validations/case.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
-import { FdoPermission, HttpStatusCode, ResponseMessage } from "../enums";
+import { FdoPermission, HttpStatusCode, ResponseMessage, Role } from "../enums";
 import { checkFdoHasPermission } from "../utils/checkFdoPermission.util";
+import { getPaginatedResponse } from "../utils/pagination.util";
 
 export class CaseController {
   constructor(private caseService: CaseService = new CaseService()) {}
 
   createCase = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!checkFdoHasPermission(req.user!, FdoPermission.CREATE_CASE)) {
+      if (
+        req.userRole === Role.FDO &&
+        !checkFdoHasPermission(req.user!, FdoPermission.CREATE_CASE)
+      ) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
@@ -36,14 +41,34 @@ export class CaseController {
 
   getAllCases = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_CASES)) {
+      if (
+        req.userRole === Role.FDO &&
+        !checkFdoHasPermission(req.user!, FdoPermission.VIEW_CASES)
+      ) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
       }
-      const cases = await this.caseService.getAllCases();
 
-      return ApiResponse.send(res, { cases }, ResponseMessage.CASES_FETCHED);
+      const query = paginationQuerySchema.parse(req.query);
+      const { page, per_page, ...filters } = query;
+
+      const { rows: cases, count: total } = await this.caseService.getAllCases(
+        page,
+        per_page,
+        filters,
+      );
+
+      const paginated = getPaginatedResponse(cases, total, page, per_page, req);
+
+      ApiResponse.send(
+        res,
+        paginated.data,
+        ResponseMessage.CASES_FETCHED,
+        HttpStatusCode.OK,
+        paginated.links,
+        paginated.meta,
+      );
     } catch (error) {
       return next(error);
     }
@@ -51,7 +76,10 @@ export class CaseController {
 
   getCaseById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_CASES)) {
+      if (
+        req.userRole === Role.FDO &&
+        !checkFdoHasPermission(req.user!, FdoPermission.VIEW_CASES)
+      ) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
@@ -87,7 +115,10 @@ export class CaseController {
     next: NextFunction,
   ) => {
     try {
-      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_CASES)) {
+      if (
+        req.userRole === Role.FDO &&
+        !checkFdoHasPermission(req.user!, FdoPermission.VIEW_CASES)
+      ) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
@@ -119,7 +150,10 @@ export class CaseController {
 
   updateCase = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!checkFdoHasPermission(req.user!, FdoPermission.UPDATE_CASE)) {
+      if (
+        req.userRole === Role.FDO &&
+        !checkFdoHasPermission(req.user!, FdoPermission.UPDATE_CASE)
+      ) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );

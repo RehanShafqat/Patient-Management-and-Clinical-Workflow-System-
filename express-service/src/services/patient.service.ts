@@ -1,13 +1,28 @@
 import z from "zod";
+import { Op } from "sequelize";
 import { Patient } from "../models/patient.model";
 import { AppError } from "../utils/app-error.util";
-import { createPatientSchema, updatePatientSchema } from "../validations/patient.validation";
+import {
+  createPatientSchema,
+  updatePatientSchema,
+} from "../validations/patient.validation";
 import { HttpStatusCode, PatientStatus, ResponseMessage } from "../enums";
 type CreatePatientInput = {
   first_name: string;
   last_name: string;
   date_of_birth: Date;
 } & Record<string, unknown>;
+
+type PatientListFilters = {
+  search?: string;
+  gender?: string;
+  patient_status?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  registration_date_from?: string;
+  registration_date_to?: string;
+};
 
 export class PatientService {
   createPatient = async (patientData: z.infer<typeof createPatientSchema>) => {
@@ -20,7 +35,10 @@ export class PatientService {
     });
 
     if (existing) {
-      throw new AppError(HttpStatusCode.CONFLICT, ResponseMessage.PATIENT_ALREADY_EXISTS);
+      throw new AppError(
+        HttpStatusCode.CONFLICT,
+        ResponseMessage.PATIENT_ALREADY_EXISTS,
+      );
     }
 
     const patient = await Patient.create({
@@ -31,29 +49,96 @@ export class PatientService {
     });
 
     if (!patient) {
-      throw new AppError(HttpStatusCode.INTERNAL_SERVER_ERROR, ResponseMessage.PATIENT_CREATION_FAILED);
+      throw new AppError(
+        HttpStatusCode.INTERNAL_SERVER_ERROR,
+        ResponseMessage.PATIENT_CREATION_FAILED,
+      );
     }
 
     return patient;
   };
 
-  getAllPatients = async () => {
-    return Patient.findAll();
+  getAllPatients = async (
+    page: number = 1,
+    limit: number = 15,
+    filters: PatientListFilters = {},
+  ) => {
+    const offset = (page - 1) * limit;
+
+    const where: Record<string | symbol, unknown> = {};
+
+    if (filters.search) {
+      const search = `%${filters.search.trim()}%`;
+      where[Op.or] = [
+        { first_name: { [Op.like]: search } },
+        { last_name: { [Op.like]: search } },
+        { email: { [Op.like]: search } },
+        { phone: { [Op.like]: search } },
+        { mobile: { [Op.like]: search } },
+      ];
+    }
+
+    if (filters.gender) {
+      where.gender = filters.gender;
+    }
+
+    if (filters.patient_status) {
+      where.patient_status = filters.patient_status;
+    }
+
+    if (filters.city) {
+      where.city = { [Op.like]: `%${filters.city}%` };
+    }
+
+    if (filters.state) {
+      where.state = { [Op.like]: `%${filters.state}%` };
+    }
+
+    if (filters.country) {
+      where.country = { [Op.like]: `%${filters.country}%` };
+    }
+
+    if (filters.registration_date_from || filters.registration_date_to) {
+      const registrationDateRange: Record<string | symbol, unknown> = {};
+      if (filters.registration_date_from) {
+        registrationDateRange[Op.gte] = filters.registration_date_from;
+      }
+      if (filters.registration_date_to) {
+        registrationDateRange[Op.lte] = filters.registration_date_to;
+      }
+      where.registration_date = registrationDateRange;
+    }
+
+    return Patient.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [["created_at", "DESC"]],
+    });
   };
 
   getPatientById = async (id: string) => {
     const patient = await Patient.findByPk(id);
     if (!patient) {
-      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.PATIENT_NOT_FOUND);
+      throw new AppError(
+        HttpStatusCode.NOT_FOUND,
+        ResponseMessage.PATIENT_NOT_FOUND,
+      );
     }
 
     return patient;
   };
 
-  updatePatient = async (id: string, updatedData: z.infer<typeof updatePatientSchema>) => {
+  updatePatient = async (
+    id: string,
+    updatedData: z.infer<typeof updatePatientSchema>,
+  ) => {
     const patient = await Patient.findByPk(id);
     if (!patient) {
-      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.PATIENT_NOT_FOUND);
+      throw new AppError(
+        HttpStatusCode.NOT_FOUND,
+        ResponseMessage.PATIENT_NOT_FOUND,
+      );
     }
 
     await patient.update(updatedData as any);
@@ -64,7 +149,10 @@ export class PatientService {
   deletePatient = async (id: string) => {
     const patient = await Patient.findByPk(id);
     if (!patient) {
-      throw new AppError(HttpStatusCode.NOT_FOUND, ResponseMessage.PATIENT_NOT_FOUND);
+      throw new AppError(
+        HttpStatusCode.NOT_FOUND,
+        ResponseMessage.PATIENT_NOT_FOUND,
+      );
     }
 
     await patient.destroy();

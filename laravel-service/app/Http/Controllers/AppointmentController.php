@@ -22,11 +22,14 @@ class AppointmentController extends Controller
     ) {}
 
     // List
-    public function index(Request $request)
+    public function index(Request $request): AnonymousResourceCollection
     {
         $appointments = $this->appointmentService->getAll($request, auth()->user());
 
-        return AppointmentResource::collection($appointments);
+        return AppointmentResource::collection($appointments)->additional([
+            'success' => true,
+            'message' => '',
+        ]);
     }
 
     // Show

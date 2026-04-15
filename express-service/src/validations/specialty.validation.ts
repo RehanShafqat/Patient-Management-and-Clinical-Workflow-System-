@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { withRequiredPreprocess } from "./validation.utils";
+import {
+  optionalBooleanQuery,
+  optionalTrimmedString,
+  withRequiredPreprocess,
+} from "./validation.utils";
 
 export const createSpecialtySchema = z.object({
   specialty_name: withRequiredPreprocess(
@@ -21,3 +25,10 @@ export const updateSpecialtySchema = z
     ...createSpecialtySchema.shape,
   })
   .partial();
+
+export const paginationQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  per_page: z.coerce.number().int().min(1).max(100).default(15),
+  search: optionalTrimmedString,
+  is_active: optionalBooleanQuery,
+});

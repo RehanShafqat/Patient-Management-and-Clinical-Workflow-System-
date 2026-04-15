@@ -1,6 +1,12 @@
 import { z } from "zod";
-import { withRequiredPreprocess } from "./validation.utils";
+import {
+  optionalDateQuery,
+  optionalTrimmedString,
+  preprocessOptionalNativeEnum,
+  withRequiredPreprocess,
+} from "./validation.utils";
 import { Gender } from "../enums/gender.enum";
+import { PatientStatus } from "../enums/patientStatus.enum";
 
 // phone regex (supports +, country code, dashes, spaces)
 const phoneRegex = /^(\+?\d{1,3}[-.\s]?)?\d{1,4}[-.\s]?\d{3}[-.\s]?\d{4}$/;
@@ -89,3 +95,16 @@ export const updatePatientSchema = z
     ...basePatientSchema.shape,
   })
   .partial();
+
+export const paginationQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  per_page: z.coerce.number().int().min(1).max(100).default(15),
+  search: optionalTrimmedString,
+  gender: preprocessOptionalNativeEnum(Gender),
+  patient_status: preprocessOptionalNativeEnum(PatientStatus),
+  city: optionalTrimmedString,
+  state: optionalTrimmedString,
+  country: optionalTrimmedString,
+  registration_date_from: optionalDateQuery,
+  registration_date_to: optionalDateQuery,
+});

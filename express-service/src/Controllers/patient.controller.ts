@@ -4,11 +4,13 @@ import { PatientService } from "../services/patient.service";
 import {
   createPatientSchema,
   updatePatientSchema,
+  paginationQuerySchema,
 } from "../validations/patient.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
-import { FdoPermission, HttpStatusCode, ResponseMessage } from "../enums";
+import { FdoPermission, HttpStatusCode, ResponseMessage, Role } from "../enums";
 import { checkFdoHasPermission } from "../utils/checkFdoPermission.util";
+import { getPaginatedResponse } from "../utils/pagination.util";
 
 export class PatientController {
   constructor(private patientService: PatientService = new PatientService()) {}
@@ -16,12 +18,15 @@ export class PatientController {
   createPatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const patientData = createPatientSchema.parse(req.body);
-      const patient = await this.patientService.createPatient(patientData);
-      if (!checkFdoHasPermission(req.user!, FdoPermission.CREATE_PATIENT)) {
+      if (
+        req.userRole === Role.FDO &&
+        !checkFdoHasPermission(req.user!, FdoPermission.CREATE_PATIENT)
+      ) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
       }
+      const patient = await this.patientService.createPatient(patientData);
       return ApiResponse.send(
         res,
         { patient },
@@ -33,20 +38,39 @@ export class PatientController {
     }
   };
 
-  // Get all patients
+  // Get all patients (paginated)
   getAllPatients = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_PATIENTS)) {
+      if (
+        req.userRole === Role.FDO &&
+        !checkFdoHasPermission(req.user!, FdoPermission.VIEW_PATIENTS)
+      ) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
       }
-      const patients = await this.patientService.getAllPatients();
+
+      const query = paginationQuerySchema.parse(req.query);
+      const { page, per_page, ...filters } = query;
+
+      const { rows: patients, count: total } =
+        await this.patientService.getAllPatients(page, per_page, filters);
+
+      const paginated = getPaginatedResponse(
+        patients,
+        total,
+        page,
+        per_page,
+        req,
+      );
+
       ApiResponse.send(
         res,
-        { patients },
+        paginated.data,
         ResponseMessage.PATIENTS_FETCHED,
         HttpStatusCode.OK,
+        paginated.links,
+        paginated.meta,
       );
     } catch (error) {
       next(error);
@@ -56,7 +80,10 @@ export class PatientController {
   // Get patient by ID
   getPatientById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_PATIENTS)) {
+      if (
+        req.userRole === Role.FDO &&
+        !checkFdoHasPermission(req.user!, FdoPermission.VIEW_PATIENTS)
+      ) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
@@ -89,7 +116,10 @@ export class PatientController {
   // Update patient
   updatePatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!checkFdoHasPermission(req.user!, FdoPermission.UPDATE_PATIENT)) {
+      if (
+        req.userRole === Role.FDO &&
+        !checkFdoHasPermission(req.user!, FdoPermission.UPDATE_PATIENT)
+      ) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
