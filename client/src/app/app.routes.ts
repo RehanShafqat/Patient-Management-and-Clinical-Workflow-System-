@@ -56,6 +56,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'patients/form',
+        loadComponent: () =>
+          import('./features/patients/patient-form/patient-form.component').then(
+            (m) => m.PatientFormComponent,
+          ),
+      },
+      {
         path: 'patients/:id',
         loadComponent: () =>
           import('./features/patients/patient-detail/patient-detail.component').then(

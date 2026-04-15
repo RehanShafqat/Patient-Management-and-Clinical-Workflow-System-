@@ -18,8 +18,11 @@ export class SpecialtyService {
     return specialty;
   };
 
-  getAllSpecialties = async () => {
-    return Specialty.findAll({
+  getAllSpecialties = async (page: number = 1, limit: number = 15) => {
+    const offset = (page - 1) * limit;
+    return Specialty.findAndCountAll({
+      limit,
+      offset,
       order: [["created_at", "DESC"]],
     });
   };

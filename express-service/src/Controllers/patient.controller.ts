@@ -4,11 +4,13 @@ import { PatientService } from "../services/patient.service";
 import {
   createPatientSchema,
   updatePatientSchema,
+  paginationQuerySchema,
 } from "../validations/patient.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
 import { FdoPermission, HttpStatusCode, ResponseMessage } from "../enums";
 import { checkFdoHasPermission } from "../utils/checkFdoPermission.util";
+import { getPaginatedResponse } from "../utils/pagination.util";
 
 export class PatientController {
   constructor(private patientService: PatientService = new PatientService()) {}
@@ -16,12 +18,12 @@ export class PatientController {
   createPatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const patientData = createPatientSchema.parse(req.body);
-      const patient = await this.patientService.createPatient(patientData);
       if (!checkFdoHasPermission(req.user!, FdoPermission.CREATE_PATIENT)) {
         return next(
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
       }
+      const patient = await this.patientService.createPatient(patientData);
       return ApiResponse.send(
         res,
         { patient },
@@ -33,7 +35,7 @@ export class PatientController {
     }
   };
 
-  // Get all patients
+  // Get all patients (paginated)
   getAllPatients = async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!checkFdoHasPermission(req.user!, FdoPermission.VIEW_PATIENTS)) {
@@ -41,10 +43,23 @@ export class PatientController {
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
       }
-      const patients = await this.patientService.getAllPatients();
+
+      const { page, per_page } = paginationQuerySchema.parse(req.query);
+
+      const { rows: patients, count: total } =
+        await this.patientService.getAllPatients(page, per_page);
+
+      const paginated = getPaginatedResponse(
+        patients,
+        total,
+        page,
+        per_page,
+        req,
+      );
+
       ApiResponse.send(
         res,
-        { patients },
+        paginated,
         ResponseMessage.PATIENTS_FETCHED,
         HttpStatusCode.OK,
       );

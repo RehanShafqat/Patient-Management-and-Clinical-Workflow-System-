@@ -12,25 +12,13 @@ patientRouter.post(
   checkRoleMiddleware([Role.FDO]),
   patientController.createPatient,
 );
-patientRouter.get(
-  "/",
-  //   checkAccessToken,
-  patientController.getAllPatients,
-);
+patientRouter.get("/", checkAccessToken, patientController.getAllPatients);
 patientRouter.get(
   "/:id",
   // checkAccessToken,
   patientController.getPatientById,
 );
-patientRouter.put(
-  "/:id",
-  // checkAccessToken,
-  patientController.updatePatient,
-);
-patientRouter.delete(
-  "/:id",
-  // checkAccessToken,
-  patientController.deletePatient,
-);
+patientRouter.put("/:id", checkAccessToken, patientController.updatePatient);
+patientRouter.delete("/:id", checkAccessToken, patientController.deletePatient);
 
 export default patientRouter;

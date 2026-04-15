@@ -4,11 +4,13 @@ import { CaseService } from "../services/case.service";
 import {
   createCaseSchema,
   updateCaseSchema,
+  paginationQuerySchema,
 } from "../validations/case.validation";
 import { AppError } from "../utils/app-error.util";
 import { isValidUUID } from "../utils/uuid.util";
 import { FdoPermission, HttpStatusCode, ResponseMessage } from "../enums";
 import { checkFdoHasPermission } from "../utils/checkFdoPermission.util";
+import { getPaginatedResponse } from "../utils/pagination.util";
 
 export class CaseController {
   constructor(private caseService: CaseService = new CaseService()) {}
@@ -41,9 +43,26 @@ export class CaseController {
           new AppError(HttpStatusCode.FORBIDDEN, ResponseMessage.FORBIDDEN),
         );
       }
-      const cases = await this.caseService.getAllCases();
 
-      return ApiResponse.send(res, { cases }, ResponseMessage.CASES_FETCHED);
+      const { page, per_page } = paginationQuerySchema.parse(req.query);
+
+      const { rows: cases, count: total } =
+        await this.caseService.getAllCases(page, per_page);
+
+      const paginated = getPaginatedResponse(
+        cases,
+        total,
+        page,
+        per_page,
+        req,
+      );
+
+      ApiResponse.send(
+        res,
+        paginated,
+        ResponseMessage.CASES_FETCHED,
+        HttpStatusCode.OK,
+      );
     } catch (error) {
       return next(error);
     }

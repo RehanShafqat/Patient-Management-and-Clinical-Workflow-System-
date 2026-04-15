@@ -22,8 +22,13 @@ export class UserService {
     });
   };
 
-  getAllUsers = async () => {
-    return User.findAll();
+  getAllUsers = async (page: number = 1, limit: number = 15) => {
+    const offset = (page - 1) * limit;
+    return User.findAndCountAll({
+      limit,
+      offset,
+      order: [["created_at", "DESC"]],
+    });
   };
 
   getUserById = async (id: string) => {

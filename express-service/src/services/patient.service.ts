@@ -37,8 +37,13 @@ export class PatientService {
     return patient;
   };
 
-  getAllPatients = async () => {
-    return Patient.findAll();
+  getAllPatients = async (page: number = 1, limit: number = 15) => {
+    const offset = (page - 1) * limit;
+    return Patient.findAndCountAll({
+      limit,
+      offset,
+      order: [["created_at", "DESC"]],
+    });
   };
 
   getPatientById = async (id: string) => {

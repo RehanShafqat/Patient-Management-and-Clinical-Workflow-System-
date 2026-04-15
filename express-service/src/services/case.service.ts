@@ -13,8 +13,13 @@ export class CaseService {
     return patientCase;
   };
 
-  getAllCases = async () => {
-    return PatientCase.findAll();
+  getAllCases = async (page: number = 1, limit: number = 15) => {
+    const offset = (page - 1) * limit;
+    return PatientCase.findAndCountAll({
+      limit,
+      offset,
+      order: [["created_at", "DESC"]],
+    });
   };
 
   getCaseById = async (id: string) => {

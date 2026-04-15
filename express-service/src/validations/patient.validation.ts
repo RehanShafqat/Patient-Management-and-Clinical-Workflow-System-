@@ -89,3 +89,8 @@ export const updatePatientSchema = z
     ...basePatientSchema.shape,
   })
   .partial();
+
+export const paginationQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  per_page: z.coerce.number().int().min(1).max(100).default(15),
+});
