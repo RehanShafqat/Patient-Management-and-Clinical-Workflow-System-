@@ -6,6 +6,5 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './fdo-dashboard.component.html',
-  styleUrls: ['./fdo-dashboard.component.css'],
 })
 export class FdoDashboardComponent {}

@@ -42,37 +42,34 @@ export class PatientFormComponent {
   isSubmitting = false;
 
   form = this.fb.group({
-    first_name: ['', [Validators.required, Validators.minLength(3)]],
-    middle_name: [''],
-    last_name: ['', [Validators.required, Validators.minLength(3)]],
+    first_name: [
+      '',
+      [Validators.required, Validators.minLength(3), Validators.maxLength(50)],
+    ],
+    middle_name: ['', [Validators.maxLength(50)]],
+    last_name: [
+      '',
+      [Validators.required, Validators.minLength(3), Validators.maxLength(50)],
+    ],
     date_of_birth: ['', [Validators.required]],
     gender: ['male' as Gender, [Validators.required]],
-    ssn: ['', [Validators.required, Validators.pattern(/^\d{3}-\d{2}-\d{4}$/)]],
+    ssn: ['', [Validators.pattern(/^\d{3}-\d{2}-\d{4}$/)]],
 
-    email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required, Validators.pattern(this.phoneRegex)]],
-    mobile: ['', [Validators.required, Validators.pattern(this.phoneRegex)]],
-    address: ['', [Validators.required, Validators.maxLength(100)]],
-    city: ['', [Validators.required, Validators.maxLength(50)]],
-    state: ['', [Validators.required, Validators.maxLength(50)]],
-    zip_code: [
-      '',
-      [Validators.required, Validators.pattern(/^\d{5}(-\d{4})?$/)],
-    ],
-    country: ['', [Validators.required, Validators.maxLength(50)]],
-    emergency_contact_name: [
-      '',
-      [Validators.required, Validators.maxLength(50)],
-    ],
-    emergency_contact_phone: [
-      '',
-      [Validators.required, Validators.pattern(this.phoneRegex)],
-    ],
+    email: ['', [Validators.email]],
+    phone: ['', [Validators.pattern(this.phoneRegex)]],
+    mobile: ['', [Validators.pattern(this.phoneRegex)]],
+    address: ['', [Validators.maxLength(100)]],
+    city: ['', [Validators.maxLength(50)]],
+    state: ['', [Validators.maxLength(50)]],
+    zip_code: ['', [Validators.pattern(/^\d{5}(-\d{4})?$/)]],
+    country: ['', [Validators.maxLength(50)]],
+    emergency_contact_name: ['', [Validators.maxLength(50)]],
+    emergency_contact_phone: ['', [Validators.pattern(this.phoneRegex)]],
 
-    primary_physician: [''],
-    insurance_provider: [''],
-    insurance_policy_number: [''],
-    preferred_language: ['English'],
+    primary_physician: ['', [Validators.maxLength(50)]],
+    insurance_provider: ['', [Validators.maxLength(50)]],
+    insurance_policy_number: ['', [Validators.maxLength(50)]],
+    preferred_language: ['English', [Validators.maxLength(30)]],
     patient_status: ['active' as PatientStatus, [Validators.required]],
   });
 
@@ -177,39 +174,43 @@ export class PatientFormComponent {
 
     const value = this.form.getRawValue();
     const payload: CreatePatientPayload = {
-      first_name: value.first_name || '',
-      middle_name: value.middle_name || undefined,
-      last_name: value.last_name || '',
+      first_name: value.first_name?.trim() || '',
+      middle_name: value.middle_name?.trim() || undefined,
+      last_name: value.last_name?.trim() || '',
       date_of_birth: value.date_of_birth || '',
       gender: (value.gender || 'male') as Gender,
-      ssn: value.ssn || '',
-      email: value.email || '',
-      phone: value.phone || '',
-      mobile: value.mobile || '',
-      address: value.address || '',
-      city: value.city || '',
-      state: value.state || '',
-      zip_code: value.zip_code || '',
-      country: value.country || '',
-      emergency_contact_name: value.emergency_contact_name || '',
-      emergency_contact_phone: value.emergency_contact_phone || '',
-      primary_physician: value.primary_physician || undefined,
-      insurance_provider: value.insurance_provider || undefined,
-      insurance_policy_number: value.insurance_policy_number || undefined,
-      preferred_language: value.preferred_language || 'English',
+      ssn: value.ssn?.trim() || undefined,
+      email: value.email?.trim() || undefined,
+      phone: value.phone?.trim() || undefined,
+      mobile: value.mobile?.trim() || undefined,
+      address: value.address?.trim() || undefined,
+      city: value.city?.trim() || undefined,
+      state: value.state?.trim() || undefined,
+      zip_code: value.zip_code?.trim() || undefined,
+      country: value.country?.trim() || undefined,
+      emergency_contact_name: value.emergency_contact_name?.trim() || undefined,
+      emergency_contact_phone:
+        value.emergency_contact_phone?.trim() || undefined,
+      primary_physician: value.primary_physician?.trim() || undefined,
+      insurance_provider: value.insurance_provider?.trim() || undefined,
+      insurance_policy_number:
+        value.insurance_policy_number?.trim() || undefined,
+      preferred_language: value.preferred_language?.trim() || 'English',
       patient_status: (value.patient_status || 'active') as PatientStatus,
       registration_date: new Date().toISOString(),
     };
 
     this.isSubmitting = true;
-    this.patientService.createPatient(payload).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.onCancel();
-      },
-      error: () => {
-        this.isSubmitting = false;
-      },
-    });
+    console.log(payload);
+
+    // this.patientService.createPatient(payload).subscribe({
+    //   next: () => {
+    //     this.isSubmitting = false;
+    //     this.onCancel();
+    //   },
+    //   error: () => {
+    //     this.isSubmitting = false;
+    //   },
+    // });
   }
 }

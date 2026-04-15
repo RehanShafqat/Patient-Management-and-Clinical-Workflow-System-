@@ -8,50 +8,63 @@ const phoneRegex = /^(\+?\d{1,3}[-.\s]?)?\d{1,4}[-.\s]?\d{3}[-.\s]?\d{4}$/;
 const basePatientSchema = z.object({
   first_name: withRequiredPreprocess(z.string().min(3).max(50)),
 
-  middle_name: z.string().max(50).optional(),
+  middle_name: withRequiredPreprocess(z.string().max(50).optional()),
 
   last_name: withRequiredPreprocess(z.string().min(3).max(50)),
 
-  date_of_birth: z.coerce.date(),
+  date_of_birth: withRequiredPreprocess(z.coerce.date()),
 
   gender: withRequiredPreprocess(z.enum(Gender)),
 
-  ssn: withRequiredPreprocess(z.string().regex(/^\d{3}-\d{2}-\d{4}$/)),
+  ssn: withRequiredPreprocess(
+    z
+      .string()
+      .regex(/^\d{3}-\d{2}-\d{4}$/)
+      .optional(),
+  ),
 
-  email: withRequiredPreprocess(z.email()),
+  email: withRequiredPreprocess(z.email().optional()),
 
-  phone: withRequiredPreprocess(z.string().regex(phoneRegex)),
+  phone: withRequiredPreprocess(z.string().regex(phoneRegex).optional()),
 
-  mobile: withRequiredPreprocess(z.string().regex(phoneRegex)),
+  mobile: withRequiredPreprocess(z.string().regex(phoneRegex).optional()),
 
-  address: withRequiredPreprocess(z.string().max(100)),
+  address: withRequiredPreprocess(z.string().max(100).optional()),
 
-  city: withRequiredPreprocess(z.string().max(50)),
+  city: withRequiredPreprocess(z.string().max(50).optional()),
 
-  state: withRequiredPreprocess(z.string().max(50)),
+  state: withRequiredPreprocess(z.string().max(50).optional()),
 
-  zip_code: withRequiredPreprocess(z.string().regex(/^\d{5}(-\d{4})?$/)),
+  zip_code: withRequiredPreprocess(
+    z
+      .string()
+      .regex(/^\d{5}(-\d{4})?$/)
+      .optional(),
+  ),
 
-  country: withRequiredPreprocess(z.string().max(50)),
+  country: withRequiredPreprocess(z.string().max(50).optional()),
 
-  emergency_contact_name: withRequiredPreprocess(z.string().max(50)),
+  emergency_contact_name: withRequiredPreprocess(z.string().max(50).optional()),
 
-  emergency_contact_phone: withRequiredPreprocess(z.string().regex(phoneRegex)),
+  emergency_contact_phone: withRequiredPreprocess(
+    z.string().regex(phoneRegex).optional(),
+  ),
 
-  primary_physician: z.string().max(50).optional(),
+  primary_physician: withRequiredPreprocess(z.string().max(50).optional()),
 
-  insurance_provider: z.string().max(50).optional(),
+  insurance_provider: withRequiredPreprocess(z.string().max(50).optional()),
 
-  insurance_policy_number: z.string().max(50).optional(),
+  insurance_policy_number: withRequiredPreprocess(
+    z.string().max(50).optional(),
+  ),
 
-  preferred_language: z.string().max(30).optional(),
+  preferred_language: withRequiredPreprocess(z.string().max(30).optional()),
 
   patient_status: withRequiredPreprocess(
     z.enum(["active", "inactive", "deceased", "transferred"]),
   ),
 
-  registration_date: z.coerce.date().optional()
-  ,
+  registration_date: z.coerce.date().optional(),
 });
 
 export const createPatientSchema = basePatientSchema
@@ -71,10 +84,8 @@ export const createPatientSchema = basePatientSchema
     },
   );
 
-export const updatePatientSchema = z.object({
- ...basePatientSchema.shape,
-}).partial()
-
-
-
-
+export const updatePatientSchema = z
+  .object({
+    ...basePatientSchema.shape,
+  })
+  .partial();
