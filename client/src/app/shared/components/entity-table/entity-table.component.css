@@ -1,4 +1,4 @@
-:host {
+/* :host {
   display: block;
 }
 
@@ -27,4 +27,9 @@
 
 ::ng-deep .ngx-datatable.material .datatable-body-row:hover {
   background: color-mix(in srgb, hsl(var(--b2)) 75%, white);
+} */
+
+::ng-deep .ngx-datatable.material {
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1) !important;
+  /* border-radius: 5px; */
 }
