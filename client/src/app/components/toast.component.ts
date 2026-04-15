@@ -3,6 +3,7 @@ import { ToastService } from '../core/services/toast.service';
 
 @Component({
   selector: 'app-toast',
+  standalone: true,
   template: `
     <div class="toast toast-top toast-end z-50">
       @for (toast of toastService.toasts(); track toast.id) {
