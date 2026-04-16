@@ -1,5 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'); */
 @import "tailwindcss";
 
 @plugin "daisyui" {
@@ -140,3 +140,15 @@ body {
   -ms-overflow-style: none; 
   scrollbar-width: none; 
 }
+
+/* Ensure all input, select, and textarea elements globally use the primary color on focus. */
+.input:focus, .input:focus-within,
+.select:focus, .select:focus-within,
+.textarea:focus, .textarea:focus-within,
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 8px rgba(13, 148, 136, 0.2) !important;
+}
+
+

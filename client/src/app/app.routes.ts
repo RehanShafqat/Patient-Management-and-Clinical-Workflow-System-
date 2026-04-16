@@ -70,6 +70,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'cases/new',
+        loadComponent: () =>
+          import('./features/cases/case-create/case-create.component').then(
+            (m) => m.CaseCreateComponent,
+          ),
+      },
+      {
         path: 'cases',
         loadComponent: () =>
           import('./features/cases/case-list/case-list.component').then(

@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import { env } from "./config";
 import { loggerMiddleware } from "./middlewares/logger.middleware";
 
 import { authMiddleware } from "./middlewares/auth.middleware";
@@ -8,7 +9,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: env.CLIENT_URL || "http://localhost:4200",
     credentials: true,
   }),
 );

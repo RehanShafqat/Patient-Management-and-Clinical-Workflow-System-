@@ -1,4 +1,3 @@
-
 export const routes = [
   {
     pathFilter: [
@@ -6,6 +5,8 @@ export const routes = [
       "/api/appointments",
       "/api/practice-locations",
       "/api/dashboard",
+      "/api/firms",
+      "/api/insurances",
     ],
     target: process.env.LARAVEL_SERVICE_URL,
   },

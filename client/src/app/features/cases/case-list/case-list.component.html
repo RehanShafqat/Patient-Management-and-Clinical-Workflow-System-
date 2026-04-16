@@ -1,1 +1,77 @@
-<p>case-list works!</p>
+<div class="h-full flex flex-col p-6 space-y-6">
+  <!-- Header & Actions -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content tracking-tight">Clinical Cases</h1>
+      <p class="text-sm text-base-content/70 mt-1">Manage active patient pathways, referrals, and billing logistics.</p>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="relative w-64 lg:w-80">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40 text-lg">search</span>
+        <input type="text" 
+               class="input input-bordered h-10 pl-10 w-full text-sm placeholder:text-base-content/40" 
+               placeholder="Search cases..." 
+               (input)="onSearch($event)">
+      </div>
+
+      <!-- Route to Case Create Page -->
+      <a routerLink="new" class="btn btn-primary h-10 min-h-0">
+        <span class="material-symbols-outlined text-[20px]">add</span>
+        New Case
+      </a>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <div class="flex-1 bg-base-100 rounded-box shadow-sm border border-base-200 overflow-hidden flex flex-col min-h-[400px]">
+    <app-entity-table
+      [columns]="columns"
+      [rows]="cases"
+      [loading]="loading"
+      [totalCount]="totalCount"
+      [pageSize]="pageSize"
+      (pageChanged)="onPageChange($event)"
+      (rowSelected)="onRowSelected($event)"
+      (updateRequested)="openUpdateModal($event)"
+      (deleteRequested)="openDeleteModal($event)">
+    </app-entity-table>
+  </div>
+</div>
+
+<!-- Update Modal -->
+<dialog class="modal" [class.modal-open]="isUpdateModalOpen">
+  <div class="modal-box max-w-4xl p-0 overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-base-200 flex justify-between items-center bg-base-100">
+      <h3 class="font-bold text-lg text-base-content">Edit Case</h3>
+      <button class="btn btn-sm btn-circle btn-ghost" (click)="closeUpdateModal()">✕</button>
+    </div>
+    
+    <!-- Form Content -->
+    <div class="max-h-[70vh] overflow-y-auto">
+      <app-case-form *ngIf="isUpdateModalOpen"
+                     [caseMode]="'edit'"
+                     [initialData]="selectedCase"
+                     (formSuccess)="onUpdateSuccess($event)"
+                     (formCancel)="closeUpdateModal()">
+      </app-case-form>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button (click)="closeUpdateModal()">close</button>
+  </form>
+</dialog>
+
+<!-- Delete Modal -->
+<app-confirm-dialog
+  [open]="isDeleteModalOpen"
+  [title]="'Delete Case'"
+  [message]="'Are you sure you want to delete case \'' + selectedCase?.case_number + '\'? This action is permanent and cannot be undone.'"
+  [confirmLabel]="'Delete'"
+  [cancelLabel]="'Cancel'"
+  [variant]="'error'"
+  [loading]="isDeleting"
+  (confirmed)="confirmDelete()"
+  (openChange)="closeDeleteModal()">
+</app-confirm-dialog>
