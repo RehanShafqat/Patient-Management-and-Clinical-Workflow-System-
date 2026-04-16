@@ -84,6 +84,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'appointments/:id',
+        loadComponent: () =>
+          import('./features/appointments/appointment-detail/appointment-detail.component').then(
+            (m) => m.AppointmentDetailComponent,
+          ),
+      },
+      {
         path: 'visits',
         loadComponent: () =>
           import('./features/visits/visit-list/visit-list.component').then(
@@ -113,6 +120,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/appointments/appointment-list/appointment-list.component').then(
             (m) => m.AppointmentListComponent,
+          ),
+      },
+      {
+        path: 'appointments/:id',
+        loadComponent: () =>
+          import('./features/appointments/appointment-detail/appointment-detail.component').then(
+            (m) => m.AppointmentDetailComponent,
           ),
       },
       {
@@ -180,6 +194,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/appointments/appointment-list/appointment-list.component').then(
             (m) => m.AppointmentListComponent,
+          ),
+      },
+      {
+        path: 'appointments/:id',
+        loadComponent: () =>
+          import('./features/appointments/appointment-detail/appointment-detail.component').then(
+            (m) => m.AppointmentDetailComponent,
           ),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

@@ -1,0 +1,283 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-6">
+  <!-- Patient & Case Info -->
+  <fieldset class="space-y-4">
+    <legend class="text-lg font-semibold text-base-content">
+      Patient Information
+    </legend>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Case ID -->
+      <label class="form-control">
+        <span class="label-text text-sm font-semibold text-base-content/80">
+          Case <span class="text-red-500">*</span>
+        </span>
+        <select
+          formControlName="case_id"
+          class="select select-bordered mt-2 h-10 text-sm"
+          [class.select-error]="isFieldInvalid('case_id')"
+        >
+          <option value="">Select a case</option>
+          <!-- You'll need to populate this from a cases service -->
+        </select>
+        <span
+          *ngIf="isFieldInvalid('case_id')"
+          class="text-xs text-red-500 mt-1"
+        >
+          Case is required
+        </span>
+      </label>
+
+      <!-- Patient ID -->
+      <label class="form-control">
+        <span class="label-text text-sm font-semibold text-base-content/80">
+          Patient <span class="text-red-500">*</span>
+        </span>
+        <select
+          formControlName="patient_id"
+          class="select select-bordered mt-2 h-10 text-sm"
+          [class.select-error]="isFieldInvalid('patient_id')"
+        >
+          <option value="">Select a patient</option>
+          <!-- You'll need to populate this from a patients service -->
+        </select>
+        <span
+          *ngIf="isFieldInvalid('patient_id')"
+          class="text-xs text-red-500 mt-1"
+        >
+          Patient is required
+        </span>
+      </label>
+    </div>
+  </fieldset>
+
+  <!-- Doctor & Location Info -->
+  <fieldset class="space-y-4">
+    <legend class="text-lg font-semibold text-base-content">
+      Doctor & Location
+    </legend>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Doctor ID -->
+      <label class="form-control">
+        <span class="label-text text-sm font-semibold text-base-content/80">
+          Doctor <span class="text-red-500">*</span>
+        </span>
+        <select
+          formControlName="doctor_id"
+          class="select select-bordered mt-2 h-10 text-sm"
+          [class.select-error]="isFieldInvalid('doctor_id')"
+        >
+          <option value="">Select a doctor</option>
+          <!-- You'll need to populate this from a doctors service -->
+        </select>
+        <span
+          *ngIf="isFieldInvalid('doctor_id')"
+          class="text-xs text-red-500 mt-1"
+        >
+          Doctor is required
+        </span>
+      </label>
+
+      <!-- Specialty ID -->
+      <label class="form-control">
+        <span class="label-text text-sm font-semibold text-base-content/80">
+          Specialty <span class="text-red-500">*</span>
+        </span>
+        <select
+          formControlName="specialty_id"
+          class="select select-bordered mt-2 h-10 text-sm"
+          [class.select-error]="isFieldInvalid('specialty_id')"
+        >
+          <option value="">Select a specialty</option>
+          <!-- You'll need to populate this from a specialties service -->
+        </select>
+        <span
+          *ngIf="isFieldInvalid('specialty_id')"
+          class="text-xs text-red-500 mt-1"
+        >
+          Specialty is required
+        </span>
+      </label>
+
+      <!-- Practice Location -->
+      <label class="form-control">
+        <span class="label-text text-sm font-semibold text-base-content/80">
+          Practice Location <span class="text-red-500">*</span>
+        </span>
+        <select
+          formControlName="practice_location_id"
+          class="select select-bordered mt-2 h-10 text-sm"
+          [class.select-error]="isFieldInvalid('practice_location_id')"
+        >
+          <option value="">Select a location</option>
+          <!-- You'll need to populate this from a locations service -->
+        </select>
+        <span
+          *ngIf="isFieldInvalid('practice_location_id')"
+          class="text-xs text-red-500 mt-1"
+        >
+          Location is required
+        </span>
+      </label>
+    </div>
+  </fieldset>
+
+  <!-- Appointment Details -->
+  <fieldset class="space-y-4">
+    <legend class="text-lg font-semibold text-base-content">
+      Appointment Details
+    </legend>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Appointment Date -->
+      <label class="form-control">
+        <span class="label-text text-sm font-semibold text-base-content/80">
+          Date <span class="text-red-500">*</span>
+        </span>
+        <input
+          type="date"
+          formControlName="appointment_date"
+          class="input input-bordered mt-2 h-10 text-sm"
+          [class.input-error]="isFieldInvalid('appointment_date')"
+        />
+        <span
+          *ngIf="isFieldInvalid('appointment_date')"
+          class="text-xs text-red-500 mt-1"
+        >
+          Date is required
+        </span>
+      </label>
+
+      <!-- Appointment Time -->
+      <label class="form-control">
+        <span class="label-text text-sm font-semibold text-base-content/80">
+          Time <span class="text-red-500">*</span>
+        </span>
+        <input
+          type="time"
+          formControlName="appointment_time"
+          class="input input-bordered mt-2 h-10 text-sm"
+          [class.input-error]="isFieldInvalid('appointment_time')"
+        />
+        <span
+          *ngIf="isFieldInvalid('appointment_time')"
+          class="text-xs text-red-500 mt-1"
+        >
+          Time is required
+        </span>
+      </label>
+
+      <!-- Appointment Type -->
+      <label class="form-control">
+        <span class="label-text text-sm font-semibold text-base-content/80">
+          Type <span class="text-red-500">*</span>
+        </span>
+        <select
+          formControlName="appointment_type"
+          class="select select-bordered mt-2 h-10 text-sm"
+          [class.select-error]="isFieldInvalid('appointment_type')"
+        >
+          <option *ngFor="let type of appointmentTypeOptions" [value]="type">
+            {{ type }}
+          </option>
+        </select>
+        <span
+          *ngIf="isFieldInvalid('appointment_type')"
+          class="text-xs text-red-500 mt-1"
+        >
+          Type is required
+        </span>
+      </label>
+
+      <!-- Duration Minutes -->
+      <label class="form-control">
+        <span class="label-text text-sm font-semibold text-base-content/80">
+          Duration (minutes)
+        </span>
+        <input
+          type="number"
+          formControlName="duration_minutes"
+          class="input input-bordered mt-2 h-10 text-sm"
+          [class.input-error]="isFieldInvalid('duration_minutes')"
+          min="5"
+          max="480"
+        />
+        <span
+          *ngIf="isFieldInvalid('duration_minutes')"
+          class="text-xs text-red-500 mt-1"
+        >
+          Duration must be between 5 and 480 minutes
+        </span>
+      </label>
+    </div>
+  </fieldset>
+
+  <!-- Reason & Notes -->
+  <fieldset class="space-y-4">
+    <legend class="text-lg font-semibold text-base-content">
+      Additional Information
+    </legend>
+
+    <!-- Reason for Visit -->
+    <label class="form-control">
+      <span class="label-text text-sm font-semibold text-base-content/80">
+        Reason for Visit <span class="text-red-500">*</span>
+      </span>
+      <textarea
+        formControlName="reason_for_visit"
+        class="textarea textarea-bordered mt-2 text-sm"
+        [class.textarea-error]="isFieldInvalid('reason_for_visit')"
+        rows="3"
+        placeholder="Describe the reason for this appointment"
+      ></textarea>
+      <span
+        *ngIf="isFieldInvalid('reason_for_visit')"
+        class="text-xs text-red-500 mt-1"
+      >
+        Reason is required (minimum 10 characters)
+      </span>
+    </label>
+
+    <!-- Notes -->
+    <label class="form-control">
+      <span class="label-text text-sm font-semibold text-base-content/80">
+        Notes
+      </span>
+      <textarea
+        formControlName="notes"
+        class="textarea textarea-bordered mt-2 text-sm"
+        rows="2"
+        placeholder="Additional notes (optional)"
+      ></textarea>
+    </label>
+  </fieldset>
+
+  <!-- Form Actions -->
+  <div class="flex gap-3 justify-end pt-6 border-t border-base-300">
+    <button
+      type="button"
+      (click)="onCancel()"
+      class="btn btn-outline"
+      [disabled]="isSubmitting"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="btn btn-primary gap-2"
+      [disabled]="isSubmitting"
+      [class.loading]="isSubmitting"
+    >
+      <span *ngIf="!isSubmitting" class="material-symbols-outlined">
+        {{ isEditMode ? "edit" : "event_available" }}
+      </span>
+      {{
+        isSubmitting
+          ? "Processing..."
+          : isEditMode
+            ? "Update Appointment"
+            : "Schedule Appointment"
+      }}
+    </button>
+  </div>
+</form>

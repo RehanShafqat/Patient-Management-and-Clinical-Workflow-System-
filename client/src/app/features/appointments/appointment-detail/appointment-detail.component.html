@@ -1,0 +1,122 @@
+<section class="space-y-6 p-6 md:p-8 pt-2 md:pt-4">
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-base-content">Appointment Detail</h1>
+      <p class="text-sm text-base-content/60 mt-1">
+        View appointment metadata and scheduling details
+      </p>
+    </div>
+    <button class="btn btn-outline" type="button" (click)="goBack()">
+      Back
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="card p-6 bg-base-100 shadow-sm">
+    <p class="text-sm text-base-content/70">Loading appointment details...</p>
+  </div>
+
+  <div *ngIf="!loading && appointment" class="space-y-6">
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="rounded-2xl border border-base-300 bg-base-100 p-6">
+        <h2 class="text-lg font-semibold text-base-content">Schedule</h2>
+        <dl class="mt-4 grid gap-3">
+          <div>
+            <dt class="text-xs uppercase text-base-content/60">
+              Appointment #
+            </dt>
+            <dd class="text-base font-medium">
+              {{ appointment.appointment_number }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase text-base-content/60">Date</dt>
+            <dd class="text-base font-medium">
+              {{ appointment.appointment_date }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase text-base-content/60">Time</dt>
+            <dd class="text-base font-medium">
+              {{ appointment.appointment_time }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase text-base-content/60">Type</dt>
+            <dd class="text-base font-medium">
+              {{ appointment.appointment_type }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase text-base-content/60">Status</dt>
+            <dd class="text-base font-medium capitalize">
+              {{ appointment.status.replaceAll("_", " ") | titlecase }}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="rounded-2xl border border-base-300 bg-base-100 p-6">
+        <h2 class="text-lg font-semibold text-base-content">Participants</h2>
+        <dl class="mt-4 grid gap-3">
+          <div>
+            <dt class="text-xs uppercase text-base-content/60">Patient</dt>
+            <dd class="text-base font-medium">
+              {{ appointment.patient_name }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase text-base-content/60">Doctor</dt>
+            <dd class="text-base font-medium">{{ appointment.doctor_name }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase text-base-content/60">Specialty</dt>
+            <dd class="text-base font-medium">
+              {{ appointment.specialty_name }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase text-base-content/60">Location</dt>
+            <dd class="text-base font-medium">
+              {{ appointment.practice_location_name }}
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-base-300 bg-base-100 p-6">
+      <h2 class="text-lg font-semibold text-base-content">Details</h2>
+      <div class="mt-4 grid gap-3 md:grid-cols-2">
+        <div>
+          <dt class="text-xs uppercase text-base-content/60">
+            Reason for visit
+          </dt>
+          <p class="text-base font-medium">
+            {{ appointment.reason_for_visit }}
+          </p>
+        </div>
+        <div>
+          <dt class="text-xs uppercase text-base-content/60">Duration</dt>
+          <p class="text-base font-medium">
+            {{ appointment.duration_minutes }} minutes
+          </p>
+        </div>
+        <div class="md:col-span-2">
+          <dt class="text-xs uppercase text-base-content/60">Notes</dt>
+          <p class="text-base font-medium">
+            {{ appointment.notes || "No notes provided." }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="!loading && !appointment"
+    class="rounded-2xl border border-base-300 bg-base-100 p-6"
+  >
+    <p class="text-sm text-base-content/70">
+      Appointment details could not be loaded. Please go back and try again.
+    </p>
+  </div>
+</section>
