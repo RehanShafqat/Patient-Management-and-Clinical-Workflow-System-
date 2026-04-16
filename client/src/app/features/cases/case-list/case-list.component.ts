@@ -32,8 +32,8 @@ export class CaseListComponent implements OnInit {
   private searchSubject = new Subject<string>();
 
   readonly columns: EntityTableColumn[] = [
-    { name: 'Case #', prop: 'case_number', width: 150 },
-    { name: 'Patient ID', prop: 'patient_id', minWidth: 150 },
+    { name: 'Case #', prop: 'case_number', width: 140 },
+    { name: 'Patient', prop: 'patient_name', minWidth: 200 },
     { name: 'Category', prop: 'category', width: 130 },
     { name: 'Type', prop: 'case_type', width: 150 },
     { name: 'Priority', prop: 'priority', width: 120 },
@@ -80,7 +80,10 @@ export class CaseListComponent implements OnInit {
 
     this.caseService.getCases(fetchFilters).subscribe({
       next: (response) => {
-        this.cases = response.data;
+        this.cases = response.data.map((c: any) => ({
+          ...c,
+          patient_name: c.patient ? `${c.patient.first_name} ${c.patient.last_name}` : 'N/A'
+        }));
         this.totalCount = response.meta.total;
         this.loading = false;
       },

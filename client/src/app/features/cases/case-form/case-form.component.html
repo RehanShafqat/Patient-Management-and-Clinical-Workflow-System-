@@ -88,7 +88,7 @@
       <label class="label"><span class="label-text font-semibold">Insurance Provider</span></label>
       <app-searchable-select 
         [items]="(insurances$ | async) || []" 
-        bindLabel="provider_name" 
+        bindLabel="insurance_name" 
         bindValue="id" 
         formControlName="insurance_id"
         placeholder="Search carrier..."

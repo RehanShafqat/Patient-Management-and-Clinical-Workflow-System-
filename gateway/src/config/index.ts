@@ -8,6 +8,7 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV,
   LARAVEL_SERVICE_URL: process.env.LARAVEL_SERVICE_URL,
   EXPRESS_SERVICE_URL: process.env.EXPRESS_SERVICE_URL,
+  CLIENT_URL: process.env.CLIENT_URL,
 } as const;
 
 const parsePort = (value: string | undefined, fallback: number): number => {

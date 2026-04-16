@@ -1,6 +1,8 @@
 import z from "zod";
 import { Op } from "sequelize";
 import { PatientCase } from "../models/patientCase.model";
+import { Patient } from "../models/patient.model";
+
 import { AppError } from "../utils/app-error.util";
 import { createCaseSchema, updateCaseSchema } from "../validations";
 import { HttpStatusCode, ResponseMessage } from "../enums";
@@ -103,11 +105,25 @@ export class CaseService {
       limit,
       offset,
       order: [["created_at", "DESC"]],
+      include: [
+        {
+          model: Patient,
+          as: "patient",
+          attributes: ["id", "first_name", "last_name"],
+        },
+      ],
     });
   };
 
   getCaseById = async (id: string) => {
-    const patientCase = await PatientCase.findByPk(id);
+    const patientCase = await PatientCase.findByPk(id, {
+      include: [
+        {
+          model: Patient,
+          as: "patient",
+        },
+      ],
+    });
 
     if (!patientCase) {
       throw new AppError(
