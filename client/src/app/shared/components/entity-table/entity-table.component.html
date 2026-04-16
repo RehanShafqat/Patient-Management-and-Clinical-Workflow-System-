@@ -33,27 +33,27 @@
     <ng-template ngx-datatable-footer-template let-rowCount="rowCount" let-pageSize="pageSize"
       let-selectedCount="selectedCount" let-curPage="curPage" let-offset="offset">
       <div
-        class="flex items-center justify-between w-full px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800">
-        <div class="text-xs text-slate-500 font-medium">
+        class="flex items-center justify-between w-full px-4 py-3 bg-base-100 border-t border-base-300">
+        <div class="text-xs text-base-content/60 font-medium">
           Showing {{ offset * pageSize + 1 }} to {{ Math.min((offset + 1) * pageSize, rowCount) }} of {{ rowCount }}
           entries
         </div>
 
         <div class="flex items-center gap-4">
-          <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <div class="text-sm font-semibold text-base-content">
             {{ curPage }} of {{ totalPages }}
           </div>
 
           <div class="flex items-center gap-2">
-            <button type="button" class="pagination-btn" [disabled]="offset === 0"
+            <button type="button" class="btn btn-sm bg-base-200 border-base-300 text-base-content/70 hover:bg-base-300 hover:border-base-300 hover:text-base-content disabled:bg-base-200 disabled:opacity-50" [disabled]="offset === 0"
               (click)="onPage({ offset: offset - 1 })" aria-label="Previous page">
-              <span class="material-symbols-outlined text-base">chevron_left</span>
+              <span class="material-symbols-outlined text-base pr-1">chevron_left</span>
               <span>Prev</span>
             </button>
-            <button type="button" class="pagination-btn" [disabled]="curPage >= totalPages"
+            <button type="button" class="btn btn-sm bg-base-200 border-base-300 text-base-content/70 hover:bg-base-300 hover:border-base-300 hover:text-base-content disabled:bg-base-200 disabled:opacity-50" [disabled]="curPage >= totalPages"
               (click)="onPage({ offset: offset + 1 })" aria-label="Next page">
               <span>Next</span>
-              <span class="material-symbols-outlined text-base">chevron_right</span>
+              <span class="material-symbols-outlined text-base pl-1">chevron_right</span>
             </button>
           </div>
         </div>
