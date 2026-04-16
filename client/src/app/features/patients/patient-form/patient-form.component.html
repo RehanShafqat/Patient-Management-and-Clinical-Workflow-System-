@@ -1,106 +1,170 @@
-<div class="p-8 max-w-5xl mx-auto w-full">
-  <div class="flex items-center gap-4 mb-8">
-    <button class="btn btn-ghost btn-circle btn-sm" type="button">
-      <span class="material-symbols-outlined">arrow_back</span>
+<div class="flex-1 p-8 max-w-5xl mx-auto w-full">
+  <div class="flex items-center gap-6 mb-8 mt-8">
+    <button
+      type="button"
+      (click)="onCancel()"
+      class="btn btn-ghost btn-circle"
+      title="Back to Patients"
+    >
+      <span class="material-symbols-outlined text-2xl">arrow_back</span>
     </button>
-    <h2 class="text-lg font-semibold text-base-content">
-      {{ isEditMode ? "Update Patient Record" : "Patient Intake Registry" }}
-    </h2>
+    <div class="space-y-1">
+      <h2 class="text-2xl font-bold text-base-content">
+        <!-- INFO: Dynamic title based on mode -->
+        {{ isEditMode ? "Update Patient Record" : "Patient Intake Registry" }}
+      </h2>
+    </div>
   </div>
 
   <!-- Stepper -->
   <div class="mb-10">
     <ul class="steps steps-horizontal w-full">
-      <li class="step" [class.step-primary]="currentStep >= 1">Personal Info</li>
-      <li class="step" [class.step-primary]="currentStep >= 2">Contact &amp; Address</li>
-      <li class="step" [class.step-primary]="currentStep >= 3">Insurance &amp; Review</li>
+      <li class="step" [class.step-primary]="currentStep >= 1">
+        Personal Info
+      </li>
+      <li class="step" [class.step-primary]="currentStep >= 2">
+        Contact &amp; Address
+      </li>
+      <li class="step" [class.step-primary]="currentStep >= 3">
+        Insurance &amp; Review
+      </li>
     </ul>
   </div>
 
   <div class="card bg-base-100 shadow-sm border border-base-300">
     <div class="card-body">
-
       <!-- Step Titles -->
-      <h3 class="card-title" *ngIf="currentStep === 1">Demographic Information</h3>
-      <h3 class="card-title" *ngIf="currentStep === 2">Contact &amp; Address Details</h3>
-      <h3 class="card-title" *ngIf="currentStep === 3">Insurance &amp; Final Review</h3>
+      <h3 class="card-title" *ngIf="currentStep === 1">
+        Demographic Information
+      </h3>
+      <h3 class="card-title" *ngIf="currentStep === 2">
+        Contact &amp; Address Details
+      </h3>
+      <h3 class="card-title" *ngIf="currentStep === 3">
+        Insurance &amp; Final Review
+      </h3>
 
       <p class="text-base-content/60" *ngIf="currentStep === 1">
-        Enter the patient's legal identification details as they appear on official documents.
+        Enter the patient's legal identification details as they appear on
+        official documents.
       </p>
       <p class="text-base-content/60" *ngIf="currentStep === 2">
-        Capture communication and emergency contact information for care coordination.
+        Capture communication and emergency contact information for care
+        coordination.
       </p>
       <p class="text-base-content/60" *ngIf="currentStep === 3">
-        Record insurance metadata and verify all entered details before registry submission.
+        Record insurance metadata and verify all entered details before registry
+        submission.
       </p>
 
       <!-- Duplicate Warning -->
       <div
         *ngIf="currentStep === 1 && duplicateHintVisible"
         role="alert"
-        class="alert alert-warning mt-4">
+        class="alert alert-warning mt-4"
+      >
         <span class="material-symbols-outlined">warning</span>
         <div>
           <p class="font-bold">Potential Duplicate Detected</p>
           <p class="text-sm">
             A patient with a similar name and DOB already exists in the system.
-            <a class="link link-hover font-semibold" href="javascript:void(0)">Verify existing record</a>
+            <a class="link link-hover font-semibold" href="javascript:void(0)"
+              >Verify existing record</a
+            >
           </p>
         </div>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mt-6 space-y-6">
-
         <!-- STEP 1: Personal Info -->
         <div *ngIf="currentStep === 1" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">First Name</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('first_name')"
-                     formControlName="first_name" />
+              <label class="label"
+                ><span class="label-text font-semibold">First Name</span></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('first_name')"
+                formControlName="first_name"
+              />
             </div>
 
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Middle Name</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     formControlName="middle_name" placeholder="Optional" />
+              <label class="label"
+                ><span class="label-text font-semibold"
+                  >Middle Name</span
+                ></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                formControlName="middle_name"
+                placeholder="Optional"
+              />
             </div>
 
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Last Name</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('last_name')"
-                     formControlName="last_name" />
+              <label class="label"
+                ><span class="label-text font-semibold">Last Name</span></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('last_name')"
+                formControlName="last_name"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Date of Birth</span></label>
-              <input type="date" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('date_of_birth')"
-                     formControlName="date_of_birth" />
+              <label class="label"
+                ><span class="label-text font-semibold"
+                  >Date of Birth</span
+                ></label
+              >
+              <input
+                type="date"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('date_of_birth')"
+                formControlName="date_of_birth"
+              />
             </div>
 
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Social Security Number</span></label>
-              <input type="text" class="input input-bordered w-full font-mono tracking-widest"
-                     [class.input-error]="isFieldInvalid('ssn')"
-                     formControlName="ssn" placeholder="123-45-6789" />
+              <label class="label"
+                ><span class="label-text font-semibold"
+                  >Social Security Number</span
+                ></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full font-mono tracking-widest"
+                [class.input-error]="isFieldInvalid('ssn')"
+                formControlName="ssn"
+                placeholder="123-45-6789"
+              />
             </div>
           </div>
 
           <div class="form-control w-full">
-            <label class="label"><span class="label-text font-semibold">Legal Gender</span></label>
+            <label class="label"
+              ><span class="label-text font-semibold">Legal Gender</span></label
+            >
             <div class="flex flex-wrap gap-1 p-1 bg-base-200 rounded-box w-fit">
               <button
                 *ngFor="let gender of genderOptions"
                 type="button"
                 (click)="selectGender(gender.value)"
                 class="btn btn-sm"
-                [ngClass]="form.value.gender === gender.value ? 'btn-primary' : 'btn-ghost'">
+                [ngClass]="
+                  form.value.gender === gender.value
+                    ? 'btn-primary'
+                    : 'btn-ghost'
+                "
+              >
                 {{ gender.label }}
               </button>
             </div>
@@ -111,16 +175,25 @@
         <div *ngIf="currentStep === 2" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="form-control w-full md:col-span-2">
-              <label class="label"><span class="label-text font-semibold">Email</span></label>
-              <input type="email" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('email')"
-                     formControlName="email" />
+              <label class="label"
+                ><span class="label-text font-semibold">Email</span></label
+              >
+              <input
+                type="email"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('email')"
+                formControlName="email"
+              />
             </div>
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Country</span></label>
-              <select class="select select-bordered w-full"
-                      [class.select-error]="isFieldInvalid('country')"
-                      formControlName="country">
+              <label class="label"
+                ><span class="label-text font-semibold">Country</span></label
+              >
+              <select
+                class="select select-bordered w-full"
+                [class.select-error]="isFieldInvalid('country')"
+                formControlName="country"
+              >
                 <option value="">Select Country</option>
                 <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
               </select>
@@ -129,62 +202,104 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Phone</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('phone')"
-                     formControlName="phone" />
+              <label class="label"
+                ><span class="label-text font-semibold">Phone</span></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('phone')"
+                formControlName="phone"
+              />
             </div>
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Mobile</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('mobile')"
-                     formControlName="mobile" />
+              <label class="label"
+                ><span class="label-text font-semibold">Mobile</span></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('mobile')"
+                formControlName="mobile"
+              />
             </div>
           </div>
 
           <div class="form-control w-full">
-            <label class="label"><span class="label-text font-semibold">Address</span></label>
-            <textarea class="textarea textarea-bordered w-full h-24"
-                      [class.textarea-error]="isFieldInvalid('address')"
-                      formControlName="address"></textarea>
+            <label class="label"
+              ><span class="label-text font-semibold">Address</span></label
+            >
+            <textarea
+              class="textarea textarea-bordered w-full h-24"
+              [class.textarea-error]="isFieldInvalid('address')"
+              formControlName="address"
+            ></textarea>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">City</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('city')"
-                     formControlName="city" />
+              <label class="label"
+                ><span class="label-text font-semibold">City</span></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('city')"
+                formControlName="city"
+              />
             </div>
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">State</span></label>
-              <select class="select select-bordered w-full"
-                      [class.select-error]="isFieldInvalid('state')"
-                      formControlName="state">
+              <label class="label"
+                ><span class="label-text font-semibold">State</span></label
+              >
+              <select
+                class="select select-bordered w-full"
+                [class.select-error]="isFieldInvalid('state')"
+                formControlName="state"
+              >
                 <option value="">Select State</option>
                 <option *ngFor="let s of states" [value]="s">{{ s }}</option>
               </select>
             </div>
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">ZIP Code</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('zip_code')"
-                     formControlName="zip_code" />
+              <label class="label"
+                ><span class="label-text font-semibold">ZIP Code</span></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('zip_code')"
+                formControlName="zip_code"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Emergency Contact Name</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('emergency_contact_name')"
-                     formControlName="emergency_contact_name" />
+              <label class="label"
+                ><span class="label-text font-semibold"
+                  >Emergency Contact Name</span
+                ></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('emergency_contact_name')"
+                formControlName="emergency_contact_name"
+              />
             </div>
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Emergency Contact Phone</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     [class.input-error]="isFieldInvalid('emergency_contact_phone')"
-                     formControlName="emergency_contact_phone" />
+              <label class="label"
+                ><span class="label-text font-semibold"
+                  >Emergency Contact Phone</span
+                ></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                [class.input-error]="isFieldInvalid('emergency_contact_phone')"
+                formControlName="emergency_contact_phone"
+              />
             </div>
           </div>
         </div>
@@ -193,39 +308,79 @@
         <div *ngIf="currentStep === 3" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Primary Physician</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     formControlName="primary_physician" placeholder="Optional" />
+              <label class="label"
+                ><span class="label-text font-semibold"
+                  >Primary Physician</span
+                ></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                formControlName="primary_physician"
+                placeholder="Optional"
+              />
             </div>
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Preferred Language</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     formControlName="preferred_language" />
+              <label class="label"
+                ><span class="label-text font-semibold"
+                  >Preferred Language</span
+                ></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                formControlName="preferred_language"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Insurance Provider</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     formControlName="insurance_provider" placeholder="Optional" />
+              <label class="label"
+                ><span class="label-text font-semibold"
+                  >Insurance Provider</span
+                ></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                formControlName="insurance_provider"
+                placeholder="Optional"
+              />
             </div>
             <div class="form-control w-full">
-              <label class="label"><span class="label-text font-semibold">Insurance Policy Number</span></label>
-              <input type="text" class="input input-bordered w-full"
-                     formControlName="insurance_policy_number" placeholder="Optional" />
+              <label class="label"
+                ><span class="label-text font-semibold"
+                  >Insurance Policy Number</span
+                ></label
+              >
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                formControlName="insurance_policy_number"
+                placeholder="Optional"
+              />
             </div>
           </div>
 
           <div class="form-control w-full">
-            <label class="label"><span class="label-text font-semibold">Patient Status</span></label>
+            <label class="label"
+              ><span class="label-text font-semibold"
+                >Patient Status</span
+              ></label
+            >
             <div class="flex flex-wrap gap-1 p-1 bg-base-200 rounded-box w-fit">
               <button
                 *ngFor="let status of patientStatusOptions"
                 type="button"
                 (click)="selectStatus(status.value)"
                 class="btn btn-sm"
-                [ngClass]="form.value.patient_status === status.value ? 'btn-primary' : 'btn-ghost'">
+                [ngClass]="
+                  form.value.patient_status === status.value
+                    ? 'btn-primary'
+                    : 'btn-ghost'
+                "
+              >
                 {{ status.label }}
               </button>
             </div>
@@ -234,13 +389,33 @@
           <!-- Review Snapshot -->
           <div class="bg-base-200 rounded-box p-5 border border-base-300">
             <p class="font-bold text-base-content mb-3">Review Snapshot</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-base-content/80">
-              <p><span class="font-semibold text-base-content">Patient:</span> {{ form.value.first_name }} {{ form.value.last_name }}</p>
-              <p><span class="font-semibold text-base-content">DOB:</span> {{ form.value.date_of_birth }}</p>
-              <p><span class="font-semibold text-base-content">Gender:</span> {{ form.value.gender }}</p>
-              <p><span class="font-semibold text-base-content">SSN:</span> {{ maskedSsn }}</p>
-              <p><span class="font-semibold text-base-content">Email:</span> {{ form.value.email }}</p>
-              <p><span class="font-semibold text-base-content">Status:</span> {{ form.value.patient_status }}</p>
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 gap-3 text-base-content/80"
+            >
+              <p>
+                <span class="font-semibold text-base-content">Patient:</span>
+                {{ form.value.first_name }} {{ form.value.last_name }}
+              </p>
+              <p>
+                <span class="font-semibold text-base-content">DOB:</span>
+                {{ form.value.date_of_birth }}
+              </p>
+              <p>
+                <span class="font-semibold text-base-content">Gender:</span>
+                {{ form.value.gender }}
+              </p>
+              <p>
+                <span class="font-semibold text-base-content">SSN:</span>
+                {{ maskedSsn }}
+              </p>
+              <p>
+                <span class="font-semibold text-base-content">Email:</span>
+                {{ form.value.email }}
+              </p>
+              <p>
+                <span class="font-semibold text-base-content">Status:</span>
+                {{ form.value.patient_status }}
+              </p>
             </div>
           </div>
         </div>
@@ -249,23 +424,54 @@
         <div class="divider"></div>
 
         <div class="flex items-center justify-between">
-          <button *ngIf="currentStep === 1" type="button" (click)="onCancel()" class="btn btn-ghost">
+          <button
+            *ngIf="currentStep === 1"
+            type="button"
+            (click)="onCancel()"
+            class="btn btn-ghost"
+          >
             Cancel Registry
           </button>
 
-          <button *ngIf="currentStep > 1" type="button" (click)="goToPreviousStep()" class="btn btn-ghost gap-2">
+          <button
+            *ngIf="currentStep > 1"
+            type="button"
+            (click)="goToPreviousStep()"
+            class="btn btn-ghost gap-2"
+          >
             <span class="material-symbols-outlined text-sm">arrow_back</span>
             Previous Step
           </button>
 
-          <button *ngIf="currentStep < 3" type="button" (click)="goToNextStep()" class="btn btn-primary gap-2">
+          <button
+            *ngIf="currentStep < 3"
+            type="button"
+            (click)="goToNextStep()"
+            class="btn btn-primary gap-2"
+          >
             Continue to {{ currentStep === 1 ? "Contact" : "Insurance" }}
             <span class="material-symbols-outlined text-sm">arrow_forward</span>
           </button>
 
-          <button *ngIf="currentStep === 3" type="submit" [disabled]="isSubmitting" class="btn btn-primary gap-2">
-            <span *ngIf="isSubmitting" class="loading loading-spinner loading-xs"></span>
-            {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Patient' : 'Submit Registry') }}
+          <button
+            *ngIf="currentStep === 3"
+            type="submit"
+            [disabled]="isSubmitting"
+            class="btn btn-primary gap-2"
+          >
+            <span
+              *ngIf="isSubmitting"
+              class="loading loading-spinner loading-xs"
+            ></span>
+            {{
+              isSubmitting
+                ? isEditMode
+                  ? "Updating..."
+                  : "Saving..."
+                : isEditMode
+                  ? "Update Patient"
+                  : "Submit Registry"
+            }}
             <span class="material-symbols-outlined text-sm">check_circle</span>
           </button>
         </div>

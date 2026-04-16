@@ -27,6 +27,16 @@ export class EntityTableComponent {
   @Input() pageSize = 10;
   @Input() pageOffset = 0;
 
+  get totalPages(): number {
+    return Math.ceil(this.totalCount / this.pageSize);
+  }
+
+  get currentPage(): number {
+    return this.pageOffset + 1;
+  }
+
+  protected readonly Math = Math;
+
   @Output() rowSelected = new EventEmitter<any>();
   @Output() updateRequested = new EventEmitter<any>();
   @Output() deleteRequested = new EventEmitter<any>();

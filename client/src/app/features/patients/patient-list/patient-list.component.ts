@@ -47,13 +47,14 @@ export class PatientListComponent implements OnInit {
 
   //INFO: Table column configuration
   readonly columns: EntityTableColumn[] = [
-    { name: 'First Name', prop: 'first_name', minWidth: 150 },
-    { name: 'Last Name', prop: 'last_name', minWidth: 150 },
+    { name: 'Name', prop: 'full_name', minWidth: 200 },
+    { name: 'Email', prop: 'email', minWidth: 200 },
     { name: 'DOB', prop: 'date_of_birth', type: 'date', width: 130 },
     { name: 'Gender', prop: 'gender', width: 100 },
     { name: 'Status', prop: 'patient_status', type: 'status', width: 130 },
     { name: 'Contact', prop: 'phone', minWidth: 150 },
     { name: 'City', prop: 'city', width: 120 },
+    { name: 'Country', prop: 'country', width: 120 },
   ];
 
   readonly statusOptions: PatientStatus[] = [
@@ -73,7 +74,7 @@ export class PatientListComponent implements OnInit {
   patients: Patient[] = [];
   loading = true;
   totalCount = 0;
-  pageSize = 15;
+  pageSize = 10;
   currentPage = 1;
 
   //INFO: Filters state
@@ -152,7 +153,10 @@ export class PatientListComponent implements OnInit {
 
     this.patientService.getPatients(fetchFilters).subscribe({
       next: (response) => {
-        this.patients = response.data;
+        this.patients = response.data.map((p: any) => ({
+          ...p,
+          full_name: `${p.first_name} ${p.last_name}`,
+        }));
         this.totalCount = response.meta.total;
         this.loading = false;
       },
