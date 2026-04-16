@@ -56,11 +56,16 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'patients/form',
+        path: 'patients/new',
         loadComponent: () =>
-          import('./features/patients/patient-form/patient-form.component').then(
-            (m) => m.PatientFormComponent,
+          import('./features/patients/patient-create/patient-create.component').then(
+            (m) => m.PatientCreateComponent,
           ),
+      },
+      {
+        path: 'patients/form',
+        redirectTo: 'patients/new',
+        pathMatch: 'full',
       },
       {
         path: 'patients/:id',
@@ -84,11 +89,30 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'cases/:id',
+        loadComponent: () =>
+          import('./features/cases/case-detail/case-detail.component').then(
+            (m) => m.CaseDetailComponent,
+          ),
+      },
+      {
         path: 'appointments',
         loadComponent: () =>
           import('./features/appointments/appointment-list/appointment-list.component').then(
             (m) => m.AppointmentListComponent,
           ),
+      },
+      {
+        path: 'appointments/new',
+        loadComponent: () =>
+          import('./features/appointments/appointment-create/appointment-create.component').then(
+            (m) => m.AppointmentCreateComponent,
+          ),
+      },
+      {
+        path: 'appointments/form',
+        redirectTo: 'appointments/new',
+        pathMatch: 'full',
       },
       {
         path: 'appointments/:id',
@@ -130,6 +154,18 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'appointments/new',
+        loadComponent: () =>
+          import('./features/appointments/appointment-create/appointment-create.component').then(
+            (m) => m.AppointmentCreateComponent,
+          ),
+      },
+      {
+        path: 'appointments/form',
+        redirectTo: 'appointments/new',
+        pathMatch: 'full',
+      },
+      {
         path: 'appointments/:id',
         loadComponent: () =>
           import('./features/appointments/appointment-detail/appointment-detail.component').then(
@@ -141,6 +177,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/visits/visit-list/visit-list.component').then(
             (m) => m.VisitListComponent,
+          ),
+      },
+      {
+        path: 'cases/:id',
+        loadComponent: () =>
+          import('./features/cases/case-detail/case-detail.component').then(
+            (m) => m.CaseDetailComponent,
           ),
       },
       {
@@ -197,11 +240,30 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'cases/:id',
+        loadComponent: () =>
+          import('./features/cases/case-detail/case-detail.component').then(
+            (m) => m.CaseDetailComponent,
+          ),
+      },
+      {
         path: 'appointments',
         loadComponent: () =>
           import('./features/appointments/appointment-list/appointment-list.component').then(
             (m) => m.AppointmentListComponent,
           ),
+      },
+      {
+        path: 'appointments/new',
+        loadComponent: () =>
+          import('./features/appointments/appointment-create/appointment-create.component').then(
+            (m) => m.AppointmentCreateComponent,
+          ),
+      },
+      {
+        path: 'appointments/form',
+        redirectTo: 'appointments/new',
+        pathMatch: 'full',
       },
       {
         path: 'appointments/:id',

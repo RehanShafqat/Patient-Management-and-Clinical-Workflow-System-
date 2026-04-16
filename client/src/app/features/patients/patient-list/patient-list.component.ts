@@ -78,12 +78,15 @@ export class PatientListComponent implements OnInit {
   currentPage = 1;
 
   //INFO: Filters state
-  filters: PatientFilters = {
+  private readonly defaultFilters: PatientFilters = {
     search: '',
     patient_status: undefined,
     gender: undefined,
     city: '',
+    country: '',
   };
+
+  filters: PatientFilters = { ...this.defaultFilters };
 
   //INFO: Modal state
   isUpdateModalOpen = false;
@@ -137,19 +140,19 @@ export class PatientListComponent implements OnInit {
     if (!fetchFilters.country) delete fetchFilters.country;
 
     //INFO: Defensive cleanup in case select emits string "undefined" from template bindings.
-    if (
-      !fetchFilters.patient_status ||
-      fetchFilters.patient_status === ('undefined' as unknown as PatientStatus)
-    ) {
-      delete fetchFilters.patient_status;
-    }
+    // if (
+    //   !fetchFilters.patient_status ||
+    //   fetchFilters.patient_status === ('undefined' as unknown as PatientStatus)
+    // ) {
+    //   delete fetchFilters.patient_status;
+    // }
 
-    if (
-      !fetchFilters.gender ||
-      fetchFilters.gender === ('undefined' as unknown as Gender)
-    ) {
-      delete fetchFilters.gender;
-    }
+    // if (
+    //   !fetchFilters.gender ||
+    //   fetchFilters.gender === ('undefined' as unknown as Gender)
+    // ) {
+    //   delete fetchFilters.gender;
+    // }
 
     this.patientService.getPatients(fetchFilters).subscribe({
       next: (response) => {
@@ -187,10 +190,29 @@ export class PatientListComponent implements OnInit {
     this.loadPatients();
   }
 
+  resetFilters(): void {
+    if (this.areFiltersDefault() && this.currentPage === 1) {
+      return;
+    }
+
+    this.filters = { ...this.defaultFilters };
+    this.currentPage = 1;
+    this.loadPatients();
+  }
+
+  private areFiltersDefault(): boolean {
+    return (
+      (this.filters.search || '').trim() === '' &&
+      !this.filters.patient_status &&
+      !this.filters.gender &&
+      (this.filters.city || '').trim() === '' &&
+      (this.filters.country || '').trim() === ''
+    );
+  }
+
   onPageChange(event: { offset: number; limit: number }): void {
     this.currentPage = event.offset + 1;
     this.pageSize = event.limit;
-    this.loadPatients();
     this.loadPatients();
   }
 
@@ -202,7 +224,7 @@ export class PatientListComponent implements OnInit {
     const rolePrefix = this.router.url.split('/')[1];
 
     //INFO: Use absolute role path to ensure detail route opens reliably from any patients list context.
-    this.router.navigate([`/${rolePrefix || 'admin'}/patients`, row.id]);
+    this.router.navigate([`/${rolePrefix}/patients`, row.id]);
   }
 
   //INFO: Modal management

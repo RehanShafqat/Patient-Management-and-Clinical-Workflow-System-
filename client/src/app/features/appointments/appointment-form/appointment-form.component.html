@@ -23,7 +23,7 @@
           *ngIf="isFieldInvalid('case_id')"
           class="text-xs text-red-500 mt-1"
         >
-          Case is required
+          {{ getFieldErrorMessage("case_id") }}
         </span>
       </label>
 
@@ -44,7 +44,7 @@
           *ngIf="isFieldInvalid('patient_id')"
           class="text-xs text-red-500 mt-1"
         >
-          Patient is required
+          {{ getFieldErrorMessage("patient_id") }}
         </span>
       </label>
     </div>
@@ -74,7 +74,7 @@
           *ngIf="isFieldInvalid('doctor_id')"
           class="text-xs text-red-500 mt-1"
         >
-          Doctor is required
+          {{ getFieldErrorMessage("doctor_id") }}
         </span>
       </label>
 
@@ -95,7 +95,7 @@
           *ngIf="isFieldInvalid('specialty_id')"
           class="text-xs text-red-500 mt-1"
         >
-          Specialty is required
+          {{ getFieldErrorMessage("specialty_id") }}
         </span>
       </label>
 
@@ -116,7 +116,7 @@
           *ngIf="isFieldInvalid('practice_location_id')"
           class="text-xs text-red-500 mt-1"
         >
-          Location is required
+          {{ getFieldErrorMessage("practice_location_id") }}
         </span>
       </label>
     </div>
@@ -144,7 +144,7 @@
           *ngIf="isFieldInvalid('appointment_date')"
           class="text-xs text-red-500 mt-1"
         >
-          Date is required
+          {{ getFieldErrorMessage("appointment_date") }}
         </span>
       </label>
 
@@ -163,7 +163,7 @@
           *ngIf="isFieldInvalid('appointment_time')"
           class="text-xs text-red-500 mt-1"
         >
-          Time is required
+          {{ getFieldErrorMessage("appointment_time") }}
         </span>
       </label>
 
@@ -185,7 +185,7 @@
           *ngIf="isFieldInvalid('appointment_type')"
           class="text-xs text-red-500 mt-1"
         >
-          Type is required
+          {{ getFieldErrorMessage("appointment_type") }}
         </span>
       </label>
 
@@ -206,7 +206,7 @@
           *ngIf="isFieldInvalid('duration_minutes')"
           class="text-xs text-red-500 mt-1"
         >
-          Duration must be between 5 and 480 minutes
+          {{ getFieldErrorMessage("duration_minutes") }}
         </span>
       </label>
     </div>
@@ -234,7 +234,7 @@
         *ngIf="isFieldInvalid('reason_for_visit')"
         class="text-xs text-red-500 mt-1"
       >
-        Reason is required (minimum 10 characters)
+        {{ getFieldErrorMessage("reason_for_visit") }}
       </span>
     </label>
 
@@ -246,9 +246,13 @@
       <textarea
         formControlName="notes"
         class="textarea textarea-bordered mt-2 text-sm"
+        [class.textarea-error]="isFieldInvalid('notes')"
         rows="2"
         placeholder="Additional notes (optional)"
       ></textarea>
+      <span *ngIf="isFieldInvalid('notes')" class="text-xs text-red-500 mt-1">
+        {{ getFieldErrorMessage("notes") }}
+      </span>
     </label>
   </fieldset>
 

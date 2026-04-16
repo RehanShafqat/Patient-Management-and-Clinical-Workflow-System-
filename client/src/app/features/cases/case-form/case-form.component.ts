@@ -16,7 +16,15 @@ import {
   Validators,
 } from '@angular/forms';
 import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
-import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap, tap } from 'rxjs';
+import {
+  Subject,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { PatientService } from '../../../core/services/patient.service';
 import { PracticeLocationService } from '../../../core/services/practice-location.service';
 import { InsuranceService } from '../../../core/services/insurance.service';
@@ -34,6 +42,7 @@ import { Patient } from '../../../core/models/patient.model';
 import { PracticeLocation } from '../../../core/models/practice-location.model';
 import { Insurance } from '../../../core/models/insurance.model';
 import { Firm } from '../../../core/models/firm.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-case-form',
@@ -79,6 +88,17 @@ export class CaseFormComponent implements OnInit, OnChanges {
   firms$ = new Subject<Firm[]>();
   firmsLoading = false;
   firmSearchInput$ = new Subject<string>();
+  private readonly searchableSelectPageSize =
+    environment.searchableSelectPageSize;
+
+  private readonly fieldLabels: Record<string, string> = {
+    patient_id: 'Patient',
+    practice_location_id: 'Practice location',
+    category: 'Case category',
+    case_type: 'Case type',
+    priority: 'Priority',
+    purpose_of_visit: 'Purpose of visit',
+  };
 
   ngOnInit() {
     this.initForm();
@@ -86,6 +106,10 @@ export class CaseFormComponent implements OnInit, OnChanges {
     this.setupLocationSearch();
     this.setupInsuranceSearch();
     this.setupFirmSearch();
+
+    if (this.initialData) {
+      this.patchFormValues();
+    }
 
     // Load initial empty searches to populate default list
     this.loadPatients('');
@@ -95,7 +119,7 @@ export class CaseFormComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['initialData'] && this.initialData) {
+    if (changes['initialData'] && this.initialData && this.caseForm) {
       this.patchFormValues();
     }
   }
@@ -121,21 +145,7 @@ export class CaseFormComponent implements OnInit, OnChanges {
 
   private patchFormValues() {
     if (this.caseForm && this.initialData) {
-      // Need to pre-populate ng-select subjects if we only have IDs, 
-      // but usually the backend returns relations, so we might need to handle them.
-      // If we have relations, let's inject them into streams as initial values so ng-select displays them properly
-      if (this.initialData.patient) {
-        this.patients$.next([this.initialData.patient]);
-      }
-      if (this.initialData.practiceLocation) {
-        this.practiceLocations$.next([this.initialData.practiceLocation]);
-      }
-      if (this.initialData.insurance) {
-        this.insurances$.next([this.initialData.insurance]);
-      }
-      if (this.initialData.firm) {
-        this.firms$.next([this.initialData.firm]);
-      }
+      this.seedSelectOptionsFromInitialData();
 
       this.caseForm.patchValue({
         patient_id: this.initialData.patient_id,
@@ -156,34 +166,134 @@ export class CaseFormComponent implements OnInit, OnChanges {
     }
   }
 
+  private seedSelectOptionsFromInitialData(): void {
+    if (!this.initialData) {
+      return;
+    }
+
+    const data = this.initialData as any;
+
+    const patientOption =
+      this.initialData.patient ||
+      (data.patient_id
+        ? {
+            id: data.patient_id,
+            first_name:
+              typeof data.patient_name === 'string'
+                ? data.patient_name.split(' ')[0] || 'Patient'
+                : 'Patient',
+            last_name:
+              typeof data.patient_name === 'string'
+                ? data.patient_name.split(' ').slice(1).join(' ') || ''
+                : '',
+            date_of_birth: data.patient?.date_of_birth || '-',
+            gender: data.patient?.gender || 'other',
+            patient_status: data.patient?.patient_status || 'active',
+            registration_date:
+              data.patient?.registration_date || new Date().toISOString(),
+          }
+        : null);
+
+    const locationOption =
+      this.initialData.practiceLocation ||
+      (data.practice_location_id
+        ? {
+            id: data.practice_location_id,
+            location_name:
+              data.practice_location_name ||
+              data.practiceLocation?.location_name ||
+              'Selected location',
+            address: data.practiceLocation?.address || '-',
+            city: data.practiceLocation?.city || '-',
+            state: data.practiceLocation?.state || '-',
+            zip: data.practiceLocation?.zip || '-',
+            phone: data.practiceLocation?.phone || '-',
+            email: data.practiceLocation?.email || '-',
+            is_active: true,
+          }
+        : null);
+
+    const insuranceOption =
+      this.initialData.insurance ||
+      (data.insurance_id
+        ? {
+            id: data.insurance_id,
+            insurance_name:
+              data.insurance_name ||
+              data.insurance?.insurance_name ||
+              'Selected insurance',
+            insurance_code: data.insurance?.insurance_code || '-',
+            is_active: true,
+          }
+        : null);
+
+    const firmOption =
+      this.initialData.firm ||
+      (data.firm_id
+        ? {
+            id: data.firm_id,
+            firm_name:
+              data.firm_name || data.firm?.firm_name || 'Selected firm',
+            address: data.firm?.address || '-',
+            contact_person: data.firm?.contact_person || '-',
+            email: data.firm?.email || '-',
+            phone: data.firm?.phone || '-',
+            is_active: true,
+          }
+        : null);
+
+    if (patientOption) {
+      this.patients$.next([patientOption as Patient]);
+    }
+    if (locationOption) {
+      this.practiceLocations$.next([locationOption as PracticeLocation]);
+    }
+    if (insuranceOption) {
+      this.insurances$.next([insuranceOption as Insurance]);
+    }
+    if (firmOption) {
+      this.firms$.next([firmOption as Firm]);
+    }
+  }
+
   // Search Loaders
   private loadPatients(term: string) {
     this.playersPatientSearch(term);
   }
   private playersPatientSearch(term: string) {
-      this.patientService.getPatients({ search: term, per_page: 20 }).subscribe(res => {
-         this.patients$.next(res.data);
+    this.patientService
+      .getPatients({ search: term, per_page: this.searchableSelectPageSize })
+      .subscribe((res) => {
+        this.patients$.next(res.data);
       });
   }
 
   private loadLocations(term: string) {
-      this.practiceLocationService.getPracticeLocations({ search: term, per_page: 20 }).subscribe(res => {
-         this.practiceLocations$.next(res.data);
+    this.practiceLocationService
+      .getPracticeLocations({
+        search: term,
+        per_page: this.searchableSelectPageSize,
+      })
+      .subscribe((res) => {
+        this.practiceLocations$.next(res.data);
       });
   }
 
   private loadInsurances(term: string) {
-      this.insuranceService.getInsurances({ search: term, per_page: 20 }).subscribe(res => {
-         this.insurances$.next(res.data);
+    this.insuranceService
+      .getInsurances({ search: term, per_page: this.searchableSelectPageSize })
+      .subscribe((res) => {
+        this.insurances$.next(res.data);
       });
   }
 
   private loadFirms(term: string) {
-      this.firmService.getFirms({ search: term, per_page: 20 }).subscribe(res => {
-         this.firms$.next(res.data);
+    this.firmService
+      .getFirms({ search: term, per_page: this.searchableSelectPageSize })
+      .subscribe((res) => {
+        this.firms$.next(res.data);
       });
   }
-
 
   // RxJS Setup for Debounced Typeaheads
   private setupPatientSearch() {
@@ -193,11 +303,16 @@ export class CaseFormComponent implements OnInit, OnChanges {
         distinctUntilChanged(),
         tap(() => (this.patientsLoading = true)),
         switchMap((term) =>
-          this.patientService.getPatients({ search: term, per_page: 20 }).pipe(
-            catchError(() => of({ data: [] })),
-            tap(() => (this.patientsLoading = false))
-          )
-        )
+          this.patientService
+            .getPatients({
+              search: term,
+              per_page: this.searchableSelectPageSize,
+            })
+            .pipe(
+              catchError(() => of({ data: [] })),
+              tap(() => (this.patientsLoading = false)),
+            ),
+        ),
       )
       .subscribe((res: any) => {
         this.patients$.next(res.data);
@@ -211,11 +326,16 @@ export class CaseFormComponent implements OnInit, OnChanges {
         distinctUntilChanged(),
         tap(() => (this.locationsLoading = true)),
         switchMap((term) =>
-          this.practiceLocationService.getPracticeLocations({ search: term, per_page: 20 }).pipe(
-            catchError(() => of({ data: [] })),
-            tap(() => (this.locationsLoading = false))
-          )
-        )
+          this.practiceLocationService
+            .getPracticeLocations({
+              search: term,
+              per_page: this.searchableSelectPageSize,
+            })
+            .pipe(
+              catchError(() => of({ data: [] })),
+              tap(() => (this.locationsLoading = false)),
+            ),
+        ),
       )
       .subscribe((res: any) => {
         this.practiceLocations$.next(res.data);
@@ -229,11 +349,16 @@ export class CaseFormComponent implements OnInit, OnChanges {
         distinctUntilChanged(),
         tap(() => (this.insurancesLoading = true)),
         switchMap((term) =>
-          this.insuranceService.getInsurances({ search: term, per_page: 20 }).pipe(
-            catchError(() => of({ data: [] })),
-            tap(() => (this.insurancesLoading = false))
-          )
-        )
+          this.insuranceService
+            .getInsurances({
+              search: term,
+              per_page: this.searchableSelectPageSize,
+            })
+            .pipe(
+              catchError(() => of({ data: [] })),
+              tap(() => (this.insurancesLoading = false)),
+            ),
+        ),
       )
       .subscribe((res: any) => {
         this.insurances$.next(res.data);
@@ -247,11 +372,13 @@ export class CaseFormComponent implements OnInit, OnChanges {
         distinctUntilChanged(),
         tap(() => (this.firmsLoading = true)),
         switchMap((term) =>
-          this.firmService.getFirms({ search: term, per_page: 20 }).pipe(
-            catchError(() => of({ data: [] })),
-            tap(() => (this.firmsLoading = false))
-          )
-        )
+          this.firmService
+            .getFirms({ search: term, per_page: this.searchableSelectPageSize })
+            .pipe(
+              catchError(() => of({ data: [] })),
+              tap(() => (this.firmsLoading = false)),
+            ),
+        ),
       )
       .subscribe((res: any) => {
         this.firms$.next(res.data);
@@ -312,5 +439,26 @@ export class CaseFormComponent implements OnInit, OnChanges {
 
   get locationControl() {
     return this.caseForm.get('practice_location_id');
+  }
+
+  isFieldInvalid(controlName: string): boolean {
+    const control = this.caseForm.get(controlName);
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  getFieldErrorMessage(controlName: string): string {
+    const control = this.caseForm.get(controlName);
+    if (!control || !control.errors || !(control.dirty || control.touched)) {
+      return '';
+    }
+
+    const label = this.fieldLabels[controlName] || 'This field';
+    const errors = control.errors;
+
+    if (errors['required']) {
+      return `${label} is required.`;
+    }
+
+    return `${label} is invalid.`;
   }
 }

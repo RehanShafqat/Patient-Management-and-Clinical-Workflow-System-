@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   EntityTableColumn,
   EntityTableComponent,
@@ -17,6 +17,7 @@ import {
 import { AppointmentFormComponent } from '../appointment-form/appointment-form.component';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-appointment-list',
@@ -28,6 +29,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
     EntityTableComponent,
     ConfirmDialogComponent,
     AppointmentFormComponent,
+    RouterLink,
   ],
   templateUrl: './appointment-list.component.html',
   styleUrls: ['./appointment-list.component.css'],
@@ -36,6 +38,7 @@ export class AppointmentListComponent implements OnInit {
   private readonly appointmentService = inject(AppointmentService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
+  private readonly dropdownPageSize = environment.searchableSelectPageSize;
 
   //INFO: Stream for debounced search to avoid excessive API calls
   private patientNameSubject = new Subject<string>();
@@ -95,7 +98,7 @@ export class AppointmentListComponent implements OnInit {
   private isInitialLoadComplete = false;
 
   //INFO: Filters state
-  filters: AppointmentFilters = {
+  private readonly defaultFilters: AppointmentFilters = {
     patient_name: '',
     doctor_name: '',
     specialty_id: undefined,
@@ -107,8 +110,9 @@ export class AppointmentListComponent implements OnInit {
     date_to: undefined,
   };
 
+  filters: AppointmentFilters = { ...this.defaultFilters };
+
   //INFO: Modal state
-  isCreateModalOpen = false;
   isUpdateModalOpen = false;
   isDeleteModalOpen = false;
   selectedAppointment: Appointment | null = null;
@@ -122,18 +126,20 @@ export class AppointmentListComponent implements OnInit {
 
   //INFO: Load appointments without filters to populate specialty/location dropdowns
   private loadAllAppointmentsForOptions(): void {
-    this.appointmentService.getAppointments({ per_page: 100 }).subscribe({
-      next: (response) => {
-        this.extractFilterOptions(response.data);
-        this.isInitialLoadComplete = true;
-        // Now load with filters applied
-        this.loadAppointments();
-      },
-      error: () => {
-        this.isInitialLoadComplete = true;
-        this.loadAppointments();
-      },
-    });
+    this.appointmentService
+      .getAppointments({ per_page: this.dropdownPageSize })
+      .subscribe({
+        next: (response) => {
+          this.extractFilterOptions(response.data);
+          this.isInitialLoadComplete = true;
+          // Now load with filters applied
+          this.loadAppointments();
+        },
+        error: () => {
+          this.isInitialLoadComplete = true;
+          this.loadAppointments();
+        },
+      });
   }
 
   //INFO: Setup filter subscriptions
@@ -276,6 +282,30 @@ export class AppointmentListComponent implements OnInit {
     this.loadAppointments();
   }
 
+  resetFilters(): void {
+    if (this.areFiltersDefault() && this.currentPage === 1) {
+      return;
+    }
+
+    this.filters = { ...this.defaultFilters };
+    this.currentPage = 1;
+    this.loadAppointments();
+  }
+
+  private areFiltersDefault(): boolean {
+    return (
+      (this.filters.patient_name || '').trim() === '' &&
+      (this.filters.doctor_name || '').trim() === '' &&
+      !this.filters.specialty_id &&
+      !this.filters.appointment_type &&
+      !this.filters.status &&
+      !this.filters.practice_location_id &&
+      !this.filters.created_by &&
+      !this.filters.date_from &&
+      !this.filters.date_to
+    );
+  }
+
   onPageChange(event: { offset: number; limit: number }): void {
     this.currentPage = event.offset + 1;
     this.pageSize = event.limit;
@@ -294,21 +324,6 @@ export class AppointmentListComponent implements OnInit {
   }
 
   //INFO: Modal management
-  openCreateModal(): void {
-    this.isCreateModalOpen = true;
-  }
-
-  closeCreateModal(): void {
-    this.isCreateModalOpen = false;
-  }
-
-  onCreateSuccess(newAppointment: Appointment): void {
-    this.closeCreateModal();
-    this.currentPage = 1;
-    this.loadAppointments();
-    this.toastr.success('Appointment scheduled successfully');
-  }
-
   openUpdateModal(appointment: Appointment): void {
     this.selectedAppointment = appointment;
     this.isUpdateModalOpen = true;

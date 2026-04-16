@@ -7,16 +7,13 @@
         {{ totalCount }} records found
       </p>
     </div>
-    <a
-      routerLink="/admin/patients/form"
-      class="btn btn-primary gap-2 teal-glow"
-    >
+    <a routerLink="/admin/patients/new" class="btn btn-primary gap-2 teal-glow">
       <span class="material-symbols-outlined">person_add</span>
       Add Patient
     </a>
   </div>
 
-  <!-- INFO: Advanced Filtering Section -->
+  <!-- INFO: Filtering Section -->
   <div
     class="rounded-2xl border border-base-300 bg-base-100 p-5 md:p-6 space-y-4"
   >
@@ -133,17 +130,7 @@
         <button
           type="button"
           class="btn btn-outline h-10 mt-1"
-          (click)="
-            filters = {
-              search: '',
-              patient_status: undefined,
-              gender: undefined,
-              city: '',
-              country: '',
-            };
-            currentPage = 1;
-            loadPatients()
-          "
+          (click)="resetFilters()"
         >
           Reset
         </button>

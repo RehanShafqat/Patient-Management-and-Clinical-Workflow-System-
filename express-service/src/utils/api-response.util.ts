@@ -11,6 +11,7 @@ export class ApiResponse {
   ): void {
     if (links && meta) {
       res.status(statusCode).json({
+        success: true,
         data,
         links,
         meta,

@@ -54,6 +54,20 @@ export class AppointmentFormComponent implements OnInit {
 
   isSubmitting = false;
 
+  private readonly fieldLabels: Record<string, string> = {
+    case_id: 'Case',
+    patient_id: 'Patient',
+    doctor_id: 'Doctor',
+    appointment_date: 'Date',
+    appointment_time: 'Time',
+    appointment_type: 'Type',
+    specialty_id: 'Specialty',
+    practice_location_id: 'Practice location',
+    duration_minutes: 'Duration',
+    reason_for_visit: 'Reason for visit',
+    notes: 'Notes',
+  };
+
   //INFO: Form definition with validation rules matching backend schemas
   form = this.fb.group({
     case_id: ['', [Validators.required]],
@@ -104,8 +118,40 @@ export class AppointmentFormComponent implements OnInit {
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
+  getFieldErrorMessage(controlName: string): string {
+    const control = this.form.get(controlName);
+    if (!control || !control.errors || !(control.dirty || control.touched)) {
+      return '';
+    }
+
+    const label = this.fieldLabels[controlName] || 'This field';
+    const errors = control.errors;
+
+    if (errors['required']) {
+      return `${label} is required.`;
+    }
+
+    if (errors['minlength']) {
+      return `${label} must be at least ${errors['minlength'].requiredLength} characters.`;
+    }
+
+    if (errors['maxlength']) {
+      return `${label} cannot exceed ${errors['maxlength'].requiredLength} characters.`;
+    }
+
+    if (errors['min']) {
+      return `${label} must be at least ${errors['min'].min}.`;
+    }
+
+    if (errors['max']) {
+      return `${label} cannot exceed ${errors['max'].max}.`;
+    }
+
+    return `${label} is invalid.`;
+  }
+
   onCancel(): void {
-    if (this.isEditMode) {
+    if (this.formCancel.observed) {
       this.formCancel.emit();
     } else {
       //INFO: Navigate back to the previous screen (respects role-based routes)
@@ -165,6 +211,9 @@ export class AppointmentFormComponent implements OnInit {
         next: (response) => {
           this.isSubmitting = false;
           this.formSuccess.emit(response.data.appointment);
+          if (!this.formSuccess.observed) {
+            this.location.back();
+          }
         },
         error: (error) => {
           this.isSubmitting = false;

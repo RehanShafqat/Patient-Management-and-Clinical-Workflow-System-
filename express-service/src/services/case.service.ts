@@ -2,6 +2,9 @@ import z from "zod";
 import { Op } from "sequelize";
 import { PatientCase } from "../models/patientCase.model";
 import { Patient } from "../models/patient.model";
+import { PracticeLocation } from "../models/practiceLocation.model";
+import { Insurance } from "../models/insurance.model";
+import { Firm } from "../models/firm.model";
 
 import { AppError } from "../utils/app-error.util";
 import { createCaseSchema, updateCaseSchema } from "../validations";
@@ -45,11 +48,27 @@ export class CaseService {
 
     if (filters.search) {
       const search = `%${filters.search.trim()}%`;
+      const matchedPatients = await Patient.findAll({
+        attributes: ["id"],
+        where: {
+          [Op.or]: [
+            { first_name: { [Op.like]: search } },
+            { last_name: { [Op.like]: search } },
+          ],
+        },
+      });
+
+      const matchedPatientIds = matchedPatients.map((patient) => patient.id);
+
       where[Op.or] = [
         { case_number: { [Op.like]: search } },
-        { purpose_of_visit: { [Op.like]: search } },
-        { referred_by: { [Op.like]: search } },
-        { referred_doctor_name: { [Op.like]: search } },
+        { category: { [Op.like]: search } },
+        { case_type: { [Op.like]: search } },
+        { priority: { [Op.like]: search } },
+        { case_status: { [Op.like]: search } },
+        ...(matchedPatientIds.length
+          ? [{ patient_id: { [Op.in]: matchedPatientIds } }]
+          : []),
       ];
     }
 
@@ -121,6 +140,21 @@ export class CaseService {
         {
           model: Patient,
           as: "patient",
+        },
+        {
+          model: PracticeLocation,
+          as: "practiceLocation",
+          attributes: ["id", "location_name"],
+        },
+        {
+          model: Insurance,
+          as: "insurance",
+          attributes: ["id", "insurance_name"],
+        },
+        {
+          model: Firm,
+          as: "firm",
+          attributes: ["id", "firm_name"],
         },
       ],
     });

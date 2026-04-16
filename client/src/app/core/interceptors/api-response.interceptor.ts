@@ -21,6 +21,7 @@ export const apiResponseInterceptor: HttpInterceptorFn = (req, next) => {
         const body = event.body as ApiResponse<unknown>;
         if (body.message && !(body.message == ''))
           toastService.success(body.message);
+        console.log(body.data);
       }
       return event;
     }),
