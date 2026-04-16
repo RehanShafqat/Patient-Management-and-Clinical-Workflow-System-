@@ -60,11 +60,11 @@ export class EntityTableComponent {
   statusBadgeClass(value: unknown): string {
     const normalized = String(value ?? '').toLowerCase();
 
-    if (normalized === 'active') return 'badge-success';
-    if (normalized === 'critical') return 'badge-warning';
-    if (normalized === 'discharged') return 'badge-info';
-    if (normalized === 'inactive') return 'badge-ghost';
+    if (normalized === 'active') return 'status-chip-active';
+    if (normalized === 'inactive') return 'status-chip-inactive';
+    if (normalized === 'transferred') return 'status-chip-transferred';
+    if (normalized === 'deceased') return 'status-chip-deceased';
 
-    return 'badge-outline';
+    return 'status-chip-default';
   }
 }

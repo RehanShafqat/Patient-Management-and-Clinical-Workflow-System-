@@ -1,12 +1,23 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  inject,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PatientService } from '../../../core/services/patient.service';
 import {
   CreatePatientPayload,
   Gender,
+  Patient,
   PatientStatus,
+  UpdatePatientPayload,
 } from '../../../core/models/patient.model';
+import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-patient-form',
@@ -15,9 +26,21 @@ import {
   templateUrl: './patient-form.component.html',
   styleUrls: ['./patient-form.component.css'],
 })
-export class PatientFormComponent {
+export class PatientFormComponent implements OnInit {
+  //INFO: Input for the patient to edit. If null, component is in 'Create' mode.
+  @Input() patientToEdit: Patient | null = null;
+
+  //INFO: EventEmitter to notify parent when operation is successful
+  @Output() formSuccess = new EventEmitter<Patient>();
+
+  //INFO: EventEmitter to handle cancellations (especially in modals)
+  @Output() formCancel = new EventEmitter<void>();
+
   private fb = inject(FormBuilder);
   private patientService = inject(PatientService);
+  private router = inject(Router);
+  private location = inject(Location);
+  private toastr = inject(ToastrService);
 
   readonly phoneRegex = /^(\+?\d{1,3}[-.\s]?)?\d{1,4}[-.\s]?\d{3}[-.\s]?\d{4}$/;
 
@@ -41,6 +64,7 @@ export class PatientFormComponent {
   currentStep = 1;
   isSubmitting = false;
 
+  //INFO: Form definition with validation rules matching backend schemas
   form = this.fb.group({
     first_name: [
       '',
@@ -72,6 +96,24 @@ export class PatientFormComponent {
     preferred_language: ['English', [Validators.maxLength(30)]],
     patient_status: ['active' as PatientStatus, [Validators.required]],
   });
+
+  ngOnInit(): void {
+    //INFO: If in edit mode, patch the form with the patient's existing data
+    if (this.patientToEdit) {
+      const dob = this.patientToEdit.date_of_birth
+        ? new Date(this.patientToEdit.date_of_birth).toISOString().split('T')[0]
+        : '';
+
+      this.form.patchValue({
+        ...this.patientToEdit,
+        date_of_birth: dob,
+      } as any);
+    }
+  }
+
+  get isEditMode(): boolean {
+    return !!this.patientToEdit;
+  }
 
   get duplicateHintVisible(): boolean {
     const value = this.form.value;
@@ -156,12 +198,12 @@ export class PatientFormComponent {
   }
 
   onCancel(): void {
-    this.form.reset({
-      gender: 'male',
-      preferred_language: 'English',
-      patient_status: 'active',
-    });
-    this.currentStep = 1;
+    if (this.isEditMode) {
+      this.formCancel.emit();
+    } else {
+      //INFO: Navigate back to the previous screen (respects role-based routes)
+      this.location.back();
+    }
   }
 
   onSubmit(): void {
@@ -173,6 +215,8 @@ export class PatientFormComponent {
     }
 
     const value = this.form.getRawValue();
+
+    //INFO: Construct payload, ensuring strings are trimmed and optional fields are properly handled
     const payload: CreatePatientPayload = {
       first_name: value.first_name?.trim() || '',
       middle_name: value.middle_name?.trim() || undefined,
@@ -197,20 +241,41 @@ export class PatientFormComponent {
         value.insurance_policy_number?.trim() || undefined,
       preferred_language: value.preferred_language?.trim() || 'English',
       patient_status: (value.patient_status || 'active') as PatientStatus,
-      registration_date: new Date().toISOString(),
+      registration_date:
+        this.patientToEdit?.registration_date || new Date().toISOString(),
     };
 
     this.isSubmitting = true;
-    console.log(payload);
 
-    // this.patientService.createPatient(payload).subscribe({
-    //   next: () => {
-    //     this.isSubmitting = false;
-    //     this.onCancel();
-    //   },
-    //   error: () => {
-    //     this.isSubmitting = false;
-    //   },
-    // });
+    if (this.isEditMode && this.patientToEdit) {
+      //INFO: Handle update operation
+      this.patientService
+        .updatePatient(this.patientToEdit.id, payload as UpdatePatientPayload)
+        .subscribe({
+          next: (response) => {
+            this.isSubmitting = false;
+            this.toastr.success('Patient record updated successfully');
+            this.formSuccess.emit(response.data.patient);
+          },
+          error: () => {
+            this.isSubmitting = false;
+          },
+        });
+    } else {
+      //INFO: Handle create operation
+      this.patientService.createPatient(payload).subscribe({
+        next: (response) => {
+          this.isSubmitting = false;
+          this.toastr.success('Patient registered successfully');
+          this.formSuccess.emit(response.data.patient);
+          if (!this.isEditMode) {
+            this.location.back();
+          }
+        },
+        error: () => {
+          this.isSubmitting = false;
+        },
+      });
+    }
   }
 }

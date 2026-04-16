@@ -14,6 +14,7 @@ export class ConfirmDialogComponent {
   @Input() confirmLabel = 'Confirm';
   @Input() cancelLabel = 'Cancel';
   @Input() loading = false;
+  @Input() variant: 'primary' | 'error' | 'warning' = 'primary';
 
   @Output() openChange = new EventEmitter<boolean>();
   @Output() confirmed = new EventEmitter<void>();

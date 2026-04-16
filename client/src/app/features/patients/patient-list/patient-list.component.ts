@@ -1,29 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import {
   EntityTableColumn,
   EntityTableComponent,
 } from '../../../shared/components/entity-table/entity-table.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
-
-interface PatientRecord {
-  id: string;
-  first_name: string;
-  last_name: string;
-  date_of_birth: string;
-  contact: string;
-  status: 'active' | 'inactive' | 'critical' | 'discharged';
-  primary_physician: string;
-  email: string;
-}
-
-interface PatientRow extends PatientRecord {
-  name: string;
-  age: number;
-}
+import { PatientService } from '../../../core/services/patient.service';
+import {
+  Gender,
+  Patient,
+  PatientFilters,
+  PatientStatus,
+} from '../../../core/models/patient.model';
+import { PatientFormComponent } from '../patient-form/patient-form.component';
+import { ToastrService } from 'ngx-toastr';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-patient-list',
@@ -31,250 +24,222 @@ interface PatientRow extends PatientRecord {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     EntityTableComponent,
     ConfirmDialogComponent,
+    PatientFormComponent,
+    RouterLink,
   ],
   templateUrl: './patient-list.component.html',
 })
 export class PatientListComponent implements OnInit {
-  private readonly http = inject(HttpClient);
+  private readonly patientService = inject(PatientService);
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  private readonly fb = inject(FormBuilder);
+  private readonly toastr = inject(ToastrService);
 
+  //INFO: Stream for debounced search to avoid excessive API calls
+  private searchSubject = new Subject<string>();
+  //INFO: Stream for debounced city filtering to avoid excessive API calls while typing.
+  private citySubject = new Subject<string>();
+  //INFO: Stream for debounced country filtering to avoid excessive API calls while typing.
+  private countrySubject = new Subject<string>();
+
+  //INFO: Table column configuration
   readonly columns: EntityTableColumn[] = [
-    { name: 'Name', prop: 'name', minWidth: 220 },
-    { name: 'DOB', prop: 'date_of_birth', type: 'date', width: 150 },
-    { name: 'Age', prop: 'age', width: 90 },
-    { name: 'Contact', prop: 'contact', minWidth: 180 },
-    { name: 'Status', prop: 'status', type: 'status', width: 130 },
-    { name: 'Primary Physician', prop: 'primary_physician', minWidth: 180 },
+    { name: 'First Name', prop: 'first_name', minWidth: 150 },
+    { name: 'Last Name', prop: 'last_name', minWidth: 150 },
+    { name: 'DOB', prop: 'date_of_birth', type: 'date', width: 130 },
+    { name: 'Gender', prop: 'gender', width: 100 },
+    { name: 'Status', prop: 'patient_status', type: 'status', width: 130 },
+    { name: 'Contact', prop: 'phone', minWidth: 150 },
+    { name: 'City', prop: 'city', width: 120 },
   ];
 
-  readonly statusOptions = [
-    'all',
+  readonly statusOptions: PatientStatus[] = [
     'active',
     'inactive',
-    'critical',
-    'discharged',
+    'deceased',
+    'transferred',
+  ];
+  readonly genderOptions: Gender[] = [
+    'male',
+    'female',
+    'other',
+    'prefer_not_to_say',
   ];
 
-  allRows: PatientRow[] = [];
-  filteredRows: PatientRow[] = [];
-  pagedRows: PatientRow[] = [];
-
+  //INFO: Data state
+  patients: Patient[] = [];
   loading = true;
-  isSaving = false;
-  isDeleting = false;
+  totalCount = 0;
+  pageSize = 15;
+  currentPage = 1;
+
+  //INFO: Filters state
+  filters: PatientFilters = {
+    search: '',
+    patient_status: undefined,
+    gender: undefined,
+    city: '',
+  };
+
+  //INFO: Modal state
   isUpdateModalOpen = false;
   isDeleteModalOpen = false;
-
-  searchQuery = '';
-  selectedStatus = 'all';
-
-  totalCount = 0;
-  pageSize = 10;
-  pageOffset = 0;
-
-  selectedPatient: PatientRow | null = null;
-
-  updateForm = this.fb.group({
-    first_name: ['', [Validators.required, Validators.minLength(2)]],
-    last_name: ['', [Validators.required, Validators.minLength(2)]],
-    date_of_birth: ['', [Validators.required]],
-    contact: ['', [Validators.required]],
-    status: ['active', [Validators.required]],
-    primary_physician: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
-  });
+  selectedPatient: Patient | null = null;
+  isDeleting = false;
 
   ngOnInit(): void {
     this.loadPatients();
+
+    //INFO: search debouncing (300ms)
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((query) => {
+        this.filters.search = query;
+        this.currentPage = 1;
+        this.loadPatients();
+      });
+
+    //INFO: city filter debouncing (300ms)
+    this.citySubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((city) => {
+        this.filters.city = city;
+        this.currentPage = 1;
+        this.loadPatients();
+      });
+
+    //INFO: country filter debouncing (300ms)
+    this.countrySubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((country) => {
+        this.filters.country = country;
+        this.currentPage = 1;
+        this.loadPatients();
+      });
   }
 
+  //INFO: Core method to fetch patients from service
   loadPatients(): void {
     this.loading = true;
-    this.http.get<PatientRecord[]>('/patients.json').subscribe({
-      next: (records) => {
-        this.allRows = records.map((record) => ({
-          ...record,
-          name: `${record.first_name} ${record.last_name}`,
-          age: this.calculateAge(record.date_of_birth),
-        }));
+    const fetchFilters: PatientFilters = {
+      ...this.filters,
+      page: this.currentPage,
+      per_page: this.pageSize,
+    };
 
-        this.applyFilters(true);
+    // Clean empty values from filters
+    if (!fetchFilters.search) delete fetchFilters.search;
+    if (!fetchFilters.city) delete fetchFilters.city;
+    if (!fetchFilters.country) delete fetchFilters.country;
+
+    //INFO: Defensive cleanup in case select emits string "undefined" from template bindings.
+    if (
+      !fetchFilters.patient_status ||
+      fetchFilters.patient_status === ('undefined' as unknown as PatientStatus)
+    ) {
+      delete fetchFilters.patient_status;
+    }
+
+    if (
+      !fetchFilters.gender ||
+      fetchFilters.gender === ('undefined' as unknown as Gender)
+    ) {
+      delete fetchFilters.gender;
+    }
+
+    this.patientService.getPatients(fetchFilters).subscribe({
+      next: (response) => {
+        this.patients = response.data;
+        this.totalCount = response.meta.total;
         this.loading = false;
       },
+
       error: () => {
-        this.allRows = [];
-        this.applyFilters(true);
+        this.patients = [];
+        this.totalCount = 0;
         this.loading = false;
       },
     });
   }
 
+  //INFO: Event handlers for UI interactions
   onSearch(query: string): void {
-    this.searchQuery = query;
-    this.applyFilters(true);
+    this.searchSubject.next(query);
   }
 
-  onStatusChange(status: string): void {
-    this.selectedStatus = status;
-    this.applyFilters(true);
+  onCountrySearch(query: string): void {
+    this.countrySubject.next(query);
+  }
+
+  onCitySearch(query: string): void {
+    this.citySubject.next(query);
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1;
+    this.loadPatients();
   }
 
   onPageChange(event: { offset: number; limit: number }): void {
-    this.pageOffset = event.offset;
+    this.currentPage = event.offset + 1;
     this.pageSize = event.limit;
-    this.setPagedRows();
+    this.loadPatients();
   }
 
-  onRowSelected(row: PatientRow): void {
-    this.router.navigate([row.id], { relativeTo: this.route });
+  onRowSelected(row: Patient): void {
+    if (!row?.id) {
+      return;
+    }
+
+    const rolePrefix = this.router.url.split('/')[1];
+
+    //INFO: Use absolute role path to ensure detail route opens reliably from any patients list context.
+    this.router.navigate([`/${rolePrefix || 'admin'}/patients`, row.id]);
   }
 
-  openUpdateModal(row: PatientRow): void {
-    this.selectedPatient = row;
-    this.updateForm.patchValue({
-      first_name: row.first_name,
-      last_name: row.last_name,
-      date_of_birth: row.date_of_birth,
-      contact: row.contact,
-      status: row.status,
-      primary_physician: row.primary_physician,
-      email: row.email,
-    });
+  //INFO: Modal management
+  openUpdateModal(patient: Patient): void {
+    this.selectedPatient = patient;
     this.isUpdateModalOpen = true;
   }
 
   closeUpdateModal(): void {
-    if (this.isSaving) {
-      return;
-    }
-
     this.isUpdateModalOpen = false;
     this.selectedPatient = null;
-    this.updateForm.reset();
   }
 
-  saveUpdate(): void {
-    this.updateForm.markAllAsTouched();
-    if (this.updateForm.invalid || !this.selectedPatient) {
-      return;
-    }
-
-    this.isSaving = true;
-
-    const updated = this.updateForm.getRawValue();
-    this.allRows = this.allRows.map((row) => {
-      if (row.id !== this.selectedPatient?.id) {
-        return row;
-      }
-
-      const firstName = (updated.first_name ?? '').trim();
-      const lastName = (updated.last_name ?? '').trim();
-      const dob = updated.date_of_birth ?? row.date_of_birth;
-
-      return {
-        ...row,
-        first_name: firstName,
-        last_name: lastName,
-        name: `${firstName} ${lastName}`.trim(),
-        date_of_birth: dob,
-        age: this.calculateAge(dob),
-        contact: (updated.contact ?? row.contact).trim(),
-        status: (updated.status as PatientRow['status']) ?? row.status,
-        primary_physician: (
-          updated.primary_physician ?? row.primary_physician
-        ).trim(),
-        email: (updated.email ?? row.email).trim(),
-      };
-    });
-
-    this.isSaving = false;
-    this.isUpdateModalOpen = false;
-    this.selectedPatient = null;
-    this.applyFilters(false);
+  onUpdateSuccess(updatedPatient: Patient): void {
+    this.closeUpdateModal();
+    this.loadPatients();
   }
 
-  openDeleteModal(row: PatientRow): void {
-    this.selectedPatient = row;
+  openDeleteModal(patient: Patient): void {
+    this.selectedPatient = patient;
     this.isDeleteModalOpen = true;
   }
 
   closeDeleteModal(): void {
-    if (this.isDeleting) {
-      return;
-    }
-
     this.isDeleteModalOpen = false;
     this.selectedPatient = null;
   }
 
   confirmDelete(): void {
-    if (!this.selectedPatient) {
-      return;
-    }
+    if (!this.selectedPatient) return;
 
     this.isDeleting = true;
-    const idToDelete = this.selectedPatient.id;
-
-    this.allRows = this.allRows.filter((row) => row.id !== idToDelete);
-
-    this.isDeleting = false;
-    this.isDeleteModalOpen = false;
-    this.selectedPatient = null;
-    this.applyFilters(false);
-  }
-
-  private applyFilters(resetToFirstPage: boolean): void {
-    const term = this.searchQuery.trim().toLowerCase();
-    this.filteredRows = this.allRows.filter((row) => {
-      const matchesSearch =
-        !term ||
-        row.name.toLowerCase().includes(term) ||
-        row.contact.toLowerCase().includes(term) ||
-        row.primary_physician.toLowerCase().includes(term);
-
-      const matchesStatus =
-        this.selectedStatus === 'all' || row.status === this.selectedStatus;
-
-      return matchesSearch && matchesStatus;
+    this.patientService.deletePatient(this.selectedPatient.id).subscribe({
+      next: () => {
+        this.isDeleting = false;
+        this.isDeleteModalOpen = false;
+        this.toastr.success('Patient record archived successfully');
+        this.selectedPatient = null;
+        this.loadPatients();
+      },
+      error: () => {
+        this.isDeleting = false;
+      },
     });
-
-    this.totalCount = this.filteredRows.length;
-
-    if (resetToFirstPage) {
-      this.pageOffset = 0;
-    }
-
-    const maxOffset = Math.max(
-      Math.ceil(this.totalCount / this.pageSize) - 1,
-      0,
-    );
-    if (this.pageOffset > maxOffset) {
-      this.pageOffset = maxOffset;
-    }
-
-    this.setPagedRows();
-  }
-
-  private setPagedRows(): void {
-    const start = this.pageOffset * this.pageSize;
-    const end = start + this.pageSize;
-    this.pagedRows = this.filteredRows.slice(start, end);
-  }
-
-  private calculateAge(dateOfBirth: string): number {
-    const dob = new Date(dateOfBirth);
-    const today = new Date();
-
-    let age = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-      age--;
-    }
-
-    return age;
   }
 }

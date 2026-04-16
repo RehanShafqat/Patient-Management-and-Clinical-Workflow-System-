@@ -9,7 +9,8 @@
       >
     </button>
     <h2 class="text-base font-semibold text-base-content">
-      Patient Intake Registry
+      <!-- INFO: Dynamic title based on mode -->
+      {{ isEditMode ? 'Update Patient Record' : 'Patient Intake Registry' }}
     </h2>
   </div>
 
@@ -575,7 +576,13 @@
           [disabled]="isSubmitting"
           class="px-8 py-3 rounded-xl bg-primary text-primary-content font-bold text-sm teal-glow hover:brightness-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {{ isSubmitting ? "Saving Registry..." : "Submit Registry" }}
+          <!-- INFO: Dynamic button label -->
+          <span *ngIf="!isSubmitting">
+            {{ isEditMode ? 'Update Patient' : 'Submit Registry' }}
+          </span>
+          <span *ngIf="isSubmitting">
+            {{ isEditMode ? 'Updating...' : 'Saving Registry...' }}
+          </span>
           <span class="material-symbols-outlined text-sm">check_circle</span>
         </button>
       </div>
