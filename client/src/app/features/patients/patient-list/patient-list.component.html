@@ -2,457 +2,224 @@
   <div class="flex items-center justify-between gap-4">
     <div>
       <h1 class="text-3xl font-bold text-base-content">Patients</h1>
+      <!-- INFO: Real-time record count from server metadata -->
       <p class="text-sm text-base-content/60 mt-1">
         {{ totalCount }} records found
       </p>
     </div>
-    <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+    <a
+      routerLink="/admin/patients/form"
+      class="btn btn-primary gap-2 teal-glow"
+    >
+      <span class="material-symbols-outlined">person_add</span>
       Add Patient
-    </button>
+    </a>
   </div>
 
-  <div class="rounded-2xl border border-base-300 bg-base-100 p-4 md:p-5 space-y-4">
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
-      <label class="form-control md:col-span-2">
-        <span class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60">
+  <!-- INFO: Advanced Filtering Section -->
+  <div
+    class="rounded-2xl border border-base-300 bg-base-100 p-5 md:p-6 space-y-4"
+  >
+    <div class="flex items-center gap-2">
+      <p
+        class="text-xs font-semibold uppercase tracking-wider text-base-content/60"
+      >
+        Patient Filters
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+      <!-- Search Input -->
+      <label class="form-control xl:col-span-3">
+        <span
+          class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+        >
           Search
         </span>
-        <input type="text" class="input input-bordered" placeholder="Search by name, contact, or physician"
-          [(ngModel)]="searchQuery" (ngModelChange)="onFilterChange()" />
+        <input
+          type="text"
+          class="input input-bordered mt-1 h-10 text-sm"
+          placeholder="Name, Phone, etc."
+          [(ngModel)]="filters.search"
+          (ngModelChange)="onSearch($event)"
+        />
       </label>
 
-      <label class="form-control">
-        <span class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60">
+      <!-- Status Filter -->
+      <label class="form-control xl:col-span-2">
+        <span
+          class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+        >
           Status
         </span>
-        <select class="select select-bordered capitalize" [(ngModel)]="selectedStatus"
-          (ngModelChange)="onFilterChange()">
-          <option *ngFor="let option of statusOptions" [value]="option" class="capitalize">
-            {{ option }}
+        <select
+          class="select select-bordered mt-1 h-10 min-h-0 text-sm capitalize"
+          [(ngModel)]="filters.patient_status"
+          (ngModelChange)="onFilterChange()"
+        >
+          <option [ngValue]="undefined">All Status</option>
+          <option
+            *ngFor="let status of statusOptions"
+            [ngValue]="status"
+            class="capitalize"
+          >
+            {{ status | titlecase }}
           </option>
         </select>
       </label>
 
-      <label class="form-control">
-        <span class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60">
+      <!-- Gender Filter -->
+      <label class="form-control xl:col-span-2">
+        <span
+          class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+        >
           Gender
         </span>
-        <select class="select select-bordered" [(ngModel)]="selectedGender" (ngModelChange)="onFilterChange()">
-          <option value="all">All</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
+        <select
+          class="select select-bordered mt-1 h-10 min-h-0 text-sm capitalize"
+          [(ngModel)]="filters.gender"
+          (ngModelChange)="onFilterChange()"
+        >
+          <option [ngValue]="undefined">All Gender</option>
+          <option
+            *ngFor="let gender of genderOptions"
+            [ngValue]="gender"
+            class="capitalize"
+          >
+            {{ gender.replaceAll("_", " ") | titlecase }}
+          </option>
         </select>
       </label>
-    </div>
 
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <label class="form-control">
-        <span class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60">
+      <!-- City Filter -->
+      <label class="form-control xl:col-span-2">
+        <span
+          class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+        >
           City
         </span>
-        <select class="select select-bordered" [(ngModel)]="filterCity" (ngModelChange)="onFilterChange()">
-          <option value="">All Cities</option>
-          <option *ngFor="let option of cityOptions" [value]="option">
-            {{ option }}
-          </option>
-        </select>
+        <input
+          type="text"
+          class="input input-bordered mt-1 h-10 text-sm"
+          placeholder="Filter by city"
+          [(ngModel)]="filters.city"
+          (ngModelChange)="onCitySearch($event)"
+        />
       </label>
 
-      <label class="form-control">
-        <span class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60">
-          State
-        </span>
-        <select class="select select-bordered" [(ngModel)]="filterState" (ngModelChange)="onFilterChange()">
-          <option value="">All States</option>
-          <option *ngFor="let option of stateOptions" [value]="option">
-            {{ option }}
-          </option>
-        </select>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60">
+      <!-- Country Filter (Debounced) -->
+      <label class="form-control xl:col-span-2">
+        <span
+          class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+        >
           Country
         </span>
-        <select class="select select-bordered" [(ngModel)]="filterCountry" (ngModelChange)="onFilterChange()">
-          <option value="">All Countries</option>
-          <option *ngFor="let option of countryOptions" [value]="option">
-            {{ option }}
-          </option>
-        </select>
+        <input
+          type="text"
+          class="input input-bordered mt-1 h-10 text-sm"
+          placeholder="Filter by country"
+          [(ngModel)]="filters.country"
+          (ngModelChange)="onCountrySearch($event)"
+        />
+      </label>
+
+      <!-- Reset Filters -->
+      <label class="form-control xl:col-span-1">
+        <span
+          class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/0"
+        >
+          Reset
+        </span>
+        <button
+          type="button"
+          class="btn btn-outline h-10 mt-1"
+          (click)="
+            filters = {
+              search: '',
+              patient_status: undefined,
+              gender: undefined,
+              city: '',
+              country: '',
+            };
+            currentPage = 1;
+            loadPatients()
+          "
+        >
+          Reset
+        </button>
       </label>
     </div>
   </div>
 
-  <app-entity-table [columns]="columns" [rows]="pagedRows" [loading]="loading" [totalCount]="totalCount"
-    [pageSize]="pageSize" [pageOffset]="pageOffset" (rowSelected)="onRowSelected($event)"
-    (updateRequested)="openUpdateModal($event)" (deleteRequested)="openDeleteModal($event)"
-    (pageChanged)="onPageChange($event)" />
+  <!-- INFO: Paginated Data Table with Server-Side events -->
+  <app-entity-table
+    [columns]="columns"
+    [rows]="patients"
+    [loading]="loading"
+    [totalCount]="totalCount"
+    [pageSize]="pageSize"
+    [pageOffset]="currentPage - 1"
+    (rowSelected)="onRowSelected($event)"
+    (updateRequested)="openUpdateModal($event)"
+    (deleteRequested)="openDeleteModal($event)"
+    (pageChanged)="onPageChange($event)"
+  />
 </section>
 
+<!-- INFO: Reusable Patient Form Hosted in Modal for Contextual Updates -->
 <div class="modal" [class.modal-open]="isUpdateModalOpen">
-  <div class="modal-box max-w-2xl">
-    <h3 class="text-lg font-semibold">Update Patient</h3>
-    <p class="text-sm text-base-content/70 mt-1">
-      Edit patient details and save your changes.
-    </p>
-
-    <form [formGroup]="updateForm" class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-      <label class="form-control">
-        <span class="label-text">First Name</span>
-        <input class="input input-bordered" formControlName="first_name" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              updateForm.get('first_name')?.invalid &&
-              updateForm.get('first_name')?.touched
-            ">
-            <span *ngIf="updateForm.get('first_name')?.errors?.['required']">First name is required</span>
-            <span *ngIf="updateForm.get('first_name')?.errors?.['minlength']">Must be at least 2 characters</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Last Name</span>
-        <input class="input input-bordered" formControlName="last_name" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              updateForm.get('last_name')?.invalid &&
-              updateForm.get('last_name')?.touched
-            ">
-            <span *ngIf="updateForm.get('last_name')?.errors?.['required']">Last name is required</span>
-            <span *ngIf="updateForm.get('last_name')?.errors?.['minlength']">Must be at least 2 characters</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Date of Birth</span>
-        <input class="input input-bordered" formControlName="date_of_birth" type="date" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              updateForm.get('date_of_birth')?.invalid &&
-              updateForm.get('date_of_birth')?.touched
-            ">
-            <span *ngIf="updateForm.get('date_of_birth')?.errors?.['required']">Date of birth is required</span>
-            <span *ngIf="updateForm.get('date_of_birth')?.errors?.['futureDate']">Date cannot be in the future</span>
-            <span *ngIf="updateForm.get('date_of_birth')?.errors?.['tooOld']">Invalid date of birth</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Phone</span>
-        <input class="input input-bordered" formControlName="phone" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              updateForm.get('phone')?.invalid &&
-              updateForm.get('phone')?.touched
-            ">
-            <span *ngIf="updateForm.get('phone')?.errors?.['pattern']">Invalid phone number format</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Mobile</span>
-        <input class="input input-bordered" formControlName="mobile" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              updateForm.get('mobile')?.invalid &&
-              updateForm.get('mobile')?.touched
-            ">
-            <span *ngIf="updateForm.get('mobile')?.errors?.['pattern']">Invalid phone number format</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Status</span>
-        <select class="select select-bordered capitalize" formControlName="patient_status">
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="deceased">Deceased</option>
-          <option value="transferred">Transferred</option>
-        </select>
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              updateForm.get('patient_status')?.invalid &&
-              updateForm.get('patient_status')?.touched
-            ">
-            <span *ngIf="updateForm.get('patient_status')?.errors?.['required']">Patient status is required</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Primary Physician</span>
-        <input class="input input-bordered" formControlName="primary_physician" type="text" />
-      </label>
-
-      <label class="form-control md:col-span-2">
-        <span class="label-text">Email</span>
-        <input class="input input-bordered" formControlName="email" type="email" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              updateForm.get('email')?.invalid &&
-              updateForm.get('email')?.touched
-            ">
-            <span *ngIf="updateForm.get('email')?.errors?.['email']">Invalid email format</span>
-          </span>
-        </div>
-      </label>
-    </form>
-
-    <div class="modal-action">
-      <button type="button" class="btn btn-ghost" [disabled]="isSaving" (click)="closeUpdateModal()">
-        Cancel
-      </button>
-      <button type="button" class="btn btn-primary" [disabled]="isSaving" (click)="saveUpdate()">
-        {{ isSaving ? "Saving..." : "Save Changes" }}
+  <div
+    class="modal-box max-w-5xl p-0 overflow-hidden bg-base-100 rounded-2xl shadow-2xl border border-base-300"
+  >
+    <div
+      class="modal-header p-6 border-b border-base-300 flex justify-between items-center bg-base-200/50"
+    >
+      <div>
+        <h3 class="text-xl font-bold text-base-content">Edit Patient</h3>
+        <p class="text-xs text-base-content/60 mt-0.5">
+          Refine clinical registry metadata
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="closeUpdateModal()"
+        class="p-2 hover:bg-base-300 rounded-full transition-colors"
+      >
+        <span class="material-symbols-outlined text-base-content/70"
+          >close</span
+        >
       </button>
     </div>
-  </div>
-  <button type="button" class="modal-backdrop" [disabled]="isSaving" (click)="closeUpdateModal()">
-    close
-  </button>
-</div>
 
-<div class="modal" [class.modal-open]="isCreateModalOpen">
-  <div class="modal-box max-w-4xl">
-    <h3 class="text-lg font-semibold">Add New Patient</h3>
-    <p class="text-sm text-base-content/70 mt-1">
-      Enter patient details to create a new record.
-    </p>
-
-    <form [formGroup]="createForm" class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-      <label class="form-control">
-        <span class="label-text">First Name *</span>
-        <input class="input input-bordered" formControlName="first_name" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('first_name')?.invalid &&
-              createForm.get('first_name')?.touched
-            ">
-            <span *ngIf="createForm.get('first_name')?.errors?.['required']">First name is required</span>
-            <span *ngIf="createForm.get('first_name')?.errors?.['minlength']">Must be at least 2 characters</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Middle Name</span>
-        <input class="input input-bordered" formControlName="middle_name" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Last Name *</span>
-        <input class="input input-bordered" formControlName="last_name" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('last_name')?.invalid &&
-              createForm.get('last_name')?.touched
-            ">
-            <span *ngIf="createForm.get('last_name')?.errors?.['required']">Last name is required</span>
-            <span *ngIf="createForm.get('last_name')?.errors?.['minlength']">Must be at least 2 characters</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Date of Birth *</span>
-        <input class="input input-bordered" formControlName="date_of_birth" type="date" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('date_of_birth')?.invalid &&
-              createForm.get('date_of_birth')?.touched
-            ">
-            <span *ngIf="createForm.get('date_of_birth')?.errors?.['required']">Date of birth is required</span>
-            <span *ngIf="createForm.get('date_of_birth')?.errors?.['futureDate']">Date cannot be in the future</span>
-            <span *ngIf="createForm.get('date_of_birth')?.errors?.['tooOld']">Invalid date of birth</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Gender *</span>
-        <select class="select select-bordered" formControlName="gender">
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('gender')?.invalid &&
-              createForm.get('gender')?.touched
-            ">
-            <span *ngIf="createForm.get('gender')?.errors?.['required']">Gender is required</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">SSN</span>
-        <input class="input input-bordered" formControlName="ssn" type="text" placeholder="XXX-XX-XXXX" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('ssn')?.invalid && createForm.get('ssn')?.touched
-            ">
-            <span *ngIf="createForm.get('ssn')?.errors?.['pattern']">SSN must be in format XXX-XX-XXXX</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Phone</span>
-        <input class="input input-bordered" formControlName="phone" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('phone')?.invalid &&
-              createForm.get('phone')?.touched
-            ">
-            <span *ngIf="createForm.get('phone')?.errors?.['pattern']">Invalid phone number format</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Mobile</span>
-        <input class="input input-bordered" formControlName="mobile" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('mobile')?.invalid &&
-              createForm.get('mobile')?.touched
-            ">
-            <span *ngIf="createForm.get('mobile')?.errors?.['pattern']">Invalid phone number format</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control md:col-span-2">
-        <span class="label-text">Email</span>
-        <input class="input input-bordered" formControlName="email" type="email" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('email')?.invalid &&
-              createForm.get('email')?.touched
-            ">
-            <span *ngIf="createForm.get('email')?.errors?.['email']">Invalid email format</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control md:col-span-2">
-        <span class="label-text">Address</span>
-        <input class="input input-bordered" formControlName="address" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">City</span>
-        <input class="input input-bordered" formControlName="city" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">State</span>
-        <input class="input input-bordered" formControlName="state" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">ZIP Code</span>
-        <input class="input input-bordered" formControlName="zip_code" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('zip_code')?.invalid &&
-              createForm.get('zip_code')?.touched
-            ">
-            <span *ngIf="createForm.get('zip_code')?.errors?.['pattern']">ZIP code must be 5 digits or 5 digits-4
-              digits</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Country</span>
-        <input class="input input-bordered" formControlName="country" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Emergency Contact Name</span>
-        <input class="input input-bordered" formControlName="emergency_contact_name" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Emergency Contact Phone</span>
-        <input class="input input-bordered" formControlName="emergency_contact_phone" type="text" />
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('emergency_contact_phone')?.invalid &&
-              createForm.get('emergency_contact_phone')?.touched
-            ">
-            <span *ngIf="
-                createForm.get('emergency_contact_phone')?.errors?.['pattern']
-              ">Invalid phone number format</span>
-          </span>
-        </div>
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Primary Physician</span>
-        <input class="input input-bordered" formControlName="primary_physician" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Insurance Provider</span>
-        <input class="input input-bordered" formControlName="insurance_provider" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Insurance Policy Number</span>
-        <input class="input input-bordered" formControlName="insurance_policy_number" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Preferred Language</span>
-        <input class="input input-bordered" formControlName="preferred_language" type="text" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text">Patient Status *</span>
-        <select class="select select-bordered capitalize" formControlName="patient_status">
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="deceased">Deceased</option>
-          <option value="transferred">Transferred</option>
-        </select>
-        <div class="label-text-alt text-error">
-          <span *ngIf="
-              createForm.get('patient_status')?.invalid &&
-              createForm.get('patient_status')?.touched
-            ">
-            <span *ngIf="createForm.get('patient_status')?.errors?.['required']">Patient status is required</span>
-          </span>
-        </div>
-      </label>
-    </form>
-
-    <div class="modal-action">
-      <button type="button" class="btn btn-ghost" [disabled]="isSaving" (click)="closeCreateModal()">
-        Cancel
-      </button>
-      <button type="button" class="btn btn-primary" [disabled]="isSaving" (click)="saveCreate()">
-        {{ isSaving ? "Creating..." : "Create Patient" }}
-      </button>
+    <div class="max-h-[80vh] overflow-y-auto bg-base-100">
+      <app-patient-form
+        *ngIf="isUpdateModalOpen"
+        [patientToEdit]="selectedPatient"
+        (formSuccess)="onUpdateSuccess($event)"
+        (formCancel)="closeUpdateModal()"
+      />
     </div>
   </div>
-  <button type="button" class="modal-backdrop" [disabled]="isSaving" (click)="closeCreateModal()">
-    close
-  </button>
+  <div
+    class="modal-backdrop bg-black/40 backdrop-blur-sm"
+    (click)="closeUpdateModal()"
+  ></div>
 </div>
 
-<app-confirm-dialog [open]="isDeleteModalOpen" [title]="'Delete Patient'" [message]="
-    'Delete ' +
-    (selectedPatient?.name || 'this patient') +
-    '? This action cannot be undone.'
-  " [confirmLabel]="'Delete'" [loading]="isDeleting" (openChange)="isDeleteModalOpen = $event"
-  (confirmed)="confirmDelete()" />
+<!-- INFO: Soft Delete Confirmation Dialog -->
+<app-confirm-dialog
+  [open]="isDeleteModalOpen"
+  [title]="'Archive Patient Registry'"
+  [message]="
+    'Are you sure you want to archive ' +
+    (selectedPatient
+      ? selectedPatient.first_name + ' ' + selectedPatient.last_name
+      : 'this patient') +
+    '? This record will be moved to the clinical archive.'
+  "
+  [confirmLabel]="'Archive Record'"
+  [variant]="'error'"
+  [loading]="isDeleting"
+  (openChange)="isDeleteModalOpen = $event"
+  (confirmed)="confirmDelete()"
+/>
