@@ -40,8 +40,8 @@ export class AppointmentService {
   //INFO: Fetch a single appointment by ID
   getAppointmentById(
     id: string,
-  ): Observable<ApiResponse<{ appointment: Appointment }>> {
-    return this.http.get<ApiResponse<{ appointment: Appointment }>>(
+  ): Observable<ApiResponse<Appointment>> {
+    return this.http.get<ApiResponse<Appointment>>(
       `${this.apiUrl}/${id}`,
     );
   }

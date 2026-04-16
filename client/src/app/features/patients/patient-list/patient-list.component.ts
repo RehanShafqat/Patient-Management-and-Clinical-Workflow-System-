@@ -17,6 +17,7 @@ import {
 import { PatientFormComponent } from '../patient-form/patient-form.component';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-patient-list',
@@ -37,6 +38,7 @@ export class PatientListComponent implements OnInit {
   private readonly patientService = inject(PatientService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
+  private readonly filterDebounceMs = environment.filterDebounceMs;
 
   //INFO: Stream for debounced search to avoid excessive API calls
   private searchSubject = new Subject<string>();
@@ -99,7 +101,7 @@ export class PatientListComponent implements OnInit {
 
     //INFO: search debouncing (300ms)
     this.searchSubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((query) => {
         this.filters.search = query;
         this.currentPage = 1;
@@ -108,7 +110,7 @@ export class PatientListComponent implements OnInit {
 
     //INFO: city filter debouncing (300ms)
     this.citySubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((city) => {
         this.filters.city = city;
         this.currentPage = 1;
@@ -117,7 +119,7 @@ export class PatientListComponent implements OnInit {
 
     //INFO: country filter debouncing (300ms)
     this.countrySubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((country) => {
         this.filters.country = country;
         this.currentPage = 1;

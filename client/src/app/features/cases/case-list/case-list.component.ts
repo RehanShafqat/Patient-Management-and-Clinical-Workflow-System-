@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CaseService } from '../../../core/services/case.service';
+import { environment } from '../../../../environments/environment';
 import {
   Case,
   CaseCategory,
@@ -37,6 +38,7 @@ export class CaseListComponent implements OnInit {
   private readonly caseService = inject(CaseService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
+  private readonly filterDebounceMs = environment.filterDebounceMs;
 
   private searchSubject = new Subject<string>();
   private openingDateRangeSubject = new Subject<{
@@ -86,7 +88,7 @@ export class CaseListComponent implements OnInit {
     this.loadCases();
 
     this.searchSubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((query) => {
         this.filters.search = query;
         this.currentPage = 1;
@@ -94,7 +96,7 @@ export class CaseListComponent implements OnInit {
       });
 
     this.openingDateRangeSubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe(({ from, to }) => {
         this.filters.opening_date_from = from;
         this.filters.opening_date_to = to;

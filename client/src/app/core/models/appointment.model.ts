@@ -1,12 +1,12 @@
 export type AppointmentStatus =
-  | 'scheduled'
-  | 'confirmed'
-  | 'checked_in'
-  | 'in_progress'
-  | 'completed'
-  | 'cancelled'
-  | 'no_show'
-  | 'rescheduled';
+  | 'Scheduled'
+  | 'Confirmed'
+  | 'Checked In'
+  | 'In Progress'
+  | 'Completed'
+  | 'Cancelled'
+  | 'No Show'
+  | 'Rescheduled';
 
 export type AppointmentType =
   | 'New Patient'

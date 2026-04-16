@@ -1,122 +1,244 @@
-<section class="space-y-6 p-6 md:p-8 pt-2 md:pt-4">
-  <div class="flex items-center justify-between gap-4">
-    <div>
-      <h1 class="text-3xl font-bold text-base-content">Appointment Detail</h1>
-      <p class="text-sm text-base-content/60 mt-1">
-        View appointment metadata and scheduling details
-      </p>
-    </div>
-    <button class="btn btn-outline" type="button" (click)="goBack()">
-      Back
-    </button>
-  </div>
-
-  <div *ngIf="loading" class="card p-6 bg-base-100 shadow-sm">
-    <p class="text-sm text-base-content/70">Loading appointment details...</p>
-  </div>
-
-  <div *ngIf="!loading && appointment" class="space-y-6">
-    <div class="grid gap-4 md:grid-cols-2">
-      <div class="rounded-2xl border border-base-300 bg-base-100 p-6">
-        <h2 class="text-lg font-semibold text-base-content">Schedule</h2>
-        <dl class="mt-4 grid gap-3">
-          <div>
-            <dt class="text-xs uppercase text-base-content/60">
-              Appointment #
-            </dt>
-            <dd class="text-base font-medium">
-              {{ appointment.appointment_number }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs uppercase text-base-content/60">Date</dt>
-            <dd class="text-base font-medium">
-              {{ appointment.appointment_date }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs uppercase text-base-content/60">Time</dt>
-            <dd class="text-base font-medium">
-              {{ appointment.appointment_time }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs uppercase text-base-content/60">Type</dt>
-            <dd class="text-base font-medium">
-              {{ appointment.appointment_type }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs uppercase text-base-content/60">Status</dt>
-            <dd class="text-base font-medium capitalize">
-              {{ appointment.status.replaceAll("_", " ") | titlecase }}
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      <div class="rounded-2xl border border-base-300 bg-base-100 p-6">
-        <h2 class="text-lg font-semibold text-base-content">Participants</h2>
-        <dl class="mt-4 grid gap-3">
-          <div>
-            <dt class="text-xs uppercase text-base-content/60">Patient</dt>
-            <dd class="text-base font-medium">
-              {{ appointment.patient_name }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs uppercase text-base-content/60">Doctor</dt>
-            <dd class="text-base font-medium">{{ appointment.doctor_name }}</dd>
-          </div>
-          <div>
-            <dt class="text-xs uppercase text-base-content/60">Specialty</dt>
-            <dd class="text-base font-medium">
-              {{ appointment.specialty_name }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs uppercase text-base-content/60">Location</dt>
-            <dd class="text-base font-medium">
-              {{ appointment.practice_location_name }}
-            </dd>
-          </div>
-        </dl>
-      </div>
-    </div>
-
-    <div class="rounded-2xl border border-base-300 bg-base-100 p-6">
-      <h2 class="text-lg font-semibold text-base-content">Details</h2>
-      <div class="mt-4 grid gap-3 md:grid-cols-2">
-        <div>
-          <dt class="text-xs uppercase text-base-content/60">
-            Reason for visit
-          </dt>
-          <p class="text-base font-medium">
-            {{ appointment.reason_for_visit }}
-          </p>
-        </div>
-        <div>
-          <dt class="text-xs uppercase text-base-content/60">Duration</dt>
-          <p class="text-base font-medium">
-            {{ appointment.duration_minutes }} minutes
-          </p>
-        </div>
-        <div class="md:col-span-2">
-          <dt class="text-xs uppercase text-base-content/60">Notes</dt>
-          <p class="text-base font-medium">
-            {{ appointment.notes || "No notes provided." }}
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
+<div class="flex-1 w-full max-w-6xl mx-auto p-6 md:p-8 space-y-6">
   <div
-    *ngIf="!loading && !appointment"
-    class="rounded-2xl border border-base-300 bg-base-100 p-6"
+    *ngIf="loading"
+    class="rounded-xl border border-base-300 bg-base-100 p-6 text-sm text-base-content/70"
   >
-    <p class="text-sm text-base-content/70">
-      Appointment details could not be loaded. Please go back and try again.
-    </p>
+    Loading appointment details...
   </div>
-</section>
+
+  <ng-container *ngIf="!loading && appointment as a; else appointmentNotFound">
+    <div class="flex items-center justify-between gap-4 mt-8">
+      <div class="flex items-center gap-6">
+        <button
+          type="button"
+          (click)="goBack()"
+          class="btn btn-ghost btn-circle"
+          title="Back to Appointments"
+        >
+          <span class="material-symbols-outlined text-2xl">arrow_back</span>
+        </button>
+
+        <div class="space-y-1">
+          <p
+            class="text-xs uppercase tracking-widest font-semibold text-base-content/60"
+          >
+            Appointment Profile
+          </p>
+          <h1 class="text-2xl md:text-3xl font-bold text-base-content">
+            {{ a.appointment_number }}
+          </h1>
+          <p class="text-sm text-base-content/70">Patient: {{ patientName }}</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span
+          class="badge badge-outline uppercase"
+          [ngClass]="statusBadgeClass"
+        >
+          {{ a.status || "-" }}
+        </span>
+      </div>
+    </div>
+
+    <section
+      class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm"
+    >
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="rounded-xl bg-base-200 border border-base-300 p-4">
+          <p class="text-xs uppercase tracking-wide text-base-content/60">
+            Date
+          </p>
+          <p class="text-lg font-semibold text-base-content">
+            {{ a.appointment_date | date: "mediumDate" }}
+          </p>
+        </div>
+        <div class="rounded-xl bg-base-200 border border-base-300 p-4">
+          <p class="text-xs uppercase tracking-wide text-base-content/60">
+            Time
+          </p>
+          <p class="text-lg font-semibold text-base-content">
+            {{ a.appointment_time }}
+          </p>
+        </div>
+        <div class="rounded-xl bg-base-200 border border-base-300 p-4">
+          <p class="text-xs uppercase tracking-wide text-base-content/60">
+            Type
+          </p>
+          <p class="text-lg font-semibold text-base-content">
+            {{ a.appointment_type || "-" }}
+          </p>
+        </div>
+        <div class="rounded-xl bg-base-200 border border-base-300 p-4">
+          <p class="text-xs uppercase tracking-wide text-base-content/60">
+            Duration
+          </p>
+          <p class="text-lg font-semibold text-base-content">
+            {{ a.duration_minutes || 0 }} min
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <section
+        class="xl:col-span-2 rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm space-y-6"
+      >
+        <div>
+          <h2 class="text-lg font-semibold text-base-content">Visit Details</h2>
+          <div class="mt-4 rounded-xl bg-base-200 border border-base-300 p-4">
+            <p class="text-xs uppercase tracking-wide text-base-content/60">
+              Reason for Visit
+            </p>
+            <p class="font-medium text-base-content mt-1">
+              {{ a.reason_for_visit || "-" }}
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-semibold text-base-content">Participants</h2>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-xl bg-base-200 border border-base-300 p-4">
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Patient
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.patient_name || "-" }}
+              </p>
+            </div>
+            <div class="rounded-xl bg-base-200 border border-base-300 p-4">
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Doctor
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.doctor_name || "-" }}
+              </p>
+            </div>
+            <div class="rounded-xl bg-base-200 border border-base-300 p-4">
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Specialty
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.specialty_name || "-" }}
+              </p>
+            </div>
+            <div class="rounded-xl bg-base-200 border border-base-300 p-4">
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Location
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.practice_location_name || "-" }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-semibold text-base-content">Notes</h2>
+          <div class="mt-4 rounded-xl bg-base-200 border border-base-300 p-4">
+            <p class="font-medium text-base-content whitespace-pre-wrap">
+              {{ a.notes || "No notes provided." }}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm space-y-6"
+      >
+        <div>
+          <h2 class="text-lg font-semibold text-base-content">
+            Related Records
+          </h2>
+          <div
+            class="mt-4 rounded-xl bg-base-200 border border-base-300 p-4 space-y-3"
+          >
+            <div>
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Case #
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.case_number || "-" }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Visit ID
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.visit_id || "-" }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Created By
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.created_by_name || "-" }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-semibold text-base-content">Reminder</h2>
+          <div
+            class="mt-4 rounded-xl bg-base-200 border border-base-300 p-4 space-y-3"
+          >
+            <div>
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Method
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.reminder_method || "none" }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Sent
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.reminder_sent ? "Yes" : "No" }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-lg font-semibold text-base-content">
+            Audit Metadata
+          </h2>
+          <div
+            class="mt-4 rounded-xl bg-base-200 border border-base-300 p-4 space-y-3"
+          >
+            <div>
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Created
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.created_at ? (a.created_at | date: "medium") : "-" }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-wide text-base-content/60">
+                Updated
+              </p>
+              <p class="font-medium text-base-content">
+                {{ a.updated_at ? (a.updated_at | date: "medium") : "-" }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </ng-container>
+
+  <ng-template #appointmentNotFound>
+    <div
+      class="rounded-xl border border-error/30 bg-error/10 p-6 text-sm text-error"
+    >
+      Appointment record was not found.
+    </div>
+  </ng-template>
+</div>

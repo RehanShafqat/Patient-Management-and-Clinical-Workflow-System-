@@ -39,6 +39,7 @@ export class AppointmentListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
   private readonly dropdownPageSize = environment.searchableSelectPageSize;
+  private readonly filterDebounceMs = environment.filterDebounceMs;
 
   //INFO: Stream for debounced search to avoid excessive API calls
   private patientNameSubject = new Subject<string>();
@@ -62,14 +63,14 @@ export class AppointmentListComponent implements OnInit {
   ];
 
   readonly statusOptions: AppointmentStatus[] = [
-    'scheduled',
-    'confirmed',
-    'checked_in',
-    'in_progress',
-    'completed',
-    'cancelled',
-    'no_show',
-    'rescheduled',
+    'Scheduled',
+    'Confirmed',
+    'Checked In',
+    'In Progress',
+    'Completed',
+    'Cancelled',
+    'No Show',
+    'Rescheduled',
   ];
 
   readonly appointmentTypeOptions: AppointmentType[] = [
@@ -146,7 +147,7 @@ export class AppointmentListComponent implements OnInit {
   private setupFilterSubscriptions(): void {
     //INFO: Patient name debouncing (300ms)
     this.patientNameSubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((patientName) => {
         this.filters.patient_name = patientName;
         this.currentPage = 1;
@@ -155,7 +156,7 @@ export class AppointmentListComponent implements OnInit {
 
     //INFO: Doctor name debouncing (300ms)
     this.doctorNameSubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((doctorName) => {
         this.filters.doctor_name = doctorName;
         this.currentPage = 1;
@@ -164,7 +165,7 @@ export class AppointmentListComponent implements OnInit {
 
     //INFO: Date range debouncing (300ms)
     this.dateRangeSubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe(({ from, to }) => {
         this.filters.date_from = from;
         this.filters.date_to = to;

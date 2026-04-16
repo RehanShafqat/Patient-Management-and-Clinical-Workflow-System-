@@ -8,7 +8,7 @@ use App\Http\Controllers\FirmController;
 use App\Enums\Role;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('jwt.auth')->group(function () {   
+Route::middleware('jwt.auth')->group(function () {
     Route::prefix('dashboard')->group(function () {
         Route::get('/stats', [DashboardController::class, 'stats'])->middleware('check.role:' . Role::ADMIN->value);
     });
@@ -16,17 +16,17 @@ Route::middleware('jwt.auth')->group(function () {
     Route::prefix('appointments')->group(function () {
 
         // All roles can list and view
-        Route::get('/', [AppointmentController::class, 'index'])->middleware('check.role:' . Role::FDO->value . ',' . Role::DOCTOR->value);
-        Route::get('/{appointment}', [AppointmentController::class, 'show'])->middleware('check.role:' . Role::FDO->value . ',' . Role::DOCTOR->value);
+        Route::get('/', [AppointmentController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
+        Route::get('/{appointment}', [AppointmentController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
 
         // FDO and Admin only — create
-        Route::post('/', [AppointmentController::class, 'store'])->middleware('check.role:' . Role::FDO->value);
+        Route::post('/', [AppointmentController::class, 'store'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value);
 
         // Role-restricted update (doctor = status only, FDO/Admin = full)
-        Route::patch('/{appointment}', [AppointmentController::class, 'update'])->middleware('check.role:' . Role::FDO->value . ',' . Role::DOCTOR->value);
+        Route::patch('/{appointment}', [AppointmentController::class, 'update'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
 
         // FDO and Admin only — cancel
-        Route::patch('/{appointment}/cancel', [AppointmentController::class, 'cancel'])->middleware('check.role:' . Role::FDO->value);
+        Route::patch('/{appointment}/cancel', [AppointmentController::class, 'cancel'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value);
 
         // Admin only — soft delete
         Route::delete('/{appointment}', [AppointmentController::class, 'destroy'])->middleware('check.role');

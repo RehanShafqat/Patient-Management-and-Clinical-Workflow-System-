@@ -29,7 +29,7 @@ export class AppointmentDetailComponent implements OnInit {
 
     this.appointmentService.getAppointmentById(id).subscribe({
       next: (response) => {
-        this.appointment = response.data.appointment;
+        this.appointment = response.data;
         this.loading = false;
       },
       error: () => {
@@ -41,5 +41,20 @@ export class AppointmentDetailComponent implements OnInit {
 
   goBack(): void {
     this.location.back();
+  }
+
+  get patientName(): string {
+    return this.appointment?.patient_name || '-';
+  }
+
+  get statusBadgeClass(): string {
+    const value = this.appointment?.status?.toLowerCase();
+    if (value === 'scheduled' || value === 'confirmed') return 'badge-info';
+    if (value === 'checked in' || value === 'in progress')
+      return 'badge-warning';
+    if (value === 'completed') return 'badge-success';
+    if (value === 'cancelled' || value === 'no show') return 'badge-error';
+    if (value === 'rescheduled') return 'badge-neutral';
+    return 'badge-ghost';
   }
 }
