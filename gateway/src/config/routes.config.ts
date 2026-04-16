@@ -4,6 +4,7 @@ export const routes = [
       "/api/health",
       "/api/appointments",
       "/api/practice-locations",
+      "/api/dashboard",
       "/api/firms",
       "/api/insurances",
     ],

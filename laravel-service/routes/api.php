@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PracticeLocationController;
 use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\FirmController;
@@ -8,6 +9,9 @@ use App\Enums\Role;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('jwt.auth')->group(function () {   
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/stats', [DashboardController::class, 'stats'])->middleware('check.role:' . Role::ADMIN->value);
+    });
 
     Route::prefix('appointments')->group(function () {
 
