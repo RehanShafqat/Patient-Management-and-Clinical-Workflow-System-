@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PatientService } from '../../../core/services/patient.service';
@@ -14,6 +14,7 @@ import { Patient } from '../../../core/models/patient.model';
 export class PatientDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly patientService = inject(PatientService);
+  private readonly location = inject(Location);
 
   patient: Patient | null = null;
   loading = true;
@@ -85,5 +86,9 @@ export class PatientDetailComponent implements OnInit {
     const first = this.patient.first_name?.charAt(0) || '';
     const last = this.patient.last_name?.charAt(0) || '';
     return `${first}${last}`.toUpperCase();
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }

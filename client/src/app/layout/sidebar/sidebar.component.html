@@ -26,38 +26,85 @@
         routerLinkActive="text-white bg-teal-500/10 border-l-4 border-teal-500 shadow-[0px_0px_12px_rgba(13,148,136,0.3)]"
         class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-800 font-inter text-sm font-medium tracking-tight"
       >
-        <span class="material-symbols-outlined" [attr.data-icon]="item.icon">{{ item.icon }}</span>
+        <span class="material-symbols-outlined" [attr.data-icon]="item.icon">{{
+          item.icon
+        }}</span>
         {{ item.label }}
       </a>
     </nav>
   </div>
   <div class="mt-auto px-6 py-6 border-t border-slate-800/50">
-    <a
-      routerLink="/admin/patients/form"
-      class="w-full bg-primary hover:bg-primary-container text-white py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 mb-6"
-    >
-      <span class="material-symbols-outlined text-sm">add</span>
-      Add Patient
-    </a>
-    <div class="space-y-1">
-      <a
-        class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-2 transition-colors font-inter text-sm font-medium tracking-tight"
-        href="#"
-      >
-        <span class="material-symbols-outlined text-xl" data-icon="settings"
-          >settings</span
+    @if (currentUser$ | async; as user) {
+      <div class="flex items-center gap-3 mb-4">
+        <button
+          type="button"
+          class="btn btn-ghost btn-circle avatar w-9 h-9 rounded-full bg-teal-500 flex items-center justify-center border border-teal-400"
         >
-        Settings
-      </a>
-      <a
-        class="text-slate-400 hover:text-white flex items-center gap-3 px-4 py-2 transition-colors font-inter text-sm font-medium tracking-tight"
-        href="#"
-      >
-        <span class="material-symbols-outlined text-xl" data-icon="help"
-          >help</span
+          <span class="material-symbols-outlined text-white text-lg"
+            >person</span
+          >
+        </button>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-bold text-white truncate break-words">
+            {{ user.first_name }} {{ user.last_name }}
+          </p>
+          <p
+            class="text-[10px] text-teal-400 font-medium uppercase tracking-wider"
+          >
+            {{ user.role }}
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <button
+          (click)="openLogoutConfirm()"
+          class="w-full text-slate-400 hover:text-red-400 flex items-center gap-3 px-4 py-2 transition-colors hover:bg-slate-800 rounded-lg font-inter text-sm font-medium tracking-tight"
         >
-        Support
-      </a>
-    </div>
+          <span class="material-symbols-outlined text-xl">logout</span>
+          Logout
+        </button>
+      </div>
+    }
   </div>
 </aside>
+
+<dialog #logoutConfirmModal class="modal z-[100]">
+  <div
+    class="modal-box max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+  >
+    <h3 class="font-semibold text-base text-slate-900 dark:text-white">
+      Confirm Logout
+    </h3>
+    <p class="py-3 text-sm text-slate-600 dark:text-slate-400">
+      Are you sure you want to log out from your account?
+    </p>
+    <div class="modal-action">
+      <button
+        type="button"
+        class="btn btn-ghost text-slate-700 dark:text-slate-300"
+        [disabled]="isLoggingOut"
+        (click)="closeLogoutConfirm()"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn btn-error text-white"
+        [disabled]="isLoggingOut"
+        (click)="logout()"
+      >
+        {{ isLoggingOut ? "Logging out..." : "Logout" }}
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button
+      type="button"
+      [disabled]="isLoggingOut"
+      (click)="closeLogoutConfirm()"
+    >
+      close
+    </button>
+  </form>
+</dialog>
