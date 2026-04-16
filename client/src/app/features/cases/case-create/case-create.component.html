@@ -1,0 +1,21 @@
+<div class="p-8 max-w-5xl mx-auto w-full">
+  <div class="flex items-center gap-4 mb-6">
+    <button class="btn btn-ghost btn-circle btn-sm" type="button" (click)="onCancel()">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+    <h2 class="text-lg font-semibold text-base-content">New Clinical Case</h2>
+  </div>
+
+  <div class="card bg-base-100 shadow-sm border border-base-300">
+    <div class="card-body">
+      <h3 class="card-title text-base-content">Case Registration</h3>
+      <p class="text-base-content/60 mb-4">Create a new clinical case pathway by filling in the details below.</p>
+
+      <app-case-form 
+        [caseMode]="'create'" 
+        (formSuccess)="onSuccess($event)"
+        (formCancel)="onCancel()">
+      </app-case-form>
+    </div>
+  </div>
+</div>
