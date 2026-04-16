@@ -1,5 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { PatientService } from '../../../core/services/patient.service';
+import { Patient } from '../../../core/models/patient.model';
 
 @Component({
   selector: 'app-patient-detail',
@@ -8,31 +11,12 @@ import { Component } from '@angular/core';
   templateUrl: './patient-detail.component.html',
   styleUrls: ['./patient-detail.component.css'],
 })
-export class PatientDetailComponent {
-  patient = {
-    id: 'PT-2026-000145',
-    first_name: 'Amelia',
-    middle_name: 'Rose',
-    last_name: 'Carter',
-    date_of_birth: '1991-09-12',
-    gender: 'female',
-    patient_status: 'active',
-    registration_date: '2026-04-09T10:35:00.000Z',
-    email: 'amelia.carter@example.com',
-    phone: '+1 212-555-9834',
-    mobile: '+1 917-555-1033',
-    address: '44 West 36th Street',
-    city: 'New York',
-    state: 'NY',
-    zip_code: '10018',
-    country: 'United States',
-    emergency_contact_name: 'Daniel Carter',
-    emergency_contact_phone: '+1 646-555-4711',
-    primary_physician: 'Dr. Hannah Lee',
-    insurance_provider: 'HealthShield Plus',
-    insurance_policy_number: 'HS-9344-21-A',
-    preferred_language: 'English',
-  };
+export class PatientDetailComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly patientService = inject(PatientService);
+
+  patient: Patient | null = null;
+  loading = true;
 
   readonly recentVisits = [
     { date: '2026-04-12', type: 'Follow-up', department: 'Cardiology' },
@@ -40,7 +24,32 @@ export class PatientDetailComponent {
     { date: '2026-02-11', type: 'Lab Review', department: 'Diagnostics' },
   ];
 
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+
+    if (!id) {
+      this.loading = false;
+      return;
+    }
+
+    //INFO: Patient detail is loaded from API using route param so each clicked row opens its own profile.
+    this.patientService.getPatientById(id).subscribe({
+      next: (response) => {
+        this.patient = response.data.patient;
+        this.loading = false;
+      },
+      error: () => {
+        this.patient = null;
+        this.loading = false;
+      },
+    });
+  }
+
   get fullName(): string {
+    if (!this.patient) {
+      return 'Unknown Patient';
+    }
+
     return [
       this.patient.first_name,
       this.patient.middle_name,
@@ -51,6 +60,10 @@ export class PatientDetailComponent {
   }
 
   get age(): number {
+    if (!this.patient) {
+      return 0;
+    }
+
     const birth = new Date(this.patient.date_of_birth);
     const today = new Date();
     let years = today.getFullYear() - birth.getFullYear();
@@ -65,6 +78,10 @@ export class PatientDetailComponent {
   }
 
   get initials(): string {
+    if (!this.patient) {
+      return '--';
+    }
+
     const first = this.patient.first_name?.charAt(0) || '';
     const last = this.patient.last_name?.charAt(0) || '';
     return `${first}${last}`.toUpperCase();

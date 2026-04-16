@@ -1,23 +1,29 @@
-/* :host {
-  display: block;
-}
-
 ::ng-deep .ngx-datatable.material {
   border: 1px solid hsl(var(--b3));
   border-radius: 0.75rem;
   background: hsl(var(--b1));
+  box-shadow: none !important;
+  overflow: hidden;
+  width: 100% !important;
+}
+
+::ng-deep .ngx-datatable.material .datatable-header,
+::ng-deep .ngx-datatable.material .datatable-body,
+::ng-deep .ngx-datatable.material .datatable-scroll {
+  width: 100% !important;
 }
 
 ::ng-deep .ngx-datatable.material .datatable-header {
+  background: color-mix(in srgb, hsl(var(--b2)) 70%, white);
   border-bottom: 1px solid hsl(var(--b3));
 }
 
 ::ng-deep .ngx-datatable.material .datatable-header .datatable-header-cell {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: color-mix(in srgb, hsl(var(--bc)) 70%, transparent);
+  color: color-mix(in srgb, hsl(var(--bc)) 68%, transparent);
 }
 
 ::ng-deep .ngx-datatable.material .datatable-body-row {
@@ -26,10 +32,88 @@
 }
 
 ::ng-deep .ngx-datatable.material .datatable-body-row:hover {
-  background: color-mix(in srgb, hsl(var(--b2)) 75%, white);
-} */
+  background: color-mix(in srgb, hsl(var(--b2)) 82%, white);
+}
 
-::ng-deep .ngx-datatable.material {
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1) !important;
-  /* border-radius: 5px; */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.status-chip-active {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.28);
+  color: rgb(21, 128, 61);
+}
+
+.status-chip-inactive {
+  background: rgba(148, 163, 184, 0.2);
+  border-color: rgba(148, 163, 184, 0.26);
+  color: rgb(71, 85, 105);
+}
+
+.status-chip-transferred {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: rgb(29, 78, 216);
+}
+
+.status-chip-deceased {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: rgb(185, 28, 28);
+}
+
+.status-chip-default {
+  background: rgba(100, 116, 139, 0.16);
+  border-color: rgba(100, 116, 139, 0.28);
+  color: rgb(51, 65, 85);
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+::ng-deep .ngx-datatable.material .datatable-body-cell-label {
+  overflow: visible;
+}
+
+.table-action-btn {
+  border: 1px solid hsl(var(--b3));
+  border-radius: 0.45rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+
+.table-action-btn-update {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: rgb(30, 64, 175);
+}
+
+.table-action-btn-update:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.table-action-btn-delete {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: rgb(185, 28, 28);
+}
+
+.table-action-btn-delete:hover {
+  background: rgba(239, 68, 68, 0.2);
 }

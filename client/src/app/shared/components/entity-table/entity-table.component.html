@@ -1,11 +1,11 @@
 <ngx-datatable
-  class="material striped bootstrap no-scrollbar"
+  class="material striped bootstrap no-scrollbar w-full"
   [rows]="rows"
   [columnMode]="'force'"
   [headerHeight]="56"
   [footerHeight]="56"
   [rowHeight]="64"
-  [scrollbarH]="true"
+  [scrollbarH]="false"
   [externalPaging]="true"
   [count]="totalCount"
   [offset]="pageOffset"
@@ -26,7 +26,7 @@
       <ng-container [ngSwitch]="col.type">
         <span
           *ngSwitchCase="'status'"
-          class="badge badge-sm capitalize"
+          class="status-chip capitalize"
           [ngClass]="statusBadgeClass(value)"
         >
           {{ value }}
@@ -43,36 +43,25 @@
     [draggable]="false"
     [resizeable]="false"
     [canAutoResize]="false"
-    [width]="110"
+    [minWidth]="190"
+    [width]="190"
   >
     <ng-template ngx-datatable-cell-template let-row="row">
-      <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
+      <div class="action-buttons" (click)="$event.stopPropagation()">
         <button
           type="button"
-          tabindex="0"
-          class="btn btn-ghost btn-xs btn-circle"
+          class="table-action-btn table-action-btn-update"
+          (click)="onUpdate($event, row)"
         >
-          <span class="material-symbols-outlined text-sm">more_vert</span>
+          Edit
         </button>
-        <ul
-          tabindex="0"
-          class="menu menu-sm dropdown-content z-50 mt-1 w-36 rounded-box border border-base-300 bg-base-100 p-2"
+        <button
+          type="button"
+          class="table-action-btn table-action-btn-delete"
+          (click)="onDelete($event, row)"
         >
-          <li>
-            <button type="button" (click)="onUpdate($event, row)">
-              Update
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              class="text-error"
-              (click)="onDelete($event, row)"
-            >
-              Delete
-            </button>
-          </li>
-        </ul>
+          Delete
+        </button>
       </div>
     </ng-template>
   </ngx-datatable-column>

@@ -13,7 +13,12 @@
       </button>
       <button
         type="button"
-        class="btn btn-error text-white"
+        class="btn text-white"
+        [ngClass]="{
+          'btn-primary': variant === 'primary',
+          'btn-error': variant === 'error',
+          'btn-warning': variant === 'warning'
+        }"
         [disabled]="loading"
         (click)="confirm()"
       >

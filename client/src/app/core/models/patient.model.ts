@@ -31,6 +31,7 @@ export interface Patient {
   deleted_at?: string | null;
 }
 
+//INFO: Payload for creating a patient
 export interface CreatePatientPayload {
   first_name: string;
   middle_name?: string;
@@ -54,6 +55,43 @@ export interface CreatePatientPayload {
   preferred_language?: string;
   patient_status: PatientStatus;
   registration_date?: string;
+}
+
+//INFO: Payload for updating a patient (all fields are optional)
+export type UpdatePatientPayload = Partial<CreatePatientPayload>;
+
+//INFO: Filters for patient list
+export interface PatientFilters {
+  page?: number;
+  per_page?: number;
+  search?: string;
+  gender?: Gender;
+  patient_status?: PatientStatus;
+  city?: string;
+  state?: string;
+  country?: string;
+  registration_date_from?: string;
+  registration_date_to?: string;
+}
+
+//INFO: Standard paginated response structure from backend
+export interface PaginatedResponse<T> {
+  data: T[];
+  links: {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number;
+    last_page: number;
+    path: string;
+    per_page: number;
+    to: number;
+    total: number;
+  };
 }
 
 export interface CreatePatientResponse {
