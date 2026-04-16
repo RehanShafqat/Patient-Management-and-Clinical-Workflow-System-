@@ -7,90 +7,73 @@
   </p>
 </div>
 <!-- Row 1: Metric Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" *ngIf="stats">
   <!-- Total Patients -->
   <div
-    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-primary shadow-sm hover:shadow-md transition-shadow"
-  >
+    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-primary shadow-sm hover:shadow-md transition-shadow">
     <div class="flex justify-between items-start mb-4">
       <div class="p-2 bg-primary/10 rounded-lg">
         <span class="material-symbols-outlined text-primary">groups</span>
       </div>
-      <span
-        class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-full"
-        >+4.2%</span
-      >
+      <span *ngIf="stats.patientChangePercent !== 0" class="text-xs font-bold px-2 py-1 rounded-full"
+        [ngClass]="stats.patientChangePercent > 0 ? 'text-teal-600 bg-teal-50' : 'text-rose-600 bg-rose-50'">{{
+        stats.patientChangePercent > 0 ? '+' : '' }}{{ stats.patientChangePercent }}%</span>
     </div>
     <h3 class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">
       Total Patients
     </h3>
-    <p class="text-3xl font-extrabold text-slate-900 tracking-tight">1,284</p>
+    <p class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.totalPatients | number }}</p>
   </div>
   <!-- Active Cases -->
   <div
-    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-teal-500 shadow-sm hover:shadow-md transition-shadow"
-  >
+    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-teal-500 shadow-sm hover:shadow-md transition-shadow">
     <div class="flex justify-between items-start mb-4">
       <div class="p-2 bg-teal-500/10 rounded-lg">
-        <span class="material-symbols-outlined text-teal-600"
-          >clinical_notes</span
-        >
+        <span class="material-symbols-outlined text-teal-600">clinical_notes</span>
       </div>
-      <span
-        class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-full"
-        >+12 today</span
-      >
+      <span *ngIf="stats.newCasesToday > 0"
+        class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-full">+{{ stats.newCasesToday }}
+        today</span>
     </div>
     <h3 class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">
       Active Cases
     </h3>
-    <p class="text-3xl font-extrabold text-slate-900 tracking-tight">347</p>
+    <p class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.activeCasesCount | number }}</p>
   </div>
   <!-- Today's Appointments -->
   <div
-    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-amber-500 shadow-sm hover:shadow-md transition-shadow"
-  >
+    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-amber-500 shadow-sm hover:shadow-md transition-shadow">
     <div class="flex justify-between items-start mb-4">
       <div class="p-2 bg-amber-500/10 rounded-lg">
         <span class="material-symbols-outlined text-amber-600">event</span>
       </div>
-      <span
-        class="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-full"
-        >On Schedule</span
-      >
+      <span class="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-full">On Schedule</span>
     </div>
     <h3 class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">
       Today's Appointments
     </h3>
-    <p class="text-3xl font-extrabold text-slate-900 tracking-tight">58</p>
+    <p class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.todayAppointmentsCount | number }}</p>
   </div>
   <!-- Completed Visits -->
   <div
-    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-blue-500 shadow-sm hover:shadow-md transition-shadow"
-  >
+    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-blue-500 shadow-sm hover:shadow-md transition-shadow">
     <div class="flex justify-between items-start mb-4">
       <div class="p-2 bg-blue-500/10 rounded-lg">
-        <span class="material-symbols-outlined text-blue-600"
-          >check_circle</span
-        >
+        <span class="material-symbols-outlined text-blue-600">check_circle</span>
       </div>
-      <span
-        class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full"
-        >88% Rate</span
-      >
+      <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">{{ stats.completionRate }}%
+        Rate</span>
     </div>
     <h3 class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">
       Completed Visits
     </h3>
-    <p class="text-3xl font-extrabold text-slate-900 tracking-tight">1,047</p>
+    <p class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ stats.completedVisitsCount | number }}</p>
   </div>
 </div>
 <!-- Row 2: Charts Area -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8" *ngIf="stats">
   <!-- Line Chart Mockup -->
-  <div
-    class="lg:col-span-2 bg-surface-container-lowest p-8 rounded-xl shadow-sm"
-  >
+  <div class="lg:col-span-2 bg-surface-container-lowest p-8 rounded-xl shadow-sm">
     <div class="flex justify-between items-center mb-8">
       <div>
         <h3 class="text-lg font-bold text-slate-900">Appointments Trend</h3>
@@ -98,121 +81,59 @@
           Patient volume over the last 30 days
         </p>
       </div>
-      <select
-        class="text-xs font-bold border-slate-200 rounded-lg focus:ring-primary focus:border-primary"
-      >
-        <option>Last 30 Days</option>
-        <option>Last 90 Days</option>
-      </select>
     </div>
-    <!-- Abstract Chart Mock -->
+    <!-- Abstract Chart Mock (Real data heights) -->
     <div class="h-64 flex items-end gap-1 w-full relative">
-      <div
-        class="absolute inset-0 flex flex-col justify-between pointer-events-none"
-      >
+      <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
         <div class="border-b border-slate-100 w-full h-0"></div>
         <div class="border-b border-slate-100 w-full h-0"></div>
         <div class="border-b border-slate-100 w-full h-0"></div>
         <div class="border-b border-slate-100 w-full h-0"></div>
       </div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[40%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[55%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[45%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[70%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[60%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-primary rounded-t-sm h-[85%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[65%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[40%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[55%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[90%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[30%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[45%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[60%] hover:bg-primary transition-colors"
-      ></div>
-      <div
-        class="flex-1 bg-teal-100 rounded-t-sm h-[75%] hover:bg-primary transition-colors"
-      ></div>
+      <div *ngFor="let day of stats.appointmentsTrend"
+        class="flex-1 bg-teal-100 rounded-t-sm hover:bg-primary transition-all duration-300 group relative"
+        [style.height.%]="(day.count / (stats.totalPatients / 10) * 100) || 10">
+        <!-- Tooltip -->
+        <div
+          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+          {{day.count}} appts on {{day.date | date:'MMM d'}}
+        </div>
+      </div>
     </div>
     <div class="flex justify-between mt-4 px-2">
-      <span class="text-[10px] font-bold text-slate-400">OCT 01</span>
-      <span class="text-[10px] font-bold text-slate-400">OCT 15</span>
-      <span class="text-[10px] font-bold text-slate-400">OCT 30</span>
+      <span class="text-[10px] font-bold text-slate-400">LAST 30 DAYS</span>
+      <span class="text-[10px] font-bold text-slate-400">TRENDING</span>
     </div>
   </div>
   <!-- Donut Chart Mockup -->
-  <div
-    class="bg-surface-container-lowest p-8 rounded-xl shadow-sm flex flex-col"
-  >
+  <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm flex flex-col">
     <h3 class="text-lg font-bold text-slate-900 mb-1">Case Categories</h3>
-    <p class="text-sm text-slate-500 mb-10">Active cases by department</p>
+    <p class="text-sm text-slate-500 mb-10">Active cases by category</p>
     <div class="flex-1 flex items-center justify-center relative">
-      <div
-        class="w-48 h-48 rounded-full border-[16px] border-slate-100 relative flex items-center justify-center"
-      >
+      <div class="w-48 h-48 rounded-full border-[16px] border-slate-100 relative flex items-center justify-center">
+        <!-- Dynamic Donut segments (approximated visually with CSS variable for rotation) -->
         <div
-          class="absolute inset-[-16px] rounded-full border-[16px] border-transparent border-t-primary border-r-teal-400 border-l-blue-400 transform rotate-45"
-        ></div>
+          class="absolute inset-[-16px] rounded-full border-[16px] border-transparent border-t-primary border-r-teal-400 border-l-blue-400 transform rotate-45">
+        </div>
         <div class="text-center">
-          <span class="block text-2xl font-extrabold text-slate-900">347</span>
-          <span
-            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-            >Total</span
-          >
+          <span class="block text-2xl font-extrabold text-slate-900">{{ stats.activeCasesCount }}</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
         </div>
       </div>
     </div>
     <div class="grid grid-cols-2 gap-4 mt-8">
-      <div class="flex items-center gap-2">
-        <div class="w-2 h-2 rounded-full bg-primary"></div>
-        <span class="text-xs font-medium text-slate-600">Cardiology</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <div class="w-2 h-2 rounded-full bg-teal-400"></div>
-        <span class="text-xs font-medium text-slate-600">Neurology</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <div class="w-2 h-2 rounded-full bg-blue-400"></div>
-        <span class="text-xs font-medium text-slate-600">Pediatrics</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <div class="w-2 h-2 rounded-full bg-slate-200"></div>
-        <span class="text-xs font-medium text-slate-600">Other</span>
+      <div class="flex items-center gap-2" *ngFor="let cat of stats.caseCategories.slice(0, 4)">
+        <div class="w-2 h-2 rounded-full" [ngClass]="cat.category === 'Emergency' ? 'bg-primary' : 'bg-teal-400'"></div>
+        <span class="text-xs font-medium text-slate-600 truncate">{{ cat.category }}</span>
       </div>
     </div>
   </div>
 </div>
 <!-- Row 3: Lists & Tables -->
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-8" *ngIf="stats">
   <!-- Recent Patients List -->
   <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-    <div
-      class="p-6 flex justify-between items-center bg-surface-container-low/30"
-    >
+    <div class="p-6 flex justify-between items-center bg-surface-container-low/30">
       <h3 class="text-lg font-bold text-slate-900">Recent Patients</h3>
       <button class="text-xs font-bold text-primary hover:underline">
         View All
@@ -220,83 +141,26 @@
     </div>
     <div class="divide-y divide-slate-50">
       <!-- Patient Item -->
-      <div
-        class="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
-      >
+      <div *ngFor="let patient of stats.recentPatients"
+        class="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
         <div class="flex items-center gap-4">
           <div
-            class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-white shadow-sm"
-          >
-            JS
+            class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-white shadow-sm uppercase">
+            {{ patient.full_name.substring(0, 2) }}
           </div>
           <div>
-            <h4 class="text-sm font-bold text-slate-900">Julianne Smith</h4>
-            <p class="text-xs text-slate-500 mt-0.5">ID: #MP-9942</p>
+            <h4 class="text-sm font-bold text-slate-900">{{ patient.full_name }}</h4>
+            <p class="text-xs text-slate-500 mt-0.5">ID: #{{ patient.id.substring(0, 8) }}</p>
           </div>
         </div>
         <div class="text-right flex items-center gap-8">
           <div class="hidden md:block">
-            <p class="text-xs font-bold text-slate-900">Oct 28, 2023</p>
+            <p class="text-xs font-bold text-slate-900">{{ patient.registration_date }}</p>
             <p class="text-[10px] text-slate-400 mt-0.5">Registration Date</p>
           </div>
-          <div
-            class="px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border-l-[3px] border-emerald-500 uppercase tracking-wider"
-          >
-            Stable
-          </div>
-        </div>
-      </div>
-      <!-- Patient Item -->
-      <div
-        class="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
-      >
-        <div class="flex items-center gap-4">
-          <div
-            class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold border-2 border-white shadow-sm"
-          >
-            RM
-          </div>
-          <div>
-            <h4 class="text-sm font-bold text-slate-900">Ricardo Milos</h4>
-            <p class="text-xs text-slate-500 mt-0.5">ID: #MP-8120</p>
-          </div>
-        </div>
-        <div class="text-right flex items-center gap-8">
-          <div class="hidden md:block">
-            <p class="text-xs font-bold text-slate-900">Oct 27, 2023</p>
-            <p class="text-[10px] text-slate-400 mt-0.5">Registration Date</p>
-          </div>
-          <div
-            class="px-3 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-full border-l-[3px] border-amber-500 uppercase tracking-wider"
-          >
-            Critical
-          </div>
-        </div>
-      </div>
-      <!-- Patient Item -->
-      <div
-        class="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
-      >
-        <div class="flex items-center gap-4">
-          <div
-            class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold border-2 border-white shadow-sm"
-          >
-            AH
-          </div>
-          <div>
-            <h4 class="text-sm font-bold text-slate-900">Alice Henderson</h4>
-            <p class="text-xs text-slate-500 mt-0.5">ID: #MP-3341</p>
-          </div>
-        </div>
-        <div class="text-right flex items-center gap-8">
-          <div class="hidden md:block">
-            <p class="text-xs font-bold text-slate-900">Oct 27, 2023</p>
-            <p class="text-[10px] text-slate-400 mt-0.5">Registration Date</p>
-          </div>
-          <div
-            class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-full border-l-[3px] border-blue-500 uppercase tracking-wider"
-          >
-            Routine
+          <div class="px-3 py-1 text-[10px] font-bold rounded-full border-l-[3px] uppercase tracking-wider"
+            [ngClass]="patient.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-500' : 'bg-slate-50 text-slate-700 border-slate-500'">
+            {{ patient.status }}
           </div>
         </div>
       </div>
@@ -315,114 +179,40 @@
       <table class="w-full">
         <thead>
           <tr class="bg-surface-container border-b border-slate-100">
-            <th
-              class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-            >
+            <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">
               Doctor
             </th>
-            <th
-              class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-            >
+            <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">
               Department
             </th>
-            <th
-              class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-            >
-              Patients
-            </th>
-            <th
-              class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-            >
-              Rating
+            <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              Patients Handled
             </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-50">
-          <tr class="hover:bg-slate-50/50 transition-colors">
+          <tr *ngFor="let staff of stats.staffPerformance" class="hover:bg-slate-50/50 transition-colors">
             <td class="px-6 py-4 flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg overflow-hidden bg-slate-100">
-                <img
-                  class="w-full h-full object-cover"
-                  data-alt="portrait of a male doctor in clinical environment with a kind expression"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdHNiz0M1h944-uPhKkZbuHuQOhqDjWIPIhEhoMZbHjvhJTeOQ9gscqdIDC5I9UIu2tdvDGPRXlc6tUQGLjPTPpjv_YmloJtBc6U86M6-0_xJKNVEP1hT8zMXYTcmMe78MwIrYko2P8VQd7prVRP9R2eL_GsO47e-WGDU7Hg0QYSZCPlO5Hrpxvr_SAkoWF_AVFE1PY4ikZSKafup_QIkiEuMFUybgJxMSOiO024GWjA7ady0IDhL0DqzobLMMsYkJlLK_mRbCJXr4"
-                />
+              <div class="w-8 h-8 rounded-lg overflow-hidden bg-teal-500 flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-sm">person</span>
               </div>
-              <span class="text-sm font-bold text-slate-900"
-                >Dr. Marcus Thorne</span
-              >
+              <span class="text-sm font-bold text-slate-900">{{ staff.name }}</span>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-600">Cardiology</td>
-            <td class="px-6 py-4 text-sm font-bold text-slate-900">142</td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-1 text-amber-500">
-                <span
-                  class="material-symbols-outlined text-sm"
-                  style="font-variation-settings: &quot;FILL&quot; 1"
-                  >star</span
-                >
-                <span class="text-sm font-bold text-slate-900">4.9</span>
-              </div>
-            </td>
-          </tr>
-          <tr class="hover:bg-slate-50/50 transition-colors">
-            <td class="px-6 py-4 flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg overflow-hidden bg-slate-100">
-                <img
-                  class="w-full h-full object-cover"
-                  data-alt="portrait of a professional female physician in medical attire"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrx3NT-LwtJEAipHX-GWY9uz2uNxXhRXk2CfhqBdZ5HVaZrhdXk-od8ovypVGFSCFtF4fXrCCvjkWHzElTq2rb05-psL9b0Exy32ZZigp_evTM-mDf3yrX3O4A2vZh0JZ-JIxPOuwAFyX5Q-UKV6zHUPNvmtEmay_7HNoxaGRcYTUEMaKOTm-bFVefqEcdo2KYO_Z-_hU-oZQrBzjlzobcS7I72_qRgk0mAJ-6lP7B3HAmhB1lrV-7uDN9l1O4Vx1P5dnl-whrvwwo"
-                />
-              </div>
-              <span class="text-sm font-bold text-slate-900"
-                >Dr. Elena Rodriguez</span
-              >
-            </td>
-            <td class="px-6 py-4 text-sm text-slate-600">Neurology</td>
-            <td class="px-6 py-4 text-sm font-bold text-slate-900">98</td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-1 text-amber-500">
-                <span
-                  class="material-symbols-outlined text-sm"
-                  style="font-variation-settings: &quot;FILL&quot; 1"
-                  >star</span
-                >
-                <span class="text-sm font-bold text-slate-900">4.8</span>
-              </div>
-            </td>
-          </tr>
-          <tr class="hover:bg-slate-50/50 transition-colors">
-            <td class="px-6 py-4 flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg overflow-hidden bg-slate-100">
-                <img
-                  class="w-full h-full object-cover"
-                  data-alt="portrait of a cheerful medical professional in scrubs"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0QCsaZlNgYiz6vGN9m-9muu6nwdrML3p2jka3TJRwkYQImlNymINanaNHHZbzDC6As1oO4eX0qDybpBDahke1EwIxUk0ZgaoznIIFyY2slxZopXgsLRj1PZnyqWebPfV_Z9WnaYAf_-Txt3oETNHFdrjAxGJRgT_Wx5bFg39WTDOdBB1UfvphXPcvnYLuBYIBmSniJlYzph6eUogAt4k9VtKIEgaKRNJR5q9WN6LG1PfruL-1Fr1NMOn9npzcb24CvOfn1cqbyiRi"
-                />
-              </div>
-              <span class="text-sm font-bold text-slate-900"
-                >Dr. Simon Gable</span
-              >
-            </td>
-            <td class="px-6 py-4 text-sm text-slate-600">Pediatrics</td>
-            <td class="px-6 py-4 text-sm font-bold text-slate-900">114</td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-1 text-amber-500">
-                <span
-                  class="material-symbols-outlined text-sm"
-                  style="font-variation-settings: &quot;FILL&quot; 1"
-                  >star</span
-                >
-                <span class="text-sm font-bold text-slate-900">5.0</span>
-              </div>
-            </td>
+            <td class="px-6 py-4 text-sm text-slate-600">{{ staff.department }}</td>
+            <td class="px-6 py-4 text-sm font-bold text-slate-900">{{ staff.patients_handled }}</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
+<!-- Loading State Placeholder -->
+<div class="flex flex-col items-center justify-center min-h-[400px] space-y-4" *ngIf="loading">
+  <span class="loading loading-spinner loading-lg text-primary"></span>
+  <p class="text-slate-500 font-medium animate-pulse">Synchronizing clinical data...</p>
+</div>
 <button
-  class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-50"
->
+  class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-50">
   <span class="material-symbols-outlined text-3xl">medical_information</span>
 </button>
