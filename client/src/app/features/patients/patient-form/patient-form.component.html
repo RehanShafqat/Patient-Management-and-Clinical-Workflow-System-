@@ -1,12 +1,7 @@
 <div class="flex-1 p-8 max-w-5xl mx-auto w-full">
   <div class="flex items-center gap-4 mb-8">
-    <button
-      class="p-2 hover:bg-base-200 rounded-full transition-colors"
-      type="button"
-    >
-      <span class="material-symbols-outlined text-base-content/70"
-        >arrow_back</span
-      >
+    <button class="p-2 hover:bg-base-200 rounded-full transition-colors" type="button">
+      <span class="material-symbols-outlined text-base-content/70">arrow_back</span>
     </button>
     <h2 class="text-base font-semibold text-base-content">
       Patient Intake Registry
@@ -15,69 +10,53 @@
 
   <div class="mb-12">
     <div class="flex items-center justify-between relative">
-      <div
-        class="absolute top-1/2 left-0 w-full h-0.5 bg-base-300 -translate-y-1/2 z-0"
-      ></div>
-      <div
-        class="absolute top-1/2 left-0 h-0.5 bg-primary -translate-y-1/2 z-0 transition-all duration-300"
+      <div class="absolute top-1/2 left-0 w-full h-0.5 bg-base-300 -translate-y-1/2 z-0"></div>
+      <div class="absolute top-1/2 left-0 h-0.5 bg-primary -translate-y-1/2 z-0 transition-all duration-300"
         [style.width]="
           currentStep === 1 ? '33%' : currentStep === 2 ? '66%' : '100%'
-        "
-      ></div>
+        "></div>
 
       <div class="relative z-10 flex flex-col items-center gap-3">
-        <div
-          class="w-10 h-10 rounded-full flex items-center justify-center border-4 border-base-200 transition-all"
+        <div class="w-10 h-10 rounded-full flex items-center justify-center border-4 border-base-200 transition-all"
           [ngClass]="
             currentStep >= 1
               ? 'bg-primary text-primary-content teal-glow'
               : 'bg-base-300 text-base-content/60'
-          "
-        >
+          ">
           <span class="material-symbols-outlined text-sm">person</span>
         </div>
-        <span
-          class="text-xs font-bold uppercase tracking-widest"
-          [ngClass]="currentStep >= 1 ? 'text-primary' : 'text-base-content/50'"
-        >
+        <span class="text-xs font-bold uppercase tracking-widest"
+          [ngClass]="currentStep >= 1 ? 'text-primary' : 'text-base-content/50'">
           Personal Info
         </span>
       </div>
 
       <div class="relative z-10 flex flex-col items-center gap-3">
-        <div
-          class="w-10 h-10 rounded-full flex items-center justify-center border-4 border-base-200 transition-all"
+        <div class="w-10 h-10 rounded-full flex items-center justify-center border-4 border-base-200 transition-all"
           [ngClass]="
             currentStep >= 2
               ? 'bg-primary text-primary-content teal-glow'
               : 'bg-base-300 text-base-content/60'
-          "
-        >
+          ">
           <span class="material-symbols-outlined text-sm">location_on</span>
         </div>
-        <span
-          class="text-xs font-bold uppercase tracking-widest"
-          [ngClass]="currentStep >= 2 ? 'text-primary' : 'text-base-content/50'"
-        >
+        <span class="text-xs font-bold uppercase tracking-widest"
+          [ngClass]="currentStep >= 2 ? 'text-primary' : 'text-base-content/50'">
           Contact & Address
         </span>
       </div>
 
       <div class="relative z-10 flex flex-col items-center gap-3">
-        <div
-          class="w-10 h-10 rounded-full flex items-center justify-center border-4 border-base-200 transition-all"
+        <div class="w-10 h-10 rounded-full flex items-center justify-center border-4 border-base-200 transition-all"
           [ngClass]="
             currentStep >= 3
               ? 'bg-primary text-primary-content teal-glow'
               : 'bg-base-300 text-base-content/60'
-          "
-        >
+          ">
           <span class="material-symbols-outlined text-sm">verified_user</span>
         </div>
-        <span
-          class="text-xs font-bold uppercase tracking-widest"
-          [ngClass]="currentStep >= 3 ? 'text-primary' : 'text-base-content/50'"
-        >
+        <span class="text-xs font-bold uppercase tracking-widest"
+          [ngClass]="currentStep >= 3 ? 'text-primary' : 'text-base-content/50'">
           Insurance & Review
         </span>
       </div>
@@ -86,22 +65,13 @@
 
   <div class="bg-base-100 rounded-xl p-10 shadow-sm border border-base-300/60">
     <div class="mb-8">
-      <h3
-        class="text-2xl font-bold tracking-tight text-base-content"
-        *ngIf="currentStep === 1"
-      >
+      <h3 class="text-2xl font-bold tracking-tight text-base-content" *ngIf="currentStep === 1">
         Demographic Information
       </h3>
-      <h3
-        class="text-2xl font-bold tracking-tight text-base-content"
-        *ngIf="currentStep === 2"
-      >
+      <h3 class="text-2xl font-bold tracking-tight text-base-content" *ngIf="currentStep === 2">
         Contact & Address Details
       </h3>
-      <h3
-        class="text-2xl font-bold tracking-tight text-base-content"
-        *ngIf="currentStep === 3"
-      >
+      <h3 class="text-2xl font-bold tracking-tight text-base-content" *ngIf="currentStep === 3">
         Insurance & Final Review
       </h3>
 
@@ -119,23 +89,16 @@
       </p>
     </div>
 
-    <div
-      *ngIf="currentStep === 1 && duplicateHintVisible"
-      class="mb-8 flex items-start gap-4 p-4 bg-amber-50 rounded-xl border-l-4 border-amber-400"
-    >
-      <span class="material-symbols-outlined text-amber-600 mt-0.5"
-        >warning</span
-      >
+    <div *ngIf="currentStep === 1 && duplicateHintVisible"
+      class="mb-8 flex items-start gap-4 p-4 bg-amber-50 rounded-xl border-l-4 border-amber-400">
+      <span class="material-symbols-outlined text-amber-600 mt-0.5">warning</span>
       <div>
         <p class="text-sm font-bold text-amber-900 leading-none">
           Potential Duplicate Detected
         </p>
         <p class="text-xs text-amber-800 mt-1">
           A patient with a similar name and DOB already exists in the system.
-          <a
-            class="underline font-semibold hover:text-amber-950"
-            href="javascript:void(0)"
-          >
+          <a class="underline font-semibold hover:text-amber-950" href="javascript:void(0)">
             Verify existing record
           </a>
         </p>
@@ -146,117 +109,74 @@
       <div *ngIf="currentStep === 1" class="space-y-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >First Name</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">First Name</label>
+            <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
               [ngClass]="
                 isFieldInvalid('first_name')
                   ? 'border-error'
                   : 'border-base-300'
-              "
-              formControlName="first_name"
-              type="text"
-            />
+              " formControlName="first_name" type="text" />
           </div>
 
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Middle Name</label
-            >
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Middle Name</label>
             <input
               class="w-full h-12 px-4 rounded-xl border border-base-300 bg-base-200 form-input-focus transition-all text-sm"
-              formControlName="middle_name"
-              placeholder="Optional"
-              type="text"
-            />
+              formControlName="middle_name" placeholder="Optional" type="text" />
           </div>
 
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Last Name</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Last Name</label>
+            <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
               [ngClass]="
                 isFieldInvalid('last_name') ? 'border-error' : 'border-base-300'
-              "
-              formControlName="last_name"
-              type="text"
-            />
+              " formControlName="last_name" type="text" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Date of Birth</label
-            >
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Date of Birth</label>
             <div class="relative">
-              <input
-                class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+              <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
                 [ngClass]="
                   isFieldInvalid('date_of_birth')
                     ? 'border-error'
                     : 'border-base-300'
-                "
-                formControlName="date_of_birth"
-                type="date"
-              />
+                " formControlName="date_of_birth" type="date" />
               <span
-                class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-base-content/50 pointer-events-none"
-              >
+                class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-base-content/50 pointer-events-none">
                 calendar_today
               </span>
             </div>
           </div>
 
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Social Security Number</label
-            >
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Social Security
+              Number</label>
             <div class="relative">
               <span
-                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-base-content/50 text-sm"
-              >
+                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-base-content/50 text-sm">
                 lock
               </span>
               <input
                 class="w-full h-12 pl-12 pr-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm font-mono tracking-widest"
                 [ngClass]="
                   isFieldInvalid('ssn') ? 'border-error' : 'border-base-300'
-                "
-                formControlName="ssn"
-                placeholder="123-45-6789"
-                type="text"
-              />
+                " formControlName="ssn" placeholder="123-45-6789" type="text" />
             </div>
           </div>
         </div>
 
         <div class="space-y-3">
-          <label
-            class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-            >Legal Gender</label
-          >
+          <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Legal Gender</label>
           <div class="flex flex-wrap p-1 bg-base-300 rounded-xl w-fit gap-1">
-            <button
-              *ngFor="let gender of genderOptions"
-              type="button"
-              (click)="selectGender(gender.value)"
-              class="px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition-all"
-              [ngClass]="
+            <button *ngFor="let gender of genderOptions" type="button" (click)="selectGender(gender.value)"
+              class="px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition-all" [ngClass]="
                 form.value.gender === gender.value
                   ? 'bg-base-100 shadow-sm text-primary'
                   : 'text-base-content/70 hover:bg-base-100/60'
-              "
-            >
+              ">
               {{ gender.label }}
             </button>
           </div>
@@ -266,160 +186,102 @@
       <div *ngIf="currentStep === 2" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="space-y-2 md:col-span-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Email</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Email</label>
+            <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
               [ngClass]="
                 isFieldInvalid('email') ? 'border-error' : 'border-base-300'
-              "
-              formControlName="email"
-              type="email"
-            />
+              " formControlName="email" type="email" />
           </div>
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Country</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Country</label>
+            <select
+              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm appearance-none"
               [ngClass]="
                 isFieldInvalid('country') ? 'border-error' : 'border-base-300'
-              "
-              formControlName="country"
-              type="text"
-            />
+              " formControlName="country">
+              <option value="">Select Country</option>
+              <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
+            </select>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Phone</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Phone</label>
+            <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
               [ngClass]="
                 isFieldInvalid('phone') ? 'border-error' : 'border-base-300'
-              "
-              formControlName="phone"
-              type="text"
-            />
+              " formControlName="phone" type="text" />
           </div>
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Mobile</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Mobile</label>
+            <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
               [ngClass]="
                 isFieldInvalid('mobile') ? 'border-error' : 'border-base-300'
-              "
-              formControlName="mobile"
-              type="text"
-            />
+              " formControlName="mobile" type="text" />
           </div>
         </div>
 
         <div class="space-y-2">
-          <label
-            class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-            >Address</label
-          >
+          <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Address</label>
           <textarea
             class="w-full px-4 py-3 rounded-xl border bg-base-200 form-input-focus transition-all text-sm min-h-28"
             [ngClass]="
               isFieldInvalid('address') ? 'border-error' : 'border-base-300'
-            "
-            formControlName="address"
-          ></textarea>
+            " formControlName="address"></textarea>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >City</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">City</label>
+            <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
               [ngClass]="
                 isFieldInvalid('city') ? 'border-error' : 'border-base-300'
-              "
-              formControlName="city"
-              type="text"
-            />
+              " formControlName="city" type="text" />
           </div>
 
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >State</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">State</label>
+            <select
+              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm appearance-none"
               [ngClass]="
                 isFieldInvalid('state') ? 'border-error' : 'border-base-300'
-              "
-              formControlName="state"
-              type="text"
-            />
+              " formControlName="state">
+              <option value="">Select State</option>
+              <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+            </select>
           </div>
 
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >ZIP Code</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">ZIP Code</label>
+            <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
               [ngClass]="
                 isFieldInvalid('zip_code') ? 'border-error' : 'border-base-300'
-              "
-              formControlName="zip_code"
-              type="text"
-            />
+              " formControlName="zip_code" type="text" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Emergency Contact Name</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Emergency Contact
+              Name</label>
+            <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
               [ngClass]="
                 isFieldInvalid('emergency_contact_name')
                   ? 'border-error'
                   : 'border-base-300'
-              "
-              formControlName="emergency_contact_name"
-              type="text"
-            />
+              " formControlName="emergency_contact_name" type="text" />
           </div>
 
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Emergency Contact Phone</label
-            >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Emergency Contact
+              Phone</label>
+            <input class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
               [ngClass]="
                 isFieldInvalid('emergency_contact_phone')
                   ? 'border-error'
                   : 'border-base-300'
-              "
-              formControlName="emergency_contact_phone"
-              type="text"
-            />
+              " formControlName="emergency_contact_phone" type="text" />
           </div>
         </div>
       </div>
@@ -427,76 +289,49 @@
       <div *ngIf="currentStep === 3" class="space-y-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Primary Physician</label
-            >
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Primary
+              Physician</label>
             <input
               class="w-full h-12 px-4 rounded-xl border border-base-300 bg-base-200 form-input-focus transition-all text-sm"
-              formControlName="primary_physician"
-              type="text"
-              placeholder="Optional"
-            />
+              formControlName="primary_physician" type="text" placeholder="Optional" />
           </div>
 
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Preferred Language</label
-            >
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Preferred
+              Language</label>
             <input
               class="w-full h-12 px-4 rounded-xl border border-base-300 bg-base-200 form-input-focus transition-all text-sm"
-              formControlName="preferred_language"
-              type="text"
-            />
+              formControlName="preferred_language" type="text" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Insurance Provider</label
-            >
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Insurance
+              Provider</label>
             <input
               class="w-full h-12 px-4 rounded-xl border border-base-300 bg-base-200 form-input-focus transition-all text-sm"
-              formControlName="insurance_provider"
-              type="text"
-              placeholder="Optional"
-            />
+              formControlName="insurance_provider" type="text" placeholder="Optional" />
           </div>
 
           <div class="space-y-2">
-            <label
-              class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-              >Insurance Policy Number</label
-            >
+            <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Insurance Policy
+              Number</label>
             <input
               class="w-full h-12 px-4 rounded-xl border border-base-300 bg-base-200 form-input-focus transition-all text-sm"
-              formControlName="insurance_policy_number"
-              type="text"
-              placeholder="Optional"
-            />
+              formControlName="insurance_policy_number" type="text" placeholder="Optional" />
           </div>
         </div>
 
         <div class="space-y-3">
-          <label
-            class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
-            >Patient Status</label
-          >
+          <label class="block text-xs font-bold uppercase tracking-wider text-base-content/70">Patient Status</label>
           <div class="flex flex-wrap p-1 bg-base-300 rounded-xl w-fit gap-1">
-            <button
-              *ngFor="let status of patientStatusOptions"
-              type="button"
-              (click)="selectStatus(status.value)"
-              class="px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition-all"
-              [ngClass]="
+            <button *ngFor="let status of patientStatusOptions" type="button" (click)="selectStatus(status.value)"
+              class="px-4 md:px-6 py-2 rounded-lg text-sm font-semibold transition-all" [ngClass]="
                 form.value.patient_status === status.value
                   ? 'bg-base-100 shadow-sm text-primary'
                   : 'text-base-content/70 hover:bg-base-100/60'
-              "
-            >
+              ">
               {{ status.label }}
             </button>
           </div>
@@ -506,9 +341,7 @@
           <p class="text-sm font-bold text-base-content mb-3">
             Review Snapshot
           </p>
-          <div
-            class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-base-content/80"
-          >
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-base-content/80">
             <p>
               <span class="font-semibold text-base-content">Patient:</span>
               {{ form.value.first_name }} {{ form.value.last_name }}
@@ -540,41 +373,25 @@
       <div class="h-px bg-base-300 w-full my-4"></div>
 
       <div class="flex items-center justify-between pt-4">
-        <button
-          *ngIf="currentStep === 1"
-          type="button"
-          (click)="onCancel()"
-          class="px-6 py-3 rounded-xl text-sm font-bold text-base-content/70 hover:bg-base-300 transition-all flex items-center gap-2"
-        >
+        <button *ngIf="currentStep === 1" type="button" (click)="onCancel()"
+          class="px-6 py-3 rounded-xl text-sm font-bold text-base-content/70 hover:bg-base-300 transition-all flex items-center gap-2">
           Cancel Registry
         </button>
 
-        <button
-          *ngIf="currentStep > 1"
-          type="button"
-          (click)="goToPreviousStep()"
-          class="px-6 py-3 rounded-xl text-sm font-bold text-base-content/70 hover:bg-base-300 transition-all flex items-center gap-2"
-        >
+        <button *ngIf="currentStep > 1" type="button" (click)="goToPreviousStep()"
+          class="px-6 py-3 rounded-xl text-sm font-bold text-base-content/70 hover:bg-base-300 transition-all flex items-center gap-2">
           <span class="material-symbols-outlined text-sm">arrow_back</span>
           Previous Step
         </button>
 
-        <button
-          *ngIf="currentStep < 3"
-          type="button"
-          (click)="goToNextStep()"
-          class="px-8 py-3 rounded-xl bg-primary text-primary-content font-bold text-sm teal-glow hover:brightness-105 active:scale-95 transition-all flex items-center gap-2"
-        >
+        <button *ngIf="currentStep < 3" type="button" (click)="goToNextStep()"
+          class="px-8 py-3 rounded-xl bg-primary text-primary-content font-bold text-sm teal-glow hover:brightness-105 active:scale-95 transition-all flex items-center gap-2">
           Continue to {{ currentStep === 1 ? "Contact" : "Insurance" }}
           <span class="material-symbols-outlined text-sm">arrow_forward</span>
         </button>
 
-        <button
-          *ngIf="currentStep === 3"
-          type="submit"
-          [disabled]="isSubmitting"
-          class="px-8 py-3 rounded-xl bg-primary text-primary-content font-bold text-sm teal-glow hover:brightness-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-        >
+        <button *ngIf="currentStep === 3" type="submit" [disabled]="isSubmitting"
+          class="px-8 py-3 rounded-xl bg-primary text-primary-content font-bold text-sm teal-glow hover:brightness-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
           {{ isSubmitting ? "Saving Registry..." : "Submit Registry" }}
           <span class="material-symbols-outlined text-sm">check_circle</span>
         </button>
@@ -583,12 +400,8 @@
   </div>
 
   <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div
-      class="md:col-span-2 bg-teal-50 rounded-xl p-6 border border-teal-100/50 flex gap-4"
-    >
-      <div
-        class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-teal-600 shadow-sm shrink-0"
-      >
+    <div class="md:col-span-2 bg-teal-50 rounded-xl p-6 border border-teal-100/50 flex gap-4">
+      <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-teal-600 shadow-sm shrink-0">
         <span class="material-symbols-outlined">verified</span>
       </div>
       <div>
@@ -602,15 +415,10 @@
     </div>
 
     <div class="bg-base-300 rounded-xl p-6 flex flex-col justify-center">
-      <p
-        class="text-xs font-bold text-base-content uppercase tracking-wider mb-2"
-      >
+      <p class="text-xs font-bold text-base-content uppercase tracking-wider mb-2">
         Need Assistance?
       </p>
-      <a
-        class="text-sm text-primary font-bold flex items-center gap-2 hover:underline"
-        href="javascript:void(0)"
-      >
+      <a class="text-sm text-primary font-bold flex items-center gap-2 hover:underline" href="javascript:void(0)">
         Launch Quick Help
         <span class="material-symbols-outlined text-xs">open_in_new</span>
       </a>
