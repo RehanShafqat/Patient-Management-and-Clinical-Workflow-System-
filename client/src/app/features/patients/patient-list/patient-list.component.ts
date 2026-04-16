@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 import {
   EntityTableColumn,
   EntityTableComponent,
@@ -12,17 +13,55 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 interface PatientRecord {
   id: string;
   first_name: string;
+  middle_name?: string;
   last_name: string;
   date_of_birth: string;
-  contact: string;
-  status: 'active' | 'inactive' | 'critical' | 'discharged';
-  primary_physician: string;
-  email: string;
+  gender: string;
+  ssn?: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  country?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  primary_physician?: string;
+  insurance_provider?: string;
+  insurance_policy_number?: string;
+  preferred_language?: string;
+  patient_status: 'active' | 'inactive' | 'deceased' | 'transferred';
+  registration_date?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface PatientRow extends PatientRecord {
   name: string;
   age: number;
+  contact: string;
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  links: {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    per_page: number;
+    to: number | null;
+    total: number;
+    path: string;
+    links: any[];
+  };
 }
 
 @Component({
@@ -31,6 +70,7 @@ interface PatientRow extends PatientRecord {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     EntityTableComponent,
     ConfirmDialogComponent,
   ],
@@ -41,13 +81,22 @@ export class PatientListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
+  private readonly apiUrl = environment.apiUrl;
+
+  // Phone regex: supports +, country code, dashes, spaces
+  private readonly phoneRegex =
+    /^(\+?\d{1,3}[-.\s]?)?\d{1,4}[-.\s]?\d{3}[-.\s]?\d{4}$/;
+  // SSN regex: XXX-XX-XXXX
+  private readonly ssnRegex = /^\d{3}-\d{2}-\d{4}$/;
+  // ZIP code regex: 5 digits optionally followed by - and 4 digits
+  private readonly zipRegex = /^\d{5}(-\d{4})?$/;
 
   readonly columns: EntityTableColumn[] = [
     { name: 'Name', prop: 'name', minWidth: 220 },
     { name: 'DOB', prop: 'date_of_birth', type: 'date', width: 150 },
     { name: 'Age', prop: 'age', width: 90 },
     { name: 'Contact', prop: 'contact', minWidth: 180 },
-    { name: 'Status', prop: 'status', type: 'status', width: 130 },
+    { name: 'Status', prop: 'patient_status', type: 'status', width: 130 },
     { name: 'Primary Physician', prop: 'primary_physician', minWidth: 180 },
   ];
 
@@ -55,8 +104,32 @@ export class PatientListComponent implements OnInit {
     'all',
     'active',
     'inactive',
-    'critical',
-    'discharged',
+    'deceased',
+    'transferred',
+  ];
+
+  readonly cityOptions = [
+    'New York',
+    'Los Angeles',
+    'Chicago',
+    'Houston',
+    'Phoenix',
+  ];
+
+  readonly stateOptions = [
+    'California',
+    'Texas',
+    'New York',
+    'Florida',
+    'Illinois',
+  ];
+
+  readonly countryOptions = [
+    'United States',
+    'Canada',
+    'United Kingdom',
+    'Australia',
+    'India',
   ];
 
   allRows: PatientRow[] = [];
@@ -68,9 +141,14 @@ export class PatientListComponent implements OnInit {
   isDeleting = false;
   isUpdateModalOpen = false;
   isDeleteModalOpen = false;
+  isCreateModalOpen = false;
 
   searchQuery = '';
   selectedStatus = 'all';
+  selectedGender = 'all';
+  filterCity = '';
+  filterState = '';
+  filterCountry = '';
 
   totalCount = 0;
   pageSize = 10;
@@ -81,11 +159,36 @@ export class PatientListComponent implements OnInit {
   updateForm = this.fb.group({
     first_name: ['', [Validators.required, Validators.minLength(2)]],
     last_name: ['', [Validators.required, Validators.minLength(2)]],
-    date_of_birth: ['', [Validators.required]],
-    contact: ['', [Validators.required]],
-    status: ['active', [Validators.required]],
-    primary_physician: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
+    date_of_birth: ['', [Validators.required, this.dateOfBirthValidator]],
+    phone: ['', [Validators.pattern(this.phoneRegex)]],
+    mobile: ['', [Validators.pattern(this.phoneRegex)]],
+    email: ['', [Validators.email]],
+    patient_status: ['active', [Validators.required]],
+    primary_physician: [''],
+  });
+
+  createForm = this.fb.group({
+    first_name: ['', [Validators.required, Validators.minLength(2)]],
+    middle_name: [''],
+    last_name: ['', [Validators.required, Validators.minLength(2)]],
+    date_of_birth: ['', [Validators.required, this.dateOfBirthValidator]],
+    gender: ['male', [Validators.required]],
+    ssn: ['', [Validators.pattern(this.ssnRegex)]],
+    phone: ['', [Validators.pattern(this.phoneRegex)]],
+    mobile: ['', [Validators.pattern(this.phoneRegex)]],
+    email: ['', [Validators.email]],
+    address: [''],
+    city: [''],
+    state: [''],
+    zip_code: ['', [Validators.pattern(this.zipRegex)]],
+    country: [''],
+    emergency_contact_name: [''],
+    emergency_contact_phone: ['', [Validators.pattern(this.phoneRegex)]],
+    primary_physician: [''],
+    insurance_provider: [''],
+    insurance_policy_number: [''],
+    preferred_language: [''],
+    patient_status: ['active', [Validators.required]],
   });
 
   ngOnInit(): void {
@@ -94,43 +197,107 @@ export class PatientListComponent implements OnInit {
 
   loadPatients(): void {
     this.loading = true;
-    this.http.get<PatientRecord[]>('/patients.json').subscribe({
-      next: (records) => {
-        this.allRows = records.map((record) => ({
-          ...record,
-          name: `${record.first_name} ${record.last_name}`,
-          age: this.calculateAge(record.date_of_birth),
-        }));
+    let params = new HttpParams()
+      .set('page', (this.pageOffset + 1).toString())
+      .set('per_page', this.pageSize.toString())
+      .set('search', this.searchQuery)
+      .set(
+        'patient_status',
+        this.selectedStatus === 'all' ? '' : this.selectedStatus,
+      )
+      .set('gender', this.selectedGender === 'all' ? '' : this.selectedGender);
+      
+    if (this.filterCity) params = params.set('city', this.filterCity);
+    if (this.filterState) params = params.set('state', this.filterState);
+    if (this.filterCountry) params = params.set('country', this.filterCountry);
 
-        this.applyFilters(true);
-        this.loading = false;
-      },
-      error: () => {
-        this.allRows = [];
-        this.applyFilters(true);
-        this.loading = false;
-      },
-    });
+    this.http
+      .get<
+        PaginatedResponse<PatientRecord>
+      >(`${this.apiUrl}/patients`, { params })
+      .subscribe({
+        next: (response) => {
+          this.allRows = response.data.map((record) => ({
+            ...record,
+            name: `${record.first_name} ${record.last_name}`,
+            age: this.calculateAge(record.date_of_birth),
+            contact: record.mobile || record.phone || '',
+          }));
+          this.totalCount = response.meta.total;
+          this.pageSize = response.meta.per_page;
+          this.pageOffset = response.meta.current_page - 1;
+          this.setPagedRows();
+          this.loading = false;
+        },
+        error: () => {
+          this.allRows = [];
+          this.totalCount = 0;
+          this.setPagedRows();
+          this.loading = false;
+        },
+      });
   }
 
   onSearch(query: string): void {
     this.searchQuery = query;
-    this.applyFilters(true);
+    this.pageOffset = 0;
+    this.loadPatients();
   }
 
   onStatusChange(status: string): void {
     this.selectedStatus = status;
-    this.applyFilters(true);
+    this.pageOffset = 0;
+    this.loadPatients();
+  }
+
+  onFilterChange(): void {
+    this.pageOffset = 0;
+    this.loadPatients();
   }
 
   onPageChange(event: { offset: number; limit: number }): void {
     this.pageOffset = event.offset;
     this.pageSize = event.limit;
-    this.setPagedRows();
+    this.loadPatients();
   }
 
   onRowSelected(row: PatientRow): void {
     this.router.navigate([row.id], { relativeTo: this.route });
+  }
+
+  openCreateModal(): void {
+    this.isCreateModalOpen = true;
+  }
+
+  closeCreateModal(): void {
+    if (this.isSaving) {
+      return;
+    }
+
+    this.isCreateModalOpen = false;
+    this.createForm.reset();
+  }
+
+  saveCreate(): void {
+    this.createForm.markAllAsTouched();
+    if (this.createForm.invalid) {
+      return;
+    }
+
+    this.isSaving = true;
+
+    const newPatient = this.createForm.getRawValue();
+    this.http.post(`${this.apiUrl}/patients`, newPatient).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.isCreateModalOpen = false;
+        this.createForm.reset();
+        this.loadPatients();
+      },
+      error: () => {
+        this.isSaving = false;
+      },
+    });
   }
 
   openUpdateModal(row: PatientRow): void {
@@ -139,10 +306,11 @@ export class PatientListComponent implements OnInit {
       first_name: row.first_name,
       last_name: row.last_name,
       date_of_birth: row.date_of_birth,
-      contact: row.contact,
-      status: row.status,
-      primary_physician: row.primary_physician,
-      email: row.email,
+      phone: row.phone || '',
+      mobile: row.mobile || '',
+      email: row.email || '',
+      patient_status: row.patient_status,
+      primary_physician: row.primary_physician || '',
     });
     this.isUpdateModalOpen = true;
   }
@@ -166,35 +334,19 @@ export class PatientListComponent implements OnInit {
     this.isSaving = true;
 
     const updated = this.updateForm.getRawValue();
-    this.allRows = this.allRows.map((row) => {
-      if (row.id !== this.selectedPatient?.id) {
-        return row;
-      }
-
-      const firstName = (updated.first_name ?? '').trim();
-      const lastName = (updated.last_name ?? '').trim();
-      const dob = updated.date_of_birth ?? row.date_of_birth;
-
-      return {
-        ...row,
-        first_name: firstName,
-        last_name: lastName,
-        name: `${firstName} ${lastName}`.trim(),
-        date_of_birth: dob,
-        age: this.calculateAge(dob),
-        contact: (updated.contact ?? row.contact).trim(),
-        status: (updated.status as PatientRow['status']) ?? row.status,
-        primary_physician: (
-          updated.primary_physician ?? row.primary_physician
-        ).trim(),
-        email: (updated.email ?? row.email).trim(),
-      };
-    });
-
-    this.isSaving = false;
-    this.isUpdateModalOpen = false;
-    this.selectedPatient = null;
-    this.applyFilters(false);
+    this.http
+      .put(`${this.apiUrl}/patients/${this.selectedPatient.id}`, updated)
+      .subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.isUpdateModalOpen = false;
+          this.selectedPatient = null;
+          this.loadPatients();
+        },
+        error: () => {
+          this.isSaving = false;
+        },
+      });
   }
 
   openDeleteModal(row: PatientRow): void {
@@ -217,52 +369,44 @@ export class PatientListComponent implements OnInit {
     }
 
     this.isDeleting = true;
-    const idToDelete = this.selectedPatient.id;
-
-    this.allRows = this.allRows.filter((row) => row.id !== idToDelete);
-
-    this.isDeleting = false;
-    this.isDeleteModalOpen = false;
-    this.selectedPatient = null;
-    this.applyFilters(false);
-  }
-
-  private applyFilters(resetToFirstPage: boolean): void {
-    const term = this.searchQuery.trim().toLowerCase();
-    this.filteredRows = this.allRows.filter((row) => {
-      const matchesSearch =
-        !term ||
-        row.name.toLowerCase().includes(term) ||
-        row.contact.toLowerCase().includes(term) ||
-        row.primary_physician.toLowerCase().includes(term);
-
-      const matchesStatus =
-        this.selectedStatus === 'all' || row.status === this.selectedStatus;
-
-      return matchesSearch && matchesStatus;
-    });
-
-    this.totalCount = this.filteredRows.length;
-
-    if (resetToFirstPage) {
-      this.pageOffset = 0;
-    }
-
-    const maxOffset = Math.max(
-      Math.ceil(this.totalCount / this.pageSize) - 1,
-      0,
-    );
-    if (this.pageOffset > maxOffset) {
-      this.pageOffset = maxOffset;
-    }
-
-    this.setPagedRows();
+    this.http
+      .delete(`${this.apiUrl}/patients/${this.selectedPatient.id}`)
+      .subscribe({
+        next: () => {
+          this.isDeleting = false;
+          this.isDeleteModalOpen = false;
+          this.selectedPatient = null;
+          this.loadPatients();
+        },
+        error: () => {
+          this.isDeleting = false;
+        },
+      });
   }
 
   private setPagedRows(): void {
-    const start = this.pageOffset * this.pageSize;
-    const end = start + this.pageSize;
-    this.pagedRows = this.filteredRows.slice(start, end);
+    this.pagedRows = this.allRows;
+  }
+
+  private dateOfBirthValidator(control: any): { [key: string]: any } | null {
+    if (!control.value) {
+      return null;
+    }
+
+    const dob = new Date(control.value);
+    const today = new Date();
+
+    if (dob > today) {
+      return { futureDate: true };
+    }
+
+    const minDate = new Date();
+    minDate.setFullYear(minDate.getFullYear() - 150);
+    if (dob < minDate) {
+      return { tooOld: true };
+    }
+
+    return null;
   }
 
   private calculateAge(dateOfBirth: string): number {
