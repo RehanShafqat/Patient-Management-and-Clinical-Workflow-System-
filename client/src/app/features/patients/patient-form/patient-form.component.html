@@ -10,7 +10,7 @@
     </button>
     <h2 class="text-base font-semibold text-base-content">
       <!-- INFO: Dynamic title based on mode -->
-      {{ isEditMode ? 'Update Patient Record' : 'Patient Intake Registry' }}
+      {{ isEditMode ? "Update Patient Record" : "Patient Intake Registry" }}
     </h2>
   </div>
 
@@ -285,14 +285,16 @@
               class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
               >Country</label
             >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <select
+              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm appearance-none"
               [ngClass]="
                 isFieldInvalid('country') ? 'border-error' : 'border-base-300'
               "
               formControlName="country"
-              type="text"
-            />
+            >
+              <option value="">Select Country</option>
+              <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
+            </select>
           </div>
         </div>
 
@@ -362,14 +364,16 @@
               class="block text-xs font-bold uppercase tracking-wider text-base-content/70"
               >State</label
             >
-            <input
-              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm"
+            <select
+              class="w-full h-12 px-4 rounded-xl border bg-base-200 form-input-focus transition-all text-sm appearance-none"
               [ngClass]="
                 isFieldInvalid('state') ? 'border-error' : 'border-base-300'
               "
               formControlName="state"
-              type="text"
-            />
+            >
+              <option value="">Select State</option>
+              <option *ngFor="let s of states" [value]="s">{{ s }}</option>
+            </select>
           </div>
 
           <div class="space-y-2">
@@ -578,10 +582,10 @@
         >
           <!-- INFO: Dynamic button label -->
           <span *ngIf="!isSubmitting">
-            {{ isEditMode ? 'Update Patient' : 'Submit Registry' }}
+            {{ isEditMode ? "Update Patient" : "Submit Registry" }}
           </span>
           <span *ngIf="isSubmitting">
-            {{ isEditMode ? 'Updating...' : 'Saving Registry...' }}
+            {{ isEditMode ? "Updating..." : "Saving Registry..." }}
           </span>
           <span class="material-symbols-outlined text-sm">check_circle</span>
         </button>

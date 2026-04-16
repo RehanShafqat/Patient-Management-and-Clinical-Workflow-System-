@@ -25,6 +25,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    FormsModule,
     EntityTableComponent,
     ConfirmDialogComponent,
     PatientFormComponent,
@@ -185,6 +186,7 @@ export class PatientListComponent implements OnInit {
   onPageChange(event: { offset: number; limit: number }): void {
     this.currentPage = event.offset + 1;
     this.pageSize = event.limit;
+    this.loadPatients();
     this.loadPatients();
   }
 
