@@ -88,7 +88,7 @@ class AppointmentService
             ->paginate($request->get('per_page', 15));
     }
 
-    // Get single appointment 
+    // Get single appointment
     public function getById(Appointment $appointment): Appointment
     {
         return $appointment->load([
@@ -102,8 +102,8 @@ class AppointmentService
         ]);
     }
 
-    // Create appointment 
-    public function create(array $data, int $createdBy): Appointment
+    // Create appointment
+    public function create(array $data, string $createdBy): Appointment
     {
         // Check doctor is not double-booked
         $this->checkDoctorConflict(
@@ -126,7 +126,7 @@ class AppointmentService
         ]);
     }
 
-    // Update appointment     
+    // Update appointment
     public function update(Appointment $appointment, array $data, string $role): Appointment
     {
         // Cannot update cancelled appointment
@@ -171,7 +171,7 @@ class AppointmentService
         ]);
     }
 
-    // Cancel appointment 
+    // Cancel appointment
     public function cancel(Appointment $appointment): void
     {
         if ($appointment->status === AppointmentStatus::COMPLETED) {
@@ -191,12 +191,12 @@ class AppointmentService
         $appointment->delete();
     }
 
-    // Private: doctor conflict check 
+    // Private: doctor conflict check
     private function checkDoctorConflict(
-        int $doctorId,
+        string $doctorId,
         string $date,
         string $time,
-        ?int $excludeId = null
+        ?string $excludeId = null
     ): void {
         $query = Appointment::where('doctor_id', $doctorId)
             ->where('appointment_date', $date)

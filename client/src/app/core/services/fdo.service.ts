@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../interceptors/api-response.interceptor';
 import {
@@ -18,19 +18,42 @@ import {
 export class FdoService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/users`;
+  private readonly fdosCache = new Map<
+    string,
+    Observable<PaginatedResponse<FdoUser>>
+  >();
+  private permissionsCache$?: Observable<
+    ApiResponse<{ permissions: FdoPermissionOption[] }>
+  >;
+
+  private clearFdoCache(): void {
+    this.fdosCache.clear();
+  }
 
   getFdos(filters: FdoFilters = {}): Observable<PaginatedResponse<FdoUser>> {
     let params = new HttpParams().set('role', 'fdo');
 
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, String(value));
-      }
-    });
+    Object.entries(filters)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params = params.set(key, String(value));
+        }
+      });
 
-    console.log(params.toString());
+    const cacheKey = params.toString();
+    const cached = this.fdosCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
 
-    return this.http.get<PaginatedResponse<FdoUser>>(this.apiUrl, { params });
+    const request$ = this.http
+      .get<PaginatedResponse<FdoUser>>(this.apiUrl, { params })
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+
+    this.fdosCache.set(cacheKey, request$);
+
+    return request$;
   }
 
   getFdoById(id: string): Observable<ApiResponse<{ user: FdoUser }>> {
@@ -42,28 +65,37 @@ export class FdoService {
   getPermissions(): Observable<
     ApiResponse<{ permissions: FdoPermissionOption[] }>
   > {
-    return this.http.get<ApiResponse<{ permissions: FdoPermissionOption[] }>>(
-      `${this.apiUrl}/permissions`,
-    );
+    if (!this.permissionsCache$) {
+      this.permissionsCache$ = this.http
+        .get<
+          ApiResponse<{ permissions: FdoPermissionOption[] }>
+        >(`${this.apiUrl}/permissions`)
+        .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    }
+
+    return this.permissionsCache$;
   }
 
   createFdo(
     payload: CreateFdoPayload,
   ): Observable<ApiResponse<{ user: FdoUser }>> {
-    return this.http.post<ApiResponse<{ user: FdoUser }>>(this.apiUrl, payload);
+    return this.http
+      .post<ApiResponse<{ user: FdoUser }>>(this.apiUrl, payload)
+      .pipe(tap(() => this.clearFdoCache()));
   }
 
   updateFdo(
     id: string,
     payload: UpdateFdoPayload,
   ): Observable<ApiResponse<{ user: FdoUser }>> {
-    return this.http.put<ApiResponse<{ user: FdoUser }>>(
-      `${this.apiUrl}/${id}`,
-      payload,
-    );
+    return this.http
+      .put<ApiResponse<{ user: FdoUser }>>(`${this.apiUrl}/${id}`, payload)
+      .pipe(tap(() => this.clearFdoCache()));
   }
 
   deleteFdo(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/${id}`);
+    return this.http
+      .delete<ApiResponse<null>>(`${this.apiUrl}/${id}`)
+      .pipe(tap(() => this.clearFdoCache()));
   }
 }

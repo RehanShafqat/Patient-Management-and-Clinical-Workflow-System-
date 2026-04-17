@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 import {
   Case,
   CaseFilters,
@@ -18,16 +18,36 @@ import { ApiResponse } from '../interceptors/api-response.interceptor';
 export class CaseService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/cases`;
+  private casesCache = new Map<string, Observable<PaginatedResponse<Case>>>();
+
+  private clearCasesCache(): void {
+    this.casesCache.clear();
+  }
 
   getCases(filters: CaseFilters = {}): Observable<PaginatedResponse<Case>> {
     let params = new HttpParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, value.toString());
-      }
-    });
 
-    return this.http.get<PaginatedResponse<Case>>(this.apiUrl, { params });
+    Object.entries(filters)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params = params.set(key, value.toString());
+        }
+      });
+
+    const cacheKey = params.toString();
+    const cached = this.casesCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const request$ = this.http
+      .get<PaginatedResponse<Case>>(this.apiUrl, { params })
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+
+    this.casesCache.set(cacheKey, request$);
+
+    return request$;
   }
 
   getCaseById(id: string): Observable<ApiResponse<{ case: Case }>> {
@@ -35,25 +55,25 @@ export class CaseService {
   }
 
   createCase(
-    payload: CreateCasePayload
+    payload: CreateCasePayload,
   ): Observable<ApiResponse<CreateCaseResponse>> {
-    return this.http.post<ApiResponse<CreateCaseResponse>>(
-      this.apiUrl,
-      payload
-    );
+    return this.http
+      .post<ApiResponse<CreateCaseResponse>>(this.apiUrl, payload)
+      .pipe(tap(() => this.clearCasesCache()));
   }
 
   updateCase(
     id: string,
-    payload: UpdateCasePayload
+    payload: UpdateCasePayload,
   ): Observable<ApiResponse<{ case: Case }>> {
-    return this.http.patch<ApiResponse<{ case: Case }>>(
-      `${this.apiUrl}/${id}`,
-      payload
-    );
+    return this.http
+      .patch<ApiResponse<{ case: Case }>>(`${this.apiUrl}/${id}`, payload)
+      .pipe(tap(() => this.clearCasesCache()));
   }
 
   deleteCase(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/${id}`);
+    return this.http
+      .delete<ApiResponse<null>>(`${this.apiUrl}/${id}`)
+      .pipe(tap(() => this.clearCasesCache()));
   }
 }

@@ -8,7 +8,7 @@ import {
   VisitFilters,
 } from '../models/visit.model';
 import { ApiResponse } from '../interceptors/api-response.interceptor';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -16,17 +16,39 @@ import { Observable } from 'rxjs';
 export class VisitService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/visits`;
+  private readonly visitsCache = new Map<
+    string,
+    Observable<PaginatedResponse<Visit>>
+  >();
+
+  private clearVisitsCache(): void {
+    this.visitsCache.clear();
+  }
 
   getVisits(filters: VisitFilters = {}): Observable<PaginatedResponse<Visit>> {
     let params = new HttpParams();
 
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, value.toString());
-      }
-    });
+    Object.entries(filters)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params = params.set(key, value.toString());
+        }
+      });
 
-    return this.http.get<PaginatedResponse<Visit>>(this.apiUrl, { params });
+    const cacheKey = params.toString();
+    const cached = this.visitsCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const request$ = this.http
+      .get<PaginatedResponse<Visit>>(this.apiUrl, { params })
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+
+    this.visitsCache.set(cacheKey, request$);
+
+    return request$;
   }
 
   getVisitById(id: string): Observable<ApiResponse<Visit>> {
@@ -37,13 +59,14 @@ export class VisitService {
     id: string,
     payload: UpdateVisitPayload,
   ): Observable<ApiResponse<{ visit: Visit }>> {
-    return this.http.patch<ApiResponse<{ visit: Visit }>>(
-      `${this.apiUrl}/${id}`,
-      payload,
-    );
+    return this.http
+      .patch<ApiResponse<{ visit: Visit }>>(`${this.apiUrl}/${id}`, payload)
+      .pipe(tap(() => this.clearVisitsCache()));
   }
 
   deleteVisit(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/${id}`);
+    return this.http
+      .delete<ApiResponse<null>>(`${this.apiUrl}/${id}`)
+      .pipe(tap(() => this.clearVisitsCache()));
   }
 }
