@@ -155,11 +155,11 @@ export class DoctorFormComponent implements OnChanges {
 
     forkJoin({
       specialties: this.specialtyService.getSpecialties({
-        per_page: 100,
+        per_page: 10,
         is_active: true,
       }),
       practiceLocations: this.practiceLocationService.getPracticeLocations({
-        per_page: 100,
+        per_page: 10,
       }),
     }).subscribe({
       next: ({ specialties, practiceLocations }) => {
@@ -181,11 +181,11 @@ export class DoctorFormComponent implements OnChanges {
     forkJoin({
       doctorResponse: this.doctorService.getDoctorById(id),
       specialties: this.specialtyService.getSpecialties({
-        per_page: 100,
+        per_page: 10,
         is_active: true,
       }),
       practiceLocations: this.practiceLocationService.getPracticeLocations({
-        per_page: 100,
+        per_page: 10,
       }),
     }).subscribe({
       next: ({ doctorResponse, specialties, practiceLocations }) => {
