@@ -30,7 +30,6 @@ import { PracticeLocationService } from '../../../core/services/practice-locatio
 })
 export class DoctorFormComponent implements OnChanges {
   @Input() doctorId: string | null = null;
-  @Input() mode: 'create' | 'edit' = 'edit';
   @Output() formSuccess = new EventEmitter<DoctorUser>();
   @Output() formCancel = new EventEmitter<void>();
 
@@ -88,10 +87,15 @@ export class DoctorFormComponent implements OnChanges {
     bio: ['', [Validators.maxLength(500)]],
   });
 
+  get isCreateMode(): boolean {
+    return !this.doctorId;
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
+    // this is made so that if there is create mode then email and password are required, but if its edit mode then they are optional and can be left empty to keep unchanged.
     this.applyModeValidators();
 
-    if (this.mode === 'create') {
+    if (this.isCreateMode) {
       this.currentDoctor = null;
       this.form.reset({
         first_name: '',
@@ -111,7 +115,7 @@ export class DoctorFormComponent implements OnChanges {
       return;
     }
 
-    if ((changes['doctorId'] || changes['mode']) && this.doctorId) {
+    if (changes['doctorId'] && this.doctorId) {
       this.loadForm(this.doctorId);
     }
   }
@@ -124,26 +128,26 @@ export class DoctorFormComponent implements OnChanges {
       return;
     }
 
-    if (this.mode === 'create') {
+    if (this.isCreateMode) {
       emailControl.setValidators([Validators.required, Validators.email]);
+      emailControl.enable({ emitEvent: false });
       passwordControl.setValidators([
         Validators.required,
         Validators.minLength(6),
         Validators.maxLength(100),
       ]);
-      emailControl.enable({ emitEvent: false });
-      passwordControl.enable({ emitEvent: false });
       passwordControl.setValue('', { emitEvent: false });
     } else {
       emailControl.clearValidators();
+      emailControl.disable({ emitEvent: false });
       passwordControl.setValidators([
         Validators.minLength(6),
         Validators.maxLength(100),
       ]);
       emailControl.setValue('', { emitEvent: false });
       passwordControl.setValue('', { emitEvent: false });
-      emailControl.disable({ emitEvent: false });
-      passwordControl.enable({ emitEvent: false });
+      // emailControl.enable({ emitEvent: false });
+      // passwordControl.enable({ emitEvent: false });
     }
 
     emailControl.updateValueAndValidity({ emitEvent: false });
@@ -192,6 +196,7 @@ export class DoctorFormComponent implements OnChanges {
         this.currentDoctor = doctorResponse.data.user;
         this.specialties = specialties.data;
         this.practiceLocations = practiceLocations.data;
+        console.log('This is from doctor form', this.currentDoctor);
 
         const profile = this.currentDoctor.doctorProfile;
 
@@ -203,6 +208,7 @@ export class DoctorFormComponent implements OnChanges {
           specialty_id: profile?.specialty_id || '',
           practice_location_id: profile?.practice_location_id || '',
           license_number: profile?.license_number || '',
+          email: this.currentDoctor.email || '',
           bio: profile?.bio || '',
         });
 
@@ -234,7 +240,7 @@ export class DoctorFormComponent implements OnChanges {
       return;
     }
 
-    if (this.mode === 'create') {
+    if (this.isCreateMode) {
       const payload: CreateDoctorPayload = {
         role: 'doctor',
         first_name: (value.first_name || '').trim(),

@@ -43,6 +43,16 @@ export class FdoFormComponent implements OnChanges {
 
   loading = false;
   isSubmitting = false;
+  permissionTouched = false;
+
+  private readonly fieldLabels: Record<string, string> = {
+    first_name: 'First name',
+    last_name: 'Last name',
+    email: 'Email',
+    password: 'Password',
+    phone: 'Phone',
+    is_active: 'Status',
+  };
 
   currentFdo: FdoUser | null = null;
   permissionGroups: PermissionGroup[] = [];
@@ -51,9 +61,15 @@ export class FdoFormComponent implements OnChanges {
   form = this.fb.group({
     first_name: ['', [Validators.required, Validators.minLength(2)]],
     last_name: ['', [Validators.required, Validators.minLength(2)]],
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-    phone: [''],
+    email: [
+      '',
+      [Validators.required, Validators.email, Validators.maxLength(100)],
+    ],
+    password: [
+      '',
+      [Validators.required, Validators.minLength(6), Validators.maxLength(100)],
+    ],
+    phone: ['', [Validators.required, Validators.maxLength(20)]],
     is_active: [true, [Validators.required]],
   });
 
@@ -71,6 +87,7 @@ export class FdoFormComponent implements OnChanges {
         is_active: true,
       });
       this.selectedPermissionIds = new Set<string>();
+      this.permissionTouched = false;
       this.loadPermissionsOnly();
       return;
     }
@@ -89,16 +106,24 @@ export class FdoFormComponent implements OnChanges {
     }
 
     if (this.mode === 'create') {
-      emailControl.setValidators([Validators.required, Validators.email]);
+      emailControl.setValidators([
+        Validators.required,
+        Validators.email,
+        Validators.maxLength(100),
+      ]);
       passwordControl.setValidators([
         Validators.required,
         Validators.minLength(6),
+        Validators.maxLength(100),
       ]);
       emailControl.enable({ emitEvent: false });
       passwordControl.enable({ emitEvent: false });
     } else {
       emailControl.clearValidators();
-      passwordControl.setValidators([Validators.minLength(6)]);
+      passwordControl.setValidators([
+        Validators.minLength(6),
+        Validators.maxLength(100),
+      ]);
       emailControl.setValue('', { emitEvent: false });
       passwordControl.setValue('', { emitEvent: false });
       emailControl.disable({ emitEvent: false });
@@ -149,6 +174,7 @@ export class FdoFormComponent implements OnChanges {
           last_name: this.currentFdo.last_name,
           phone: this.currentFdo.phone || '',
           is_active: this.currentFdo.is_active,
+          email: this.currentFdo.email || '',
         });
 
         this.loading = false;
@@ -186,10 +212,12 @@ export class FdoFormComponent implements OnChanges {
   togglePermission(permissionId: string, checked: boolean): void {
     if (checked) {
       this.selectedPermissionIds.add(permissionId);
+      this.permissionTouched = true;
       return;
     }
 
     this.selectedPermissionIds.delete(permissionId);
+    this.permissionTouched = true;
   }
 
   isPermissionSelected(permissionId: string): boolean {
@@ -205,8 +233,14 @@ export class FdoFormComponent implements OnChanges {
   }
 
   onSubmit(): void {
+    this.form.markAllAsTouched();
+    this.permissionTouched = true;
+
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
+      return;
+    }
+
+    if (this.selectedPermissionIds.size === 0) {
       return;
     }
 
@@ -264,6 +298,43 @@ export class FdoFormComponent implements OnChanges {
         this.isSubmitting = false;
       },
     });
+  }
+
+  isFieldInvalid(controlName: string): boolean {
+    const control = this.form.get(controlName);
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  getFieldErrorMessage(controlName: string): string {
+    const control = this.form.get(controlName);
+    if (!control || !control.errors || !(control.dirty || control.touched)) {
+      return '';
+    }
+
+    const label = this.fieldLabels[controlName] || 'This field';
+    const errors = control.errors;
+
+    if (errors['required']) {
+      return `${label} is required.`;
+    }
+
+    if (errors['email']) {
+      return 'Please enter a valid email address.';
+    }
+
+    if (errors['minlength']) {
+      return `${label} must be at least ${errors['minlength'].requiredLength} characters.`;
+    }
+
+    if (errors['maxlength']) {
+      return `${label} cannot exceed ${errors['maxlength'].requiredLength} characters.`;
+    }
+
+    return `${label} is invalid.`;
+  }
+
+  get isPermissionInvalid(): boolean {
+    return this.permissionTouched && this.selectedPermissionIds.size === 0;
   }
 
   permissionActionLabel(permissionName: string): string {

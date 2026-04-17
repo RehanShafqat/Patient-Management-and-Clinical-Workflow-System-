@@ -6,6 +6,7 @@ export interface DoctorProfile {
   user_id: string;
   specialty_id: string;
   practice_location_id: string;
+  email: string;
   license_number: string;
   availability_schedule?: unknown;
   bio?: string | null;

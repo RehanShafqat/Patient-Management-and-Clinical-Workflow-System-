@@ -24,8 +24,15 @@
         <input
           type="text"
           class="input input-bordered h-10 text-sm w-full"
+          [class.input-error]="isFieldInvalid('first_name')"
           formControlName="first_name"
         />
+        <p
+          *ngIf="isFieldInvalid('first_name')"
+          class="text-xs text-red-500 mt-1"
+        >
+          {{ getFieldErrorMessage("first_name") }}
+        </p>
       </div>
 
       <div class="form-control w-full">
@@ -39,8 +46,15 @@
         <input
           type="text"
           class="input input-bordered h-10 text-sm w-full"
+          [class.input-error]="isFieldInvalid('last_name')"
           formControlName="last_name"
         />
+        <p
+          *ngIf="isFieldInvalid('last_name')"
+          class="text-xs text-red-500 mt-1"
+        >
+          {{ getFieldErrorMessage("last_name") }}
+        </p>
       </div>
 
       <div class="form-control w-full">
@@ -54,8 +68,12 @@
         <input
           type="text"
           class="input input-bordered h-10 text-sm w-full"
+          [class.input-error]="isFieldInvalid('phone')"
           formControlName="phone"
         />
+        <p *ngIf="isFieldInvalid('phone')" class="text-xs text-red-500 mt-1">
+          {{ getFieldErrorMessage("phone") }}
+        </p>
       </div>
 
       <div class="form-control w-full">
@@ -68,14 +86,21 @@
         </label>
         <select
           class="select select-bordered h-10 min-h-0 text-sm w-full"
+          [class.select-error]="isFieldInvalid('is_active')"
           formControlName="is_active"
         >
           <option [ngValue]="true">Active</option>
           <option [ngValue]="false">Inactive</option>
         </select>
+        <p
+          *ngIf="isFieldInvalid('is_active')"
+          class="text-xs text-red-500 mt-1"
+        >
+          {{ getFieldErrorMessage("is_active") }}
+        </p>
       </div>
 
-      <div class="form-control w-full" *ngIf="mode === 'create'">
+      <div class="form-control w-full">
         <label class="label pb-1">
           <span
             class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
@@ -86,8 +111,13 @@
         <input
           type="email"
           class="input input-bordered h-10 text-sm w-full"
+          [class.input-error]="isFieldInvalid('email')"
+          maxlength="100"
           formControlName="email"
         />
+        <p *ngIf="isFieldInvalid('email')" class="text-xs text-red-500 mt-1">
+          {{ getFieldErrorMessage("email") }}
+        </p>
       </div>
 
       <div class="form-control w-full">
@@ -102,15 +132,21 @@
           type="password"
           class="input input-bordered h-10 text-sm w-full"
           formControlName="password"
+          [class.input-error]="isFieldInvalid('password')"
+          maxlength="100"
+          autocomplete="new-password"
           [placeholder]="
             mode === 'edit' ? 'Leave blank to keep current password' : ''
           "
         />
         <span class="label" *ngIf="mode === 'edit'">
           <span class="label-text-alt text-xs text-base-content/60">
-            Optional. Use at least 6 characters.
+            Optional. Use 6 to 100 characters.
           </span>
         </span>
+        <p *ngIf="isFieldInvalid('password')" class="text-xs text-red-500 mt-1">
+          {{ getFieldErrorMessage("password") }}
+        </p>
       </div>
     </div>
 
@@ -162,6 +198,10 @@
           </div>
         </div>
       </div>
+
+      <p *ngIf="isPermissionInvalid" class="text-xs text-red-500 mt-1">
+        At least one permission is required.
+      </p>
     </div>
 
     <div class="divider"></div>

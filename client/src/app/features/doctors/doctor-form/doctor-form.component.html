@@ -75,7 +75,7 @@
         </select>
       </div>
 
-      <div class="form-control w-full" *ngIf="mode === 'create'">
+      <div class="form-control w-full">
         <label class="label pb-1">
           <span
             class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
@@ -95,7 +95,7 @@
           <span
             class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
           >
-            {{ mode === "create" ? "Password" : "New Password" }}
+            {{ isCreateMode ? "Password" : "New Password" }}
           </span>
         </label>
         <input
@@ -105,10 +105,10 @@
           maxlength="100"
           autocomplete="new-password"
           [placeholder]="
-            mode === 'edit' ? 'Leave blank to keep current password' : ''
+            !isCreateMode ? 'Leave blank to keep current password' : ''
           "
         />
-        <span class="label" *ngIf="mode === 'edit'">
+        <span class="label" *ngIf="!isCreateMode">
           <span class="label-text-alt text-xs text-base-content/60">
             Optional. Use 6 to 100 characters.
           </span>
@@ -297,7 +297,7 @@
         {{
           isSubmitting
             ? "Saving..."
-            : mode === "create"
+            : isCreateMode
               ? "Create Doctor"
               : "Save Changes"
         }}
