@@ -56,10 +56,38 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'fdo/new',
+        loadComponent: () =>
+          import('./features/fdos/fdo-create/fdo-create.component').then(
+            (m) => m.FdoCreateComponent,
+          ),
+      },
+      {
         path: 'fdo/:id',
         loadComponent: () =>
           import('./features/fdos/fdo-detail/fdo-detail.component').then(
             (m) => m.FdoDetailComponent,
+          ),
+      },
+      {
+        path: 'doctors',
+        loadComponent: () =>
+          import('./features/doctors/doctor-list/doctor-list.component').then(
+            (m) => m.DoctorListComponent,
+          ),
+      },
+      {
+        path: 'doctors/new',
+        loadComponent: () =>
+          import('./features/doctors/doctor-create/doctor-create.component').then(
+            (m) => m.DoctorCreateComponent,
+          ),
+      },
+      {
+        path: 'doctors/:id',
+        loadComponent: () =>
+          import('./features/doctors/doctor-detail/doctor-detail.component').then(
+            (m) => m.DoctorDetailComponent,
           ),
       },
       {
@@ -226,6 +254,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/patients/patient-detail/patient-detail.component').then(
             (m) => m.PatientDetailComponent,
+          ),
+      },
+      {
+        path: 'doctors',
+        loadComponent: () =>
+          import('./features/doctors/doctor-list/doctor-list.component').then(
+            (m) => m.DoctorListComponent,
+          ),
+      },
+      {
+        path: 'doctors/:id',
+        loadComponent: () =>
+          import('./features/doctors/doctor-detail/doctor-detail.component').then(
+            (m) => m.DoctorDetailComponent,
           ),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

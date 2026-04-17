@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../interceptors/api-response.interceptor';
 import {
+  CreateFdoPayload,
   FdoFilters,
   FdoPermissionOption,
   FdoUser,
@@ -44,6 +45,12 @@ export class FdoService {
     return this.http.get<ApiResponse<{ permissions: FdoPermissionOption[] }>>(
       `${this.apiUrl}/permissions`,
     );
+  }
+
+  createFdo(
+    payload: CreateFdoPayload,
+  ): Observable<ApiResponse<{ user: FdoUser }>> {
+    return this.http.post<ApiResponse<{ user: FdoUser }>>(this.apiUrl, payload);
   }
 
   updateFdo(

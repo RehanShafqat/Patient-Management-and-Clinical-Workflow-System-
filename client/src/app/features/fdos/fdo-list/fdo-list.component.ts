@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import {
@@ -23,6 +23,7 @@ import { FdoFormComponent } from '../fdo-form/fdo-form.component';
     EntityTableComponent,
     ConfirmDialogComponent,
     FdoFormComponent,
+    RouterLink,
   ],
   templateUrl: './fdo-list.component.html',
 })

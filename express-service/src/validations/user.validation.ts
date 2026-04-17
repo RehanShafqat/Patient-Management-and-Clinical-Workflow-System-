@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   optionalBooleanQuery,
   optionalTrimmedString,
+  optionalUuidQuery,
   preprocessOptionalNativeEnum,
   withRequiredPreprocess,
 } from "./validation.utils";
@@ -99,4 +100,6 @@ export const paginationQuerySchema = z.object({
   search: optionalTrimmedString,
   role: preprocessOptionalNativeEnum(Role),
   is_active: optionalBooleanQuery,
+  specialty_id: optionalUuidQuery,
+  practice_location_id: optionalUuidQuery,
 });

@@ -74,6 +74,44 @@
           <option [ngValue]="false">Inactive</option>
         </select>
       </div>
+
+      <div class="form-control w-full" *ngIf="mode === 'create'">
+        <label class="label pb-1">
+          <span
+            class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+          >
+            Email
+          </span>
+        </label>
+        <input
+          type="email"
+          class="input input-bordered h-10 text-sm w-full"
+          formControlName="email"
+        />
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label pb-1">
+          <span
+            class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+          >
+            {{ mode === "create" ? "Password" : "New Password" }}
+          </span>
+        </label>
+        <input
+          type="password"
+          class="input input-bordered h-10 text-sm w-full"
+          formControlName="password"
+          [placeholder]="
+            mode === 'edit' ? 'Leave blank to keep current password' : ''
+          "
+        />
+        <span class="label" *ngIf="mode === 'edit'">
+          <span class="label-text-alt text-xs text-base-content/60">
+            Optional. Use at least 6 characters.
+          </span>
+        </span>
+      </div>
     </div>
 
     <div class="space-y-3">
@@ -142,7 +180,13 @@
           *ngIf="isSubmitting"
           class="loading loading-spinner loading-xs"
         ></span>
-        {{ isSubmitting ? "Saving..." : "Save Changes" }}
+        {{
+          isSubmitting
+            ? "Saving..."
+            : mode === "create"
+              ? "Create FDO"
+              : "Save Changes"
+        }}
       </button>
     </div>
   </form>

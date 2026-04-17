@@ -7,7 +7,13 @@ import {
   updateUserSchema,
 } from "../validations/user.validation";
 import { HttpStatusCode, ResponseMessage, Role } from "../enums";
-import { DoctorProfile, Permission, UserPermission } from "../models";
+import {
+  DoctorProfile,
+  Permission,
+  PracticeLocation,
+  Specialty,
+  UserPermission,
+} from "../models";
 import sequelize from "../config/database.config";
 import { Transaction } from "sequelize";
 
@@ -15,6 +21,8 @@ type UserListFilters = {
   search?: string;
   role?: Role;
   is_active?: boolean;
+  specialty_id?: string;
+  practice_location_id?: string;
 };
 
 export class UserService {
@@ -62,8 +70,48 @@ export class UserService {
       where.is_active = filters.is_active;
     }
 
+    const doctorProfileWhere: Record<string, string> = {};
+    if (filters.specialty_id) {
+      doctorProfileWhere.specialty_id = filters.specialty_id;
+    }
+    if (filters.practice_location_id) {
+      doctorProfileWhere.practice_location_id = filters.practice_location_id;
+    }
+
+    const includeDoctorProfile =
+      filters.role === Role.DOCTOR ||
+      !!filters.specialty_id ||
+      !!filters.practice_location_id;
+
+    const include = includeDoctorProfile
+      ? [
+          {
+            model: DoctorProfile,
+            as: "doctorProfile",
+            required: Object.keys(doctorProfileWhere).length > 0,
+            where:
+              Object.keys(doctorProfileWhere).length > 0
+                ? doctorProfileWhere
+                : undefined,
+            include: [
+              {
+                model: Specialty,
+                as: "specialty",
+                attributes: ["id", "specialty_name"],
+              },
+              {
+                model: PracticeLocation,
+                as: "practiceLocation",
+                attributes: ["id", "location_name"],
+              },
+            ],
+          },
+        ]
+      : undefined;
+
     return User.findAndCountAll({
       where,
+      include,
       limit,
       offset,
       order: [["created_at", "DESC"]],
@@ -82,6 +130,22 @@ export class UserService {
               model: Permission,
               as: "permission",
               attributes: ["id", "permission_name"],
+            },
+          ],
+        },
+        {
+          model: DoctorProfile,
+          as: "doctorProfile",
+          include: [
+            {
+              model: Specialty,
+              as: "specialty",
+              attributes: ["id", "specialty_name"],
+            },
+            {
+              model: PracticeLocation,
+              as: "practiceLocation",
+              attributes: ["id", "location_name"],
             },
           ],
         },

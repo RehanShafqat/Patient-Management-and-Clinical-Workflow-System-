@@ -36,7 +36,19 @@ export interface UpdateFdoPayload {
   last_name?: string;
   phone?: string | null;
   is_active?: boolean;
+  password?: string;
   permissions?: string[];
+}
+
+export interface CreateFdoPayload {
+  role: 'fdo';
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  phone: string;
+  is_active: boolean;
+  permissions: string[];
 }
 
 export interface PaginatedResponse<T> {
