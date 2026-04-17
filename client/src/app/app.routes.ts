@@ -128,6 +128,13 @@ export const routes: Routes = [
             (m) => m.VisitListComponent,
           ),
       },
+      {
+        path: 'visits/:id',
+        loadComponent: () =>
+          import('./features/visits/visit-detail/visit-detail.component').then(
+            (m) => m.VisitDetailComponent,
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
@@ -177,6 +184,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/visits/visit-list/visit-list.component').then(
             (m) => m.VisitListComponent,
+          ),
+      },
+      {
+        path: 'visits/:id',
+        loadComponent: () =>
+          import('./features/visits/visit-detail/visit-detail.component').then(
+            (m) => m.VisitDetailComponent,
           ),
       },
       {

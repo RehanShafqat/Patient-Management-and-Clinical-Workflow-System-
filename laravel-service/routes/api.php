@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\VisitController;
 use App\Http\Controllers\PracticeLocationController;
 use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\FirmController;
@@ -30,6 +31,18 @@ Route::middleware('jwt.auth')->group(function () {
 
         // Admin only — soft delete
         Route::delete('/{appointment}', [AppointmentController::class, 'destroy'])->middleware('check.role');
+    });
+
+    Route::prefix('visits')->group(function () {
+        // Admin and doctor can list and view visits. FDO can view for operational visibility.
+        Route::get('/', [VisitController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
+        Route::get('/{visit}', [VisitController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
+
+        // No create endpoint: visits are auto-created when appointment status becomes Completed.
+        Route::patch('/{visit}', [VisitController::class, 'update'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::DOCTOR->value);
+
+        // Admin-only soft delete.
+        Route::delete('/{visit}', [VisitController::class, 'destroy'])->middleware('check.role:' . Role::ADMIN->value);
     });
 
     Route::prefix('practice-locations')->group(function () {
