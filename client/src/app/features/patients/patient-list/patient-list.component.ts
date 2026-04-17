@@ -17,6 +17,7 @@ import {
 import { PatientFormComponent } from '../patient-form/patient-form.component';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-patient-list',
@@ -37,6 +38,7 @@ export class PatientListComponent implements OnInit {
   private readonly patientService = inject(PatientService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
+  private readonly filterDebounceMs = environment.filterDebounceMs;
 
   //INFO: Stream for debounced search to avoid excessive API calls
   private searchSubject = new Subject<string>();
@@ -78,12 +80,15 @@ export class PatientListComponent implements OnInit {
   currentPage = 1;
 
   //INFO: Filters state
-  filters: PatientFilters = {
+  private readonly defaultFilters: PatientFilters = {
     search: '',
     patient_status: undefined,
     gender: undefined,
     city: '',
+    country: '',
   };
+
+  filters: PatientFilters = { ...this.defaultFilters };
 
   //INFO: Modal state
   isUpdateModalOpen = false;
@@ -96,7 +101,7 @@ export class PatientListComponent implements OnInit {
 
     //INFO: search debouncing (300ms)
     this.searchSubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((query) => {
         this.filters.search = query;
         this.currentPage = 1;
@@ -105,7 +110,7 @@ export class PatientListComponent implements OnInit {
 
     //INFO: city filter debouncing (300ms)
     this.citySubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((city) => {
         this.filters.city = city;
         this.currentPage = 1;
@@ -114,7 +119,7 @@ export class PatientListComponent implements OnInit {
 
     //INFO: country filter debouncing (300ms)
     this.countrySubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((country) => {
         this.filters.country = country;
         this.currentPage = 1;
@@ -137,19 +142,19 @@ export class PatientListComponent implements OnInit {
     if (!fetchFilters.country) delete fetchFilters.country;
 
     //INFO: Defensive cleanup in case select emits string "undefined" from template bindings.
-    if (
-      !fetchFilters.patient_status ||
-      fetchFilters.patient_status === ('undefined' as unknown as PatientStatus)
-    ) {
-      delete fetchFilters.patient_status;
-    }
+    // if (
+    //   !fetchFilters.patient_status ||
+    //   fetchFilters.patient_status === ('undefined' as unknown as PatientStatus)
+    // ) {
+    //   delete fetchFilters.patient_status;
+    // }
 
-    if (
-      !fetchFilters.gender ||
-      fetchFilters.gender === ('undefined' as unknown as Gender)
-    ) {
-      delete fetchFilters.gender;
-    }
+    // if (
+    //   !fetchFilters.gender ||
+    //   fetchFilters.gender === ('undefined' as unknown as Gender)
+    // ) {
+    //   delete fetchFilters.gender;
+    // }
 
     this.patientService.getPatients(fetchFilters).subscribe({
       next: (response) => {
@@ -187,10 +192,29 @@ export class PatientListComponent implements OnInit {
     this.loadPatients();
   }
 
+  resetFilters(): void {
+    if (this.areFiltersDefault() && this.currentPage === 1) {
+      return;
+    }
+
+    this.filters = { ...this.defaultFilters };
+    this.currentPage = 1;
+    this.loadPatients();
+  }
+
+  private areFiltersDefault(): boolean {
+    return (
+      (this.filters.search || '').trim() === '' &&
+      !this.filters.patient_status &&
+      !this.filters.gender &&
+      (this.filters.city || '').trim() === '' &&
+      (this.filters.country || '').trim() === ''
+    );
+  }
+
   onPageChange(event: { offset: number; limit: number }): void {
     this.currentPage = event.offset + 1;
     this.pageSize = event.limit;
-    this.loadPatients();
     this.loadPatients();
   }
 
@@ -202,7 +226,7 @@ export class PatientListComponent implements OnInit {
     const rolePrefix = this.router.url.split('/')[1];
 
     //INFO: Use absolute role path to ensure detail route opens reliably from any patients list context.
-    this.router.navigate([`/${rolePrefix || 'admin'}/patients`, row.id]);
+    this.router.navigate([`/${rolePrefix}/patients`, row.id]);
   }
 
   //INFO: Modal management

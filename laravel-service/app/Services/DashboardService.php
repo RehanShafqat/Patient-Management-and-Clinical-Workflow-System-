@@ -27,7 +27,7 @@ class DashboardService
         $totalPatients = Patient::count();
         $patientsThisMonth = Patient::where('created_at', '>=', $startOfMonth)->count();
         $patientsLastMonth = Patient::whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])->count();
-        
+
         $patientChangePercent = 0;
         if ($patientsLastMonth > 0) {
             $patientChangePercent = round((($patientsThisMonth - $patientsLastMonth) / $patientsLastMonth) * 100, 1);
@@ -39,7 +39,7 @@ class DashboardService
 
         // Today's Appointments
         $todayAppointments = Appointment::whereDate('appointment_date', $today)->count();
-        
+
         // Completed Visits & Completion Rate
         $completedVisits = Visit::where('visit_status', VisitStatus::COMPLETED)->count();
         $totalVisits = Visit::count();
@@ -63,9 +63,13 @@ class DashboardService
             ->limit(5)
             ->get()
             ->map(function ($patient) {
+                $firstName = $patient->first_name ?? '';
+                $lastName = $patient->last_name ?? '';
+                $fullName = trim("{$firstName} {$lastName}");
+
                 return [
                     'id' => $patient->id,
-                    'full_name' => "{$patient->first_name} {$patient->last_name}",
+                    'full_name' => $fullName !== '' ? $fullName : 'Unknown Patient',
                     'registration_date' => $patient->created_at->format('M d, Y'),
                     'status' => $patient->patient_status,
                 ];
@@ -80,9 +84,13 @@ class DashboardService
             ->limit(3)
             ->get()
             ->map(function ($doctor) {
+                $firstName = $doctor->user?->first_name ?? '';
+                $lastName = $doctor->user?->last_name ?? '';
+                $doctorName = trim("{$firstName} {$lastName}");
+
                 return [
-                    'name' => "Dr. {$doctor->user->first_name} {$doctor->user->last_name}",
-                    'department' => $doctor->specialty?->name ?? 'General',
+                    'name' => $doctorName !== '' ? "Dr. {$doctorName}" : 'Unassigned Doctor',
+                    'department' => $doctor->specialty?->specialty_name ?? 'General',
                     'patients_handled' => $doctor->visits_count,
                 ];
             });

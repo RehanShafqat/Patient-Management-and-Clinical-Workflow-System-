@@ -9,6 +9,8 @@ userRouter.post("/", userController.createUser);
 
 userRouter.get("/", userController.getAllUsers);
 
+userRouter.get("/permissions", userController.getAllPermissions);
+
 userRouter.get("/:id", userController.getUserById);
 
 userRouter.put("/:id", userController.updateUser);

@@ -15,6 +15,7 @@ caseRouter.get("/:id", caseController.getCaseById);
 caseRouter.get("/patient/:patient_id", caseController.getCaseByPatient);
 
 caseRouter.put("/:id", caseController.updateCase);
+caseRouter.patch("/:id", caseController.updateCase);
 
 caseRouter.delete("/:id", caseController.deleteCase);
 

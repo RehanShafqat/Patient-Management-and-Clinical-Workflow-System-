@@ -2,13 +2,14 @@
 
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\VisitController;
 use App\Http\Controllers\PracticeLocationController;
 use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\FirmController;
 use App\Enums\Role;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('jwt.auth')->group(function () {   
+Route::middleware('jwt.auth')->group(function () {
     Route::prefix('dashboard')->group(function () {
         Route::get('/stats', [DashboardController::class, 'stats'])->middleware('check.role:' . Role::ADMIN->value);
     });
@@ -16,20 +17,32 @@ Route::middleware('jwt.auth')->group(function () {
     Route::prefix('appointments')->group(function () {
 
         // All roles can list and view
-        Route::get('/', [AppointmentController::class, 'index'])->middleware('check.role:' . Role::FDO->value . ',' . Role::DOCTOR->value);
-        Route::get('/{appointment}', [AppointmentController::class, 'show'])->middleware('check.role:' . Role::FDO->value . ',' . Role::DOCTOR->value);
+        Route::get('/', [AppointmentController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
+        Route::get('/{appointment}', [AppointmentController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
 
         // FDO and Admin only — create
-        Route::post('/', [AppointmentController::class, 'store'])->middleware('check.role:' . Role::FDO->value);
+        Route::post('/', [AppointmentController::class, 'store'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value);
 
         // Role-restricted update (doctor = status only, FDO/Admin = full)
-        Route::patch('/{appointment}', [AppointmentController::class, 'update'])->middleware('check.role:' . Role::FDO->value . ',' . Role::DOCTOR->value);
+        Route::patch('/{appointment}', [AppointmentController::class, 'update'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
 
         // FDO and Admin only — cancel
-        Route::patch('/{appointment}/cancel', [AppointmentController::class, 'cancel'])->middleware('check.role:' . Role::FDO->value);
+        Route::patch('/{appointment}/cancel', [AppointmentController::class, 'cancel'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value);
 
         // Admin only — soft delete
         Route::delete('/{appointment}', [AppointmentController::class, 'destroy'])->middleware('check.role');
+    });
+
+    Route::prefix('visits')->group(function () {
+        // Admin and doctor can list and view visits. FDO can view for operational visibility.
+        Route::get('/', [VisitController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
+        Route::get('/{visit}', [VisitController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
+
+        // No create endpoint: visits are auto-created when appointment status becomes Completed.
+        Route::patch('/{visit}', [VisitController::class, 'update'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::DOCTOR->value);
+
+        // Admin-only soft delete.
+        Route::delete('/{visit}', [VisitController::class, 'destroy'])->middleware('check.role:' . Role::ADMIN->value);
     });
 
     Route::prefix('practice-locations')->group(function () {

@@ -1,10 +1,19 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CaseService } from '../../../core/services/case.service';
-import { Case, CaseFilters } from '../../../core/models/case.model';
+import { environment } from '../../../../environments/environment';
+import {
+  Case,
+  CaseCategory,
+  CaseFilters,
+  CasePriority,
+  CaseStatus,
+  CaseType,
+} from '../../../core/models/case.model';
 import {
   EntityTableColumn,
   EntityTableComponent,
@@ -17,6 +26,7 @@ import { CaseFormComponent } from '../case-form/case-form.component';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     EntityTableComponent,
     ConfirmDialogComponent,
@@ -28,8 +38,13 @@ export class CaseListComponent implements OnInit {
   private readonly caseService = inject(CaseService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
+  private readonly filterDebounceMs = environment.filterDebounceMs;
 
   private searchSubject = new Subject<string>();
+  private openingDateRangeSubject = new Subject<{
+    from?: string;
+    to?: string;
+  }>();
 
   readonly columns: EntityTableColumn[] = [
     { name: 'Case #', prop: 'case_number', width: 140 },
@@ -47,9 +62,22 @@ export class CaseListComponent implements OnInit {
   pageSize = 15;
   currentPage = 1;
 
-  filters: CaseFilters = {
+  readonly statusOptions = Object.values(CaseStatus);
+  readonly priorityOptions = Object.values(CasePriority);
+  readonly categoryOptions = Object.values(CaseCategory);
+  readonly typeOptions = Object.values(CaseType);
+
+  private readonly defaultFilters: CaseFilters = {
     search: '',
+    case_status: undefined,
+    priority: undefined,
+    category: undefined,
+    case_type: undefined,
+    opening_date_from: undefined,
+    opening_date_to: undefined,
   };
+
+  filters: CaseFilters = { ...this.defaultFilters };
 
   isUpdateModalOpen = false;
   isDeleteModalOpen = false;
@@ -60,9 +88,18 @@ export class CaseListComponent implements OnInit {
     this.loadCases();
 
     this.searchSubject
-      .pipe(debounceTime(300), distinctUntilChanged())
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
       .subscribe((query) => {
         this.filters.search = query;
+        this.currentPage = 1;
+        this.loadCases();
+      });
+
+    this.openingDateRangeSubject
+      .pipe(debounceTime(this.filterDebounceMs), distinctUntilChanged())
+      .subscribe(({ from, to }) => {
+        this.filters.opening_date_from = from;
+        this.filters.opening_date_to = to;
         this.currentPage = 1;
         this.loadCases();
       });
@@ -77,13 +114,31 @@ export class CaseListComponent implements OnInit {
     };
 
     if (!fetchFilters.search) delete fetchFilters.search;
+    if (!fetchFilters.case_status) delete fetchFilters.case_status;
+    if (!fetchFilters.priority) delete fetchFilters.priority;
+    if (!fetchFilters.category) delete fetchFilters.category;
+    if (!fetchFilters.case_type) delete fetchFilters.case_type;
+    if (!fetchFilters.opening_date_from) delete fetchFilters.opening_date_from;
+    if (!fetchFilters.opening_date_to) delete fetchFilters.opening_date_to;
 
     this.caseService.getCases(fetchFilters).subscribe({
       next: (response) => {
-        this.cases = response.data.map((c: any) => ({
-          ...c,
-          patient_name: c.patient ? `${c.patient.first_name} ${c.patient.last_name}` : 'N/A'
-        }));
+        this.cases = response.data.map(
+          (c: any) =>
+            ({
+              ...c,
+              patient_name: c.patient
+                ? `${c.patient.first_name} ${c.patient.last_name}`
+                : c.patient_name || 'N/A',
+              practice_location_name:
+                c.practiceLocation?.location_name ||
+                c.practice_location_name ||
+                '',
+              insurance_name:
+                c.insurance?.insurance_name || c.insurance_name || '',
+              firm_name: c.firm?.firm_name || c.firm_name || '',
+            }) as Case,
+        );
         this.totalCount = response.meta.total;
         this.loading = false;
       },
@@ -95,9 +150,42 @@ export class CaseListComponent implements OnInit {
     });
   }
 
-  onSearch(event: any): void {
-    const query = event.target.value;
+  onSearch(query: string): void {
     this.searchSubject.next(query);
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1;
+    this.loadCases();
+  }
+
+  onOpeningDateRangeChange(): void {
+    this.openingDateRangeSubject.next({
+      from: this.filters.opening_date_from,
+      to: this.filters.opening_date_to,
+    });
+  }
+
+  resetFilters(): void {
+    if (this.areFiltersDefault() && this.currentPage === 1) {
+      return;
+    }
+
+    this.filters = { ...this.defaultFilters };
+    this.currentPage = 1;
+    this.loadCases();
+  }
+
+  private areFiltersDefault(): boolean {
+    return (
+      (this.filters.search || '').trim() === '' &&
+      !this.filters.case_status &&
+      !this.filters.priority &&
+      !this.filters.category &&
+      !this.filters.case_type &&
+      !this.filters.opening_date_from &&
+      !this.filters.opening_date_to
+    );
   }
 
   onPageChange(event: { offset: number; limit: number }): void {
@@ -107,8 +195,12 @@ export class CaseListComponent implements OnInit {
   }
 
   onRowSelected(row: Case): void {
-    // If you uncomment this, a row click will go to details instead of update.
-    // For now we'll do update on row click or button. Let's do actions through modal.
+    if (!row?.id) {
+      return;
+    }
+
+    const rolePrefix = this.router.url.split('/')[1] || 'admin';
+    this.router.navigate([`/${rolePrefix}/cases`, row.id]);
   }
 
   // --- Modal Management ---

@@ -1,0 +1,151 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6 p-5">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="form-control w-full">
+      <label class="label"
+        ><span class="label-text font-semibold">Visit Status</span></label
+      >
+      <select
+        class="select select-bordered w-full"
+        formControlName="visit_status"
+      >
+        <option *ngFor="let status of statusOptions" [ngValue]="status">
+          {{ status }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-control w-full">
+      <label class="label"
+        ><span class="label-text font-semibold">Duration (minutes)</span></label
+      >
+      <input
+        type="number"
+        formControlName="visit_duration_minutes"
+        class="input input-bordered w-full"
+      />
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="form-control w-full">
+      <label class="label"
+        ><span class="label-text font-semibold">Symptoms</span></label
+      >
+      <textarea
+        class="textarea textarea-bordered w-full h-24"
+        formControlName="symptoms"
+      ></textarea>
+    </div>
+
+    <div class="form-control w-full">
+      <label class="label"
+        ><span class="label-text font-semibold">Treatment</span></label
+      >
+      <textarea
+        class="textarea textarea-bordered w-full h-24"
+        formControlName="treatment"
+      ></textarea>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="form-control w-full">
+      <label class="label"
+        ><span class="label-text font-semibold">Treatment Plan</span></label
+      >
+      <textarea
+        class="textarea textarea-bordered w-full h-24"
+        formControlName="treatment_plan"
+      ></textarea>
+    </div>
+
+    <div class="form-control w-full">
+      <label class="label"
+        ><span class="label-text font-semibold">Prescription</span></label
+      >
+      <textarea
+        class="textarea textarea-bordered w-full h-24"
+        formControlName="prescription"
+      ></textarea>
+    </div>
+  </div>
+
+  <div class="form-control w-full">
+    <label class="label"
+      ><span class="label-text font-semibold">Notes</span></label
+    >
+    <textarea
+      class="textarea textarea-bordered w-full h-24"
+      formControlName="notes"
+    ></textarea>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="space-y-3">
+      <label class="label cursor-pointer justify-start gap-3 px-0">
+        <input
+          type="checkbox"
+          class="checkbox"
+          formControlName="follow_up_required"
+        />
+        <span class="label-text font-semibold">Follow-up required</span>
+      </label>
+
+      <div class="form-control w-full">
+        <label class="label"
+          ><span class="label-text font-semibold">Follow-up Date</span></label
+        >
+        <input
+          type="date"
+          class="input input-bordered w-full"
+          formControlName="follow_up_date"
+          [disabled]="!form.get('follow_up_required')?.value"
+        />
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <label class="label cursor-pointer justify-start gap-3 px-0">
+        <input
+          type="checkbox"
+          class="checkbox"
+          formControlName="referral_made"
+        />
+        <span class="label-text font-semibold">Referral made</span>
+      </label>
+
+      <div class="form-control w-full">
+        <label class="label"
+          ><span class="label-text font-semibold">Referral To</span></label
+        >
+        <input
+          type="text"
+          class="input input-bordered w-full"
+          formControlName="referral_to"
+          [disabled]="!form.get('referral_made')?.value"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="flex items-center justify-end gap-3">
+    <button
+      type="button"
+      class="btn btn-ghost"
+      (click)="onCancel()"
+      [disabled]="isSubmitting"
+    >
+      Cancel
+    </button>
+
+    <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+      <span
+        *ngIf="isSubmitting"
+        class="loading loading-spinner loading-xs"
+      ></span>
+      {{ isSubmitting ? "Saving..." : "Update Visit" }}
+    </button>
+  </div>
+</form>

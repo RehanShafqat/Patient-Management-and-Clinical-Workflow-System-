@@ -26,11 +26,11 @@ export class CaseController {
         );
       }
       const caseData = createCaseSchema.parse(req.body);
-      const patientCase = await this.caseService.createCase(caseData);
+      const caseRecord = await this.caseService.createCase(caseData);
 
       return ApiResponse.send(
         res,
-        { patientCase },
+        { case: caseRecord },
         ResponseMessage.CASE_CREATED,
         HttpStatusCode.CREATED,
       );
@@ -97,11 +97,11 @@ export class CaseController {
         );
       }
 
-      const patientCase = await this.caseService.getCaseById(id);
+      const caseRecord = await this.caseService.getCaseById(id);
 
       return ApiResponse.send(
         res,
-        { patientCase },
+        { case: caseRecord },
         ResponseMessage.CASE_FETCHED,
       );
     } catch (error) {
@@ -172,11 +172,11 @@ export class CaseController {
       }
 
       const updateData = updateCaseSchema.parse(req.body);
-      const patientCase = await this.caseService.updateCase(id, updateData);
+      const caseRecord = await this.caseService.updateCase(id, updateData);
 
       return ApiResponse.send(
         res,
-        { patientCase },
+        { case: caseRecord },
         ResponseMessage.CASE_UPDATED,
         HttpStatusCode.OK,
       );

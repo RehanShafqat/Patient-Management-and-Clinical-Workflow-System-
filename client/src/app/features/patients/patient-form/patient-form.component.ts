@@ -68,15 +68,89 @@ export class PatientFormComponent implements OnInit {
     'Australia',
     'India',
     'Pakistan',
-    'Other'
+    'Other',
   ];
 
   readonly states = [
-    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'Other'
+    'Alabama',
+    'Alaska',
+    'Arizona',
+    'Arkansas',
+    'California',
+    'Colorado',
+    'Connecticut',
+    'Delaware',
+    'Florida',
+    'Georgia',
+    'Hawaii',
+    'Idaho',
+    'Illinois',
+    'Indiana',
+    'Iowa',
+    'Kansas',
+    'Kentucky',
+    'Louisiana',
+    'Maine',
+    'Maryland',
+    'Massachusetts',
+    'Michigan',
+    'Minnesota',
+    'Mississippi',
+    'Missouri',
+    'Montana',
+    'Nebraska',
+    'Nevada',
+    'New Hampshire',
+    'New Jersey',
+    'New Mexico',
+    'New York',
+    'North Carolina',
+    'North Dakota',
+    'Ohio',
+    'Oklahoma',
+    'Oregon',
+    'Pennsylvania',
+    'Rhode Island',
+    'South Carolina',
+    'South Dakota',
+    'Tennessee',
+    'Texas',
+    'Utah',
+    'Vermont',
+    'Virginia',
+    'Washington',
+    'West Virginia',
+    'Wisconsin',
+    'Wyoming',
+    'Other',
   ];
 
   currentStep = 1;
   isSubmitting = false;
+
+  private readonly fieldLabels: Record<string, string> = {
+    first_name: 'First name',
+    middle_name: 'Middle name',
+    last_name: 'Last name',
+    date_of_birth: 'Date of birth',
+    gender: 'Gender',
+    ssn: 'Social security number',
+    email: 'Email',
+    phone: 'Phone',
+    mobile: 'Mobile',
+    address: 'Address',
+    city: 'City',
+    state: 'State',
+    zip_code: 'ZIP code',
+    country: 'Country',
+    emergency_contact_name: 'Emergency contact name',
+    emergency_contact_phone: 'Emergency contact phone',
+    primary_physician: 'Primary physician',
+    insurance_provider: 'Insurance provider',
+    insurance_policy_number: 'Insurance policy number',
+    preferred_language: 'Preferred language',
+    patient_status: 'Patient status',
+  };
 
   //INFO: Form definition with validation rules matching backend schemas
   form = this.fb.group({
@@ -127,11 +201,6 @@ export class PatientFormComponent implements OnInit {
 
   get isEditMode(): boolean {
     return !!this.patientToEdit;
-  }
-
-  get duplicateHintVisible(): boolean {
-    const value = this.form.value;
-    return !!(value.first_name && value.last_name && value.date_of_birth);
   }
 
   get maskedSsn(): string {
@@ -201,6 +270,51 @@ export class PatientFormComponent implements OnInit {
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
+  getFieldErrorMessage(controlName: string): string {
+    const control = this.form.get(controlName);
+    if (!control || !control.errors || !(control.dirty || control.touched)) {
+      return '';
+    }
+
+    const label = this.fieldLabels[controlName] || 'This field';
+    const errors = control.errors;
+
+    if (errors['required']) {
+      return `${label} is required.`;
+    }
+
+    if (errors['email']) {
+      return 'Please enter a valid email address.';
+    }
+
+    if (errors['minlength']) {
+      return `${label} must be at least ${errors['minlength'].requiredLength} characters.`;
+    }
+
+    if (errors['maxlength']) {
+      return `${label} cannot exceed ${errors['maxlength'].requiredLength} characters.`;
+    }
+
+    if (errors['pattern']) {
+      if (controlName === 'ssn') {
+        return 'Please enter SSN in 123-45-6789 format.';
+      }
+      if (controlName === 'zip_code') {
+        return 'Please enter a valid ZIP code (12345 or 12345-6789).';
+      }
+      if (
+        controlName === 'phone' ||
+        controlName === 'mobile' ||
+        controlName === 'emergency_contact_phone'
+      ) {
+        return `Please enter a valid ${label.toLowerCase()}.`;
+      }
+      return `${label} format is invalid.`;
+    }
+
+    return `${label} is invalid.`;
+  }
+
   private firstInvalidStep(): number {
     if (!this.isStepValid(1)) {
       return 1;
@@ -212,7 +326,7 @@ export class PatientFormComponent implements OnInit {
   }
 
   onCancel(): void {
-    if (this.isEditMode) {
+    if (this.formCancel.observed) {
       this.formCancel.emit();
     } else {
       //INFO: Navigate back to the previous screen (respects role-based routes)
@@ -282,7 +396,7 @@ export class PatientFormComponent implements OnInit {
           this.isSubmitting = false;
           this.toastr.success('Patient registered successfully');
           this.formSuccess.emit(response.data.patient);
-          if (!this.isEditMode) {
+          if (!this.formSuccess.observed) {
             this.location.back();
           }
         },

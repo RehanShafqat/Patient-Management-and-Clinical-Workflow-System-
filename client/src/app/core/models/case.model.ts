@@ -98,14 +98,18 @@ export interface CaseFilters {
   page?: number;
   per_page?: number;
   search?: string;
+  case_number?: string;
   patient_id?: string;
   practice_location_id?: string;
   case_status?: CaseStatus;
   priority?: CasePriority;
   category?: CaseCategory;
+  case_type?: CaseType;
   insurance_id?: string;
   firm_id?: string;
   opening_date?: string;
+  opening_date_from?: string;
+  opening_date_to?: string;
 }
 
 export interface CreateCaseResponse {

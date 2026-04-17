@@ -1,4 +1,6 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:4000/api',
+  searchableSelectPageSize: 10,
+  filterDebounceMs: 300,
 };

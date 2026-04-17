@@ -56,6 +56,25 @@ export class UserController {
     }
   };
 
+  getAllPermissions = async (
+    _req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const permissions = await this.userService.getAllPermissions();
+
+      return ApiResponse.send(
+        res,
+        { permissions },
+        ResponseMessage.PERMISSIONS_FETCHED,
+        HttpStatusCode.OK,
+      );
+    } catch (error) {
+      return next(error);
+    }
+  };
+
   getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = Array.isArray(req.params.id)

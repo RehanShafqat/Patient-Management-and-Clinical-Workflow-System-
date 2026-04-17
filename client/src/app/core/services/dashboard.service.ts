@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface DashboardStats {
@@ -32,10 +32,22 @@ export interface DashboardStats {
 export class DashboardService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/dashboard/stats`;
+  private statsCache$?: Observable<DashboardStats>;
+
+  clearStatsCache(): void {
+    this.statsCache$ = undefined;
+  }
 
   getStats(): Observable<DashboardStats> {
-    return this.http.get<{ data: DashboardStats }>(this.apiUrl).pipe(
-      map(response => response.data)
-    );
+    if (!this.statsCache$) {
+      this.statsCache$ = this.http
+        .get<{ data: DashboardStats }>(this.apiUrl)
+        .pipe(
+          map((response) => response.data),
+          shareReplay({ bufferSize: 1, refCount: false }),
+        );
+    }
+
+    return this.statsCache$;
   }
 }

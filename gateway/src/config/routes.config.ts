@@ -3,6 +3,7 @@ export const routes = [
     pathFilter: [
       "/api/health",
       "/api/appointments",
+      "/api/visits",
       "/api/practice-locations",
       "/api/dashboard",
       "/api/firms",

@@ -90,11 +90,7 @@ export const createPatientSchema = basePatientSchema
     },
   );
 
-export const updatePatientSchema = z
-  .object({
-    ...basePatientSchema.shape,
-  })
-  .partial();
+export const updatePatientSchema = basePatientSchema.partial();
 
 export const paginationQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),

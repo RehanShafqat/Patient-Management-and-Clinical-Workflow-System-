@@ -19,14 +19,14 @@ class StoreAppointmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'case_id' => ['required', 'integer', 'exists:patient_cases,id'],
-            'patient_id' => ['required', 'integer', 'exists:patients,id'],
-            'doctor_id' => ['required', 'integer', 'exists:doctor_profiles,id'],
+            'case_id' => ['required', 'uuid', 'exists:patient_cases,id'],
+            'patient_id' => ['required', 'uuid', 'exists:patients,id'],
+            'doctor_id' => ['required', 'uuid', 'exists:doctor_profiles,id'],
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
             'appointment_time' => ['required', 'date_format:H:i'],
             'appointment_type' => ['required', new Enum(AppointmentType::class)],
-            'specialty_id' => ['required', 'integer', 'exists:specialties,id'],
-            'practice_location_id' => ['required', 'integer', 'exists:practice_locations,id'],
+            'specialty_id' => ['required', 'uuid', 'exists:specialties,id'],
+            'practice_location_id' => ['required', 'uuid', 'exists:practice_locations,id'],
             'duration_minutes' => ['sometimes', 'integer', 'min:5', 'max:480'],
             'reminder_method' => ['nullable', new Enum(ReminderMethod::class)],
             'notes' => ['nullable', 'string'],
