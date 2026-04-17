@@ -13,6 +13,7 @@ export enum ResponseMessage {
   USER_CREATED = "User created successfully",
   USER_FETCHED = "User fetched successfully",
   USERS_FETCHED = "Users fetched successfully",
+  PERMISSIONS_FETCHED = "Permissions fetched successfully",
   USER_UPDATED = "User updated successfully",
   USER_DELETED = "User deleted successfully",
   USER_NOT_FOUND = "User not found",

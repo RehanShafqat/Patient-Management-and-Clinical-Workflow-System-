@@ -71,7 +71,22 @@ export class UserService {
   };
 
   getUserById = async (id: string) => {
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+      include: [
+        {
+          model: UserPermission,
+          as: "userPermissions",
+          attributes: ["id", "permission_id"],
+          include: [
+            {
+              model: Permission,
+              as: "permission",
+              attributes: ["id", "permission_name"],
+            },
+          ],
+        },
+      ],
+    });
 
     if (!user) {
       throw new AppError(
@@ -81,6 +96,13 @@ export class UserService {
     }
 
     return user;
+  };
+
+  getAllPermissions = async () => {
+    return Permission.findAll({
+      attributes: ["id", "permission_name"],
+      order: [["permission_name", "ASC"]],
+    });
   };
 
   updateUser = async (
@@ -151,7 +173,7 @@ export class UserService {
     transaction: Transaction,
   ) => {
     let result: any = { ...user.toJSON() };
-    const role = data.role;
+    const role = data.role ?? user.role;
 
     if (role === Role.FDO) {
       if (data.permissions) {

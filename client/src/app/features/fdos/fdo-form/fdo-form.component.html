@@ -1,0 +1,149 @@
+<div class="p-5 space-y-6">
+  <div
+    *ngIf="loading"
+    class="rounded-xl border border-base-300 bg-base-100 p-6 text-sm text-base-content/70"
+  >
+    Loading FDO profile and permissions...
+  </div>
+
+  <form
+    *ngIf="!loading"
+    [formGroup]="form"
+    (ngSubmit)="onSubmit()"
+    class="space-y-6"
+  >
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="form-control w-full">
+        <label class="label pb-1">
+          <span
+            class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+          >
+            First Name
+          </span>
+        </label>
+        <input
+          type="text"
+          class="input input-bordered h-10 text-sm w-full"
+          formControlName="first_name"
+        />
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label pb-1">
+          <span
+            class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+          >
+            Last Name
+          </span>
+        </label>
+        <input
+          type="text"
+          class="input input-bordered h-10 text-sm w-full"
+          formControlName="last_name"
+        />
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label pb-1">
+          <span
+            class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+          >
+            Phone
+          </span>
+        </label>
+        <input
+          type="text"
+          class="input input-bordered h-10 text-sm w-full"
+          formControlName="phone"
+        />
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label pb-1">
+          <span
+            class="label-text text-xs font-semibold uppercase tracking-wide text-base-content/60"
+          >
+            Status
+          </span>
+        </label>
+        <select
+          class="select select-bordered h-10 min-h-0 text-sm w-full"
+          formControlName="is_active"
+        >
+          <option [ngValue]="true">Active</option>
+          <option [ngValue]="false">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h3 class="text-base font-semibold text-base-content">
+          Permission Matrix
+        </h3>
+        <span class="badge badge-outline whitespace-nowrap">
+          {{ selectedPermissionsCount }} selected
+        </span>
+      </div>
+
+      <div class="space-y-3">
+        <div
+          *ngFor="let group of permissionGroups"
+          class="rounded-xl border border-base-300 bg-base-100 p-4"
+        >
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-sm">{{ group.title }}</span>
+            <span class="badge badge-ghost">{{
+              group.permissions.length
+            }}</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <label
+              *ngFor="let permission of group.permissions"
+              class="label cursor-pointer justify-start gap-3 rounded-lg px-3 py-2 border border-base-300 bg-base-200"
+            >
+              <input
+                type="checkbox"
+                class="checkbox checkbox-sm"
+                [checked]="isPermissionSelected(permission.id)"
+                (change)="
+                  togglePermission(permission.id, $any($event.target).checked)
+                "
+              />
+              <div>
+                <p class="text-sm font-medium">
+                  {{ permissionActionLabel(permission.permission_name) }}
+                  {{ permissionTargetLabel(permission.permission_name) }}
+                </p>
+                <p class="text-xs text-base-content/60">
+                  {{ permission.permission_name }}
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        (click)="onCancel()"
+        [disabled]="isSubmitting"
+      >
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        <span
+          *ngIf="isSubmitting"
+          class="loading loading-spinner loading-xs"
+        ></span>
+        {{ isSubmitting ? "Saving..." : "Save Changes" }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -49,6 +49,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'fdo',
+        loadComponent: () =>
+          import('./features/fdos/fdo-list/fdo-list.component').then(
+            (m) => m.FdoListComponent,
+          ),
+      },
+      {
+        path: 'fdo/:id',
+        loadComponent: () =>
+          import('./features/fdos/fdo-detail/fdo-detail.component').then(
+            (m) => m.FdoDetailComponent,
+          ),
+      },
+      {
         path: 'patients',
         loadComponent: () =>
           import('./features/patients/patient-list/patient-list.component').then(
