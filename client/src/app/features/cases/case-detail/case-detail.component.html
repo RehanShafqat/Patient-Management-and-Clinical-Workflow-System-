@@ -6,7 +6,7 @@
     Loading case details...
   </div>
 
-  <ng-container *ngIf="!loading && caseRecord as c; else caseNotFound">
+  <div *ngIf="!loading && caseRecord as c">
     <div class="flex items-center justify-between gap-4 mt-8">
       <div class="flex items-center gap-6">
         <button
@@ -242,13 +242,13 @@
         </div>
       </section>
     </div>
-  </ng-container>
+  </div>
 
-  <ng-template #caseNotFound>
+  <div *ngIf="!caseRecord && !loading">
     <div
       class="rounded-xl border border-error/30 bg-error/10 p-6 text-sm text-error"
     >
       Case record was not found.
     </div>
-  </ng-template>
+  </div>
 </div>

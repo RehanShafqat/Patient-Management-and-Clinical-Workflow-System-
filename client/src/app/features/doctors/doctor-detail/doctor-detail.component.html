@@ -6,7 +6,7 @@
     Loading doctor details...
   </div>
 
-  <ng-container *ngIf="!loading && doctor as d; else doctorNotFound">
+  <div *ngIf="!loading && doctor as d">
     <div class="flex items-center justify-between gap-4 mt-8">
       <div class="flex items-center gap-6">
         <button
@@ -219,13 +219,13 @@
         </div>
       </section>
     </div>
-  </ng-container>
+  </div>
 
-  <ng-template #doctorNotFound>
+  <div *ngIf="!doctor && !loading">
     <div
       class="rounded-xl border border-error/30 bg-error/10 p-6 text-sm text-error"
     >
       Doctor record was not found.
     </div>
-  </ng-template>
+  </div>
 </div>

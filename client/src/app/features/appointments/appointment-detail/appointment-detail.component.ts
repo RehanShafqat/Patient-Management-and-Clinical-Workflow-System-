@@ -32,7 +32,7 @@ export class AppointmentDetailComponent implements OnInit {
         this.appointment = response.data;
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
         this.appointment = null;
         this.loading = false;
       },

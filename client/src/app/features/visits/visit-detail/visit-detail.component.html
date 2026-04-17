@@ -6,7 +6,7 @@
     Loading visit details...
   </div>
 
-  <ng-container *ngIf="!loading && visit as v; else visitNotFound">
+  <div *ngIf="!loading && visit as v">
     <div class="flex items-center justify-between gap-4 mt-8">
       <div class="flex items-center gap-6">
         <button
@@ -254,13 +254,13 @@
         </div>
       </section>
     </div>
-  </ng-container>
+  </div>
 
-  <ng-template #visitNotFound>
+  <div *ngIf="!visit && !loading">
     <div
       class="rounded-xl border border-error/30 bg-error/10 p-6 text-sm text-error"
     >
       Visit record was not found.
     </div>
-  </ng-template>
+  </div>
 </div>

@@ -6,7 +6,7 @@
     Loading appointment details...
   </div>
 
-  <ng-container *ngIf="!loading && appointment as a; else appointmentNotFound">
+  <div *ngIf="!loading && appointment as a">
     <div class="flex items-center justify-between gap-4 mt-8">
       <div class="flex items-center gap-6">
         <button
@@ -232,13 +232,13 @@
         </div>
       </section>
     </div>
-  </ng-container>
+  </div>
 
-  <ng-template #appointmentNotFound>
+  <div *ngIf="!loading && !appointment">
     <div
       class="rounded-xl border border-error/30 bg-error/10 p-6 text-sm text-error"
     >
       Appointment record was not found.
     </div>
-  </ng-template>
+  </div>
 </div>

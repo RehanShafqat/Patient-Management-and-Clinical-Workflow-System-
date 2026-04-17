@@ -6,7 +6,7 @@
     Loading patient details...
   </div>
 
-  <ng-container *ngIf="!loading && patient as p; else patientNotFound">
+  <div *ngIf="!loading && patient as p">
     <div class="flex items-center justify-between gap-4 mt-8">
       <div class="flex items-center gap-6">
         <button
@@ -213,13 +213,13 @@
         </table>
       </div>
     </section>
-  </ng-container>
+  </div>
 
-  <ng-template #patientNotFound>
+  <div *ngIf="!patient && !loading">
     <div
       class="rounded-xl border border-error/30 bg-error/10 p-6 text-sm text-error"
     >
       Patient record was not found.
     </div>
-  </ng-template>
+  </div>
 </div>
