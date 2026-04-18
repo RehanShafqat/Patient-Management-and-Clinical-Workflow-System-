@@ -26,16 +26,45 @@ export interface DashboardStats {
   }[];
 }
 
+export interface DoctorDashboardStats {
+  todayAppointmentsCount: number;
+  completedVisitsCount: number;
+  activeCasesCount: number;
+  myPatientsCount: number;
+  appointmentsTrend: { date: string; count: number }[];
+  statusBreakdown: { status: string; count: number }[];
+  upcomingAppointments: {
+    id: string;
+    appointment_number: string;
+    appointment_date: string;
+    appointment_time: string;
+    status: string;
+    patient_name: string;
+    case_number?: string | null;
+  }[];
+  recentVisits: {
+    id: string;
+    visit_number: string;
+    visit_date: string;
+    visit_status: string;
+    patient_name: string;
+    diagnoses_name?: string | null;
+  }[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class DashboardService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/dashboard/stats`;
+  private doctorApiUrl = `${environment.apiUrl}/dashboard/doctor-stats`;
   private statsCache$?: Observable<DashboardStats>;
+  private doctorStatsCache$?: Observable<DoctorDashboardStats>;
 
   clearStatsCache(): void {
     this.statsCache$ = undefined;
+    this.doctorStatsCache$ = undefined;
   }
 
   getStats(): Observable<DashboardStats> {
@@ -49,5 +78,18 @@ export class DashboardService {
     }
 
     return this.statsCache$;
+  }
+
+  getDoctorStats(): Observable<DoctorDashboardStats> {
+    if (!this.doctorStatsCache$) {
+      this.doctorStatsCache$ = this.http
+        .get<{ data: DoctorDashboardStats }>(this.doctorApiUrl)
+        .pipe(
+          map((response) => response.data),
+          shareReplay({ bufferSize: 1, refCount: false }),
+        );
+    }
+
+    return this.doctorStatsCache$;
   }
 }

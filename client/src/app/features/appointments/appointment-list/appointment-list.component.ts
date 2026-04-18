@@ -51,7 +51,7 @@ export class AppointmentListComponent implements OnInit {
   private dateRangeSubject = new Subject<{ from?: string; to?: string }>();
 
   //INFO: Table column configuration
-  readonly columns: EntityTableColumn[] = [
+  private readonly allColumns: EntityTableColumn[] = [
     { name: 'Appointment#', prop: 'appointment_number', minWidth: 130 },
     { name: 'Patient', prop: 'patient_name', minWidth: 180 },
     { name: 'Doctor', prop: 'doctor_name', minWidth: 150 },
@@ -63,6 +63,17 @@ export class AppointmentListComponent implements OnInit {
     { name: 'Status', prop: 'status', type: 'status', width: 120 },
     { name: 'Reason', prop: 'reason_for_visit', minWidth: 150 },
   ];
+
+  get columns(): EntityTableColumn[] {
+    if (!this.isDoctorRole) {
+      return this.allColumns;
+    }
+
+    return this.allColumns.filter(
+      (column) =>
+        column.prop !== 'doctor_name' && column.prop !== 'specialty_name',
+    );
+  }
 
   readonly statusOptions: AppointmentStatus[] = [
     'Scheduled',
@@ -206,6 +217,11 @@ export class AppointmentListComponent implements OnInit {
     if (!fetchFilters.practice_location_id)
       delete fetchFilters.practice_location_id;
     if (!fetchFilters.created_by) delete fetchFilters.created_by;
+
+    if (this.isDoctorRole) {
+      delete fetchFilters.doctor_name;
+      delete fetchFilters.specialty_id;
+    }
 
     //INFO: Defensive cleanup in case select emits string "undefined" from template bindings.
     if (

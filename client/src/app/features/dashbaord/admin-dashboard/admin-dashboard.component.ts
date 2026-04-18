@@ -1,6 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DashboardService, DashboardStats } from '../../../core/services/dashboard.service';
+import {
+  DashboardService,
+  DashboardStats,
+} from '../../../core/services/dashboard.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -22,7 +25,7 @@ export class AdminDashboardComponent implements OnInit {
       error: (err) => {
         console.error('Error fetching dashboard stats:', err);
         this.loading = false;
-      }
+      },
     });
   }
 }

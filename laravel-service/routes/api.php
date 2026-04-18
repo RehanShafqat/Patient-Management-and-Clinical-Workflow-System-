@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('jwt.auth')->group(function () {
     Route::prefix('dashboard')->group(function () {
         Route::get('/stats', [DashboardController::class, 'stats'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::get('/doctor-stats', [DashboardController::class, 'doctorStats'])->middleware('check.role:' . Role::DOCTOR->value);
     });
 
     Route::prefix('appointments')->group(function () {
