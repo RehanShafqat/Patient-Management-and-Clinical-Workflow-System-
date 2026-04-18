@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
   FormBuilder,
-  FormGroup,
   Validators,
 } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
+import { LoginRequest } from '../../../core/models/auth.model';
 
 @Component({
   selector: 'app-login',
@@ -14,21 +14,26 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
 })
+
+// Implements OnInit interface to enforce ngOnInit lifecycle hook implementation
 export class LoginComponent implements OnInit {
   isLoading = false;
   showPassword = false;
   authService = inject(AuthService);
 
+  // FormBuilder creates a reactive form with named controls and built-in validators
   loginForm = new FormBuilder().group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
+  // Built-in Angular lifecycle hook - runs after component initialization
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
       this.authService.redirectToDashboard();
     }
   }
+  
   get email() {
     return this.loginForm.get('email')!;
   }
@@ -44,7 +49,8 @@ export class LoginComponent implements OnInit {
 
     this.isLoading = true;
 
-    this.authService.login(this.loginForm.value as any).subscribe({
+    // Gets form values (email and password) and casts to LoginRequest interface for type safety
+    this.authService.login(this.loginForm.value as LoginRequest).subscribe({
       next: () => {
         this.isLoading = false;
         this.authService.redirectToDashboard();

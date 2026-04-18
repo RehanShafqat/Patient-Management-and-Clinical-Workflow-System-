@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import {
-  authGuard,
   adminGuard,
   adminChildGuard,
   doctorGuard,
@@ -26,6 +25,8 @@ export const routes: Routes = [
         (m) => m.LoginComponent,
       ),
   },
+
+
   //INFO: Admin routes
   {
     path: 'admin',
@@ -180,6 +181,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
+
+
   //INFO: Doctor routes
   {
     path: 'doctor',
@@ -212,7 +215,7 @@ export const routes: Routes = [
       {
         path: 'appointments/form',
         redirectTo: 'appointments/new',
-        pathMatch: 'full',
+        pathMatch: 'full',   // Match exact URL only
       },
       {
         path: 'appointments/:id',
@@ -273,6 +276,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
+
+
   //INFO: FDO routes
   {
     path: 'fdo',
