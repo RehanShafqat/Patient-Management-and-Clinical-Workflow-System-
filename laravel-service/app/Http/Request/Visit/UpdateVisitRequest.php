@@ -24,9 +24,18 @@ class UpdateVisitRequest extends FormRequest
     {
         $isDoctor = Auth::user()?->role?->value === Role::DOCTOR->value;
 
+        if ($isDoctor) {
+            return [
+                'diagnoses_id' => ['nullable', 'uuid', 'exists:diagnoses,id'],
+                'treatment' => ['nullable', 'string'],
+                'prescription' => ['nullable', 'string'],
+                'notes' => ['nullable', 'string'],
+            ];
+        }
+
         return [
-            'visit_date' => [$isDoctor ? 'prohibited' : 'sometimes', 'date'],
-            'visit_time' => [$isDoctor ? 'prohibited' : 'sometimes', 'date_format:H:i'],
+            'visit_date' => ['sometimes', 'date'],
+            'visit_time' => ['sometimes', 'date_format:H:i'],
             'visit_duration_minutes' => ['sometimes', 'integer', 'min:1', 'max:1440'],
             'diagnoses_id' => ['nullable', 'uuid', 'exists:diagnoses,id'],
             'treatment' => ['nullable', 'string'],
@@ -44,13 +53,7 @@ class UpdateVisitRequest extends FormRequest
             'visit_status' => [
                 'sometimes',
                 new Enum(VisitStatus::class),
-                $isDoctor
-                    ? Rule::in([
-                        VisitStatus::DRAFT->value,
-                        VisitStatus::COMPLETED->value,
-                        VisitStatus::CANCELLED->value,
-                    ])
-                    : Rule::in(array_map(fn($status) => $status->value, VisitStatus::cases())),
+                Rule::in(array_map(fn($status) => $status->value, VisitStatus::cases())),
             ],
         ];
     }

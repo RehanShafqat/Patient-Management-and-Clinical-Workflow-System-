@@ -80,8 +80,17 @@ class VisitService
         ]);
     }
 
-    public function update(Visit $visit, array $data): Visit
+    public function update(Visit $visit, array $data, string $role): Visit
     {
+        if ($role === Role::DOCTOR->value) {
+            $data = array_intersect_key($data, array_flip([
+                'diagnoses_id',
+                'treatment',
+                'prescription',
+                'notes',
+            ]));
+        }
+
         if (array_key_exists('visit_status', $data)) {
             if ($data['visit_status'] === VisitStatus::COMPLETED->value && !$visit->completed_at) {
                 $data['completed_at'] = now();

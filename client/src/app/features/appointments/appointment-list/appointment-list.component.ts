@@ -18,6 +18,7 @@ import { AppointmentFormComponent } from '../appointment-form/appointment-form.c
 import { ToastrService } from 'ngx-toastr';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-appointment-list',
@@ -38,6 +39,7 @@ export class AppointmentListComponent implements OnInit {
   private readonly appointmentService = inject(AppointmentService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
+  private readonly authService = inject(AuthService);
   private readonly dropdownPageSize = environment.searchableSelectPageSize;
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
@@ -118,6 +120,18 @@ export class AppointmentListComponent implements OnInit {
   isDeleteModalOpen = false;
   selectedAppointment: Appointment | null = null;
   isDeleting = false;
+
+  get isDoctorRole(): boolean {
+    return this.authService.isDoctor();
+  }
+
+  get canCreateAppointments(): boolean {
+    return !this.isDoctorRole;
+  }
+
+  get canDeleteAppointments(): boolean {
+    return !this.isDoctorRole;
+  }
 
   ngOnInit(): void {
     // Load all appointments without filters first to populate options

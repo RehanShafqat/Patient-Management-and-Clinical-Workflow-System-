@@ -129,6 +129,10 @@ class AppointmentService
     // Update appointment
     public function update(Appointment $appointment, array $data, string $role): Appointment
     {
+        if ($role === Role::DOCTOR->value) {
+            $data = array_intersect_key($data, array_flip(['status']));
+        }
+
         // Cannot update cancelled appointment
         if ($appointment->status === AppointmentStatus::CANCELLED) {
             throw new \Exception('Cannot update a cancelled appointment.', 422);

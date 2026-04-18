@@ -17,6 +17,7 @@ import {
   Visit,
   VisitStatus,
 } from '../../../core/models/visit.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-visit-form',
@@ -32,6 +33,7 @@ export class VisitFormComponent implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
   private readonly visitService = inject(VisitService);
   private readonly toastr = inject(ToastrService);
+  private readonly authService = inject(AuthService);
 
   isSubmitting = false;
 
@@ -45,6 +47,7 @@ export class VisitFormComponent implements OnInit, OnChanges {
   form = this.fb.group({
     visit_status: ['Draft' as VisitStatus, [Validators.required]],
     visit_duration_minutes: [null as number | null],
+    diagnoses_id: [''],
     symptoms: [''],
     treatment: [''],
     treatment_plan: [''],
@@ -66,6 +69,10 @@ export class VisitFormComponent implements OnInit, OnChanges {
     }
   }
 
+  get isDoctorRole(): boolean {
+    return this.authService.isDoctor();
+  }
+
   private patchFormFromInput(): void {
     if (!this.visitToEdit) {
       return;
@@ -74,6 +81,7 @@ export class VisitFormComponent implements OnInit, OnChanges {
     this.form.patchValue({
       visit_status: this.visitToEdit.visit_status,
       visit_duration_minutes: this.visitToEdit.visit_duration_minutes ?? null,
+      diagnoses_id: this.visitToEdit.diagnoses_id || '',
       symptoms: this.visitToEdit.symptoms || '',
       treatment: this.visitToEdit.treatment || '',
       treatment_plan: this.visitToEdit.treatment_plan || '',
@@ -101,6 +109,30 @@ export class VisitFormComponent implements OnInit, OnChanges {
     }
 
     const value = this.form.getRawValue();
+
+    if (this.isDoctorRole) {
+      const payload: UpdateVisitPayload = {
+        diagnoses_id: value.diagnoses_id || null,
+        treatment: value.treatment?.trim() || undefined,
+        prescription: value.prescription?.trim() || undefined,
+        notes: value.notes?.trim() || undefined,
+      };
+
+      this.isSubmitting = true;
+
+      this.visitService.updateVisit(this.visitToEdit.id, payload).subscribe({
+        next: (response) => {
+          this.isSubmitting = false;
+          this.toastr.success('Visit updated successfully');
+          this.formSuccess.emit(response.data.visit);
+        },
+        error: () => {
+          this.isSubmitting = false;
+        },
+      });
+
+      return;
+    }
 
     const payload: UpdateVisitPayload = {
       visit_status: (value.visit_status || 'Draft') as VisitStatus,

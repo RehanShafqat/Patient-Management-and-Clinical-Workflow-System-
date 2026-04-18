@@ -87,6 +87,13 @@ class AppointmentController extends Controller
             $validated = $request->validated();
             $role = Auth::user()->role->value;
 
+            if ($role === Role::DOCTOR->value) {
+                $doctorId = Auth::user()->doctorProfile?->id;
+                if ($appointment->doctor_id !== $doctorId) {
+                    return Response::failure('Unauthorized.', 403);
+                }
+            }
+
             $appointment = $this->appointmentService->update(
                 $appointment,
                 $validated,

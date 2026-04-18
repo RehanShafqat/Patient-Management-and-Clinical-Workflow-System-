@@ -13,6 +13,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import {
   Appointment,
+  AppointmentStatus,
   AppointmentType,
   CreateAppointmentPayload,
   UpdateAppointmentPayload,
@@ -37,6 +38,7 @@ import { Specialty } from '../../../core/models/specialty.model';
 import { PracticeLocationService } from '../../../core/services/practice-location.service';
 import { PracticeLocation } from '../../../core/models/practice-location.model';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface CaseOption extends Case {
   display_label: string;
@@ -68,6 +70,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   private readonly practiceLocationService = inject(PracticeLocationService);
   private readonly location = inject(Location);
   private readonly toastr = inject(ToastrService);
+  private readonly authService = inject(AuthService);
 
   private readonly searchableSelectPageSize =
     environment.searchableSelectPageSize;
@@ -104,6 +107,12 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     'Post-op Follow-up',
   ];
 
+  readonly doctorStatusOptions: AppointmentStatus[] = [
+    'Checked In',
+    'In Progress',
+    'Completed',
+  ];
+
   isSubmitting = false;
 
   private readonly fieldLabels: Record<string, string> = {
@@ -118,6 +127,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     duration_minutes: 'Duration',
     reason_for_visit: 'Reason for visit',
     notes: 'Notes',
+    status: 'Status',
   };
 
   form = this.fb.group({
@@ -135,6 +145,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     ],
     reason_for_visit: ['', [Validators.required, Validators.minLength(10)]],
     notes: ['', [Validators.maxLength(500)]],
+    status: ['' as AppointmentStatus | ''],
   });
 
   ngOnInit(): void {
@@ -151,6 +162,17 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     } else {
       this.form.get('case_id')?.enable();
       this.form.get('patient_id')?.enable();
+    }
+
+    if (this.doctorStatusOnlyMode) {
+      this.form.get('status')?.setValidators([Validators.required]);
+      this.form.get('status')?.updateValueAndValidity({ emitEvent: false });
+
+      Object.keys(this.form.controls).forEach((key) => {
+        if (key !== 'status') {
+          this.form.get(key)?.disable({ emitEvent: false });
+        }
+      });
     }
 
     this.loadCases('');
@@ -170,6 +192,14 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
 
   get isEditMode(): boolean {
     return !!this.appointmentToEdit;
+  }
+
+  get isDoctorRole(): boolean {
+    return this.authService.isDoctor();
+  }
+
+  get doctorStatusOnlyMode(): boolean {
+    return this.isEditMode && this.isDoctorRole;
   }
 
   private patchFormValues(): void {
@@ -193,6 +223,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       duration_minutes: this.appointmentToEdit.duration_minutes,
       reason_for_visit: this.appointmentToEdit.reason_for_visit,
       notes: this.appointmentToEdit.notes,
+      status: this.appointmentToEdit.status,
     });
   }
 
@@ -562,6 +593,34 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     }
 
     const value = this.form.getRawValue();
+
+    if (this.doctorStatusOnlyMode && this.appointmentToEdit) {
+      const updatePayload: UpdateAppointmentPayload = {
+        status: value.status as AppointmentStatus,
+      };
+
+      this.isSubmitting = true;
+
+      this.appointmentService
+        .updateAppointment(this.appointmentToEdit.id, updatePayload)
+        .subscribe({
+          next: (response) => {
+            this.isSubmitting = false;
+            this.formSuccess.emit(response.data.appointment);
+            if (!this.formSuccess.observed) {
+              this.location.back();
+            }
+          },
+          error: (error) => {
+            this.isSubmitting = false;
+            const errorMsg =
+              error?.error?.message || 'Failed to update appointment status';
+            this.toastr.error(errorMsg);
+          },
+        });
+
+      return;
+    }
 
     const payload: CreateAppointmentPayload = {
       case_id: value.case_id || '',

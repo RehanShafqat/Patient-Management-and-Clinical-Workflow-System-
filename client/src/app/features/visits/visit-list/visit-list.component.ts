@@ -76,6 +76,10 @@ export class VisitListComponent implements OnInit {
   isDeleting = false;
   selectedVisit: Visit | null = null;
 
+  get canDeleteVisits(): boolean {
+    return this.isAdminRoute();
+  }
+
   ngOnInit(): void {
     this.setupSearch();
     this.loadVisits();
