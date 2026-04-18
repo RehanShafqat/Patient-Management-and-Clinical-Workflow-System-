@@ -3,6 +3,7 @@ import { PatientController } from "../controllers/patient.controller";
 import { checkAccessToken } from "../middlewares/auth.middleware";
 import { checkRoleMiddleware } from "../middlewares/checkRole.middleware";
 import { Role } from "../enums";
+import { checkPrime } from "node:crypto";
 const patientRouter = Router();
 const patientController = new PatientController();
 
@@ -12,7 +13,12 @@ patientRouter.post(
   checkRoleMiddleware([Role.FDO]),
   patientController.createPatient,
 );
-patientRouter.get("/", checkAccessToken, patientController.getAllPatients);
+patientRouter.get(
+  "/",
+  checkAccessToken,
+  checkRoleMiddleware([Role.FDO, Role.DOCTOR]),
+  patientController.getAllPatients,
+);
 patientRouter.get(
   "/:id",
   // checkAccessToken,

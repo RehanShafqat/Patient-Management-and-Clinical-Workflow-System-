@@ -53,8 +53,14 @@ export class PatientController {
       const query = paginationQuerySchema.parse(req.query);
       const { page, per_page, ...filters } = query;
 
+      //INFO: For doctors, we will filter patients to only those that have appointments with the doctor. Admins can see all patients.
       const { rows: patients, count: total } =
-        await this.patientService.getAllPatients(page, per_page, filters);
+        await this.patientService.getAllPatients(
+          page,
+          per_page,
+          filters,
+          req.userRole === Role.DOCTOR ? req.userId : undefined,
+        );
 
       const paginated = getPaginatedResponse(
         patients,

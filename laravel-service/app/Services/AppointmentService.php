@@ -85,7 +85,7 @@ class AppointmentService
         return $query
             ->orderBy('appointment_date', 'asc')
             ->orderBy('appointment_time', 'asc')
-            ->paginate($request->get('per_page', 15));
+            ->paginate($request->input('per_page', 15));
     }
 
     // Get single appointment
