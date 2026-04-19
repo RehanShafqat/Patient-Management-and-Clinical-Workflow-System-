@@ -19,6 +19,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
+import { FDO_PERMISSIONS } from '../../../core/constants/fdo-permissions';
 
 @Component({
   selector: 'app-appointment-list',
@@ -137,11 +138,32 @@ export class AppointmentListComponent implements OnInit {
   }
 
   get canCreateAppointments(): boolean {
-    return !this.isDoctorRole;
+    if (this.authService.isAdmin()) return true;
+    if (this.authService.isDoctor()) return false;
+    if (this.authService.isFdo()) {
+      return this.authService.hasPermission(FDO_PERMISSIONS.CREATE_APPOINTMENT);
+    }
+
+    return false;
   }
 
   get canDeleteAppointments(): boolean {
-    return !this.isDoctorRole;
+    if (this.authService.isAdmin()) return true;
+    if (this.authService.isDoctor()) return false;
+    if (this.authService.isFdo()) {
+      return this.authService.hasPermission(FDO_PERMISSIONS.UPDATE_APPOINTMENT);
+    }
+
+    return false;
+  }
+
+  get canUpdateAppointments(): boolean {
+    if (this.authService.isAdmin() || this.authService.isDoctor()) return true;
+    if (this.authService.isFdo()) {
+      return this.authService.hasPermission(FDO_PERMISSIONS.UPDATE_APPOINTMENT);
+    }
+
+    return false;
   }
 
   ngOnInit(): void {

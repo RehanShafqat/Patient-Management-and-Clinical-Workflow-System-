@@ -7,7 +7,11 @@
       </p>
     </div>
 
-    <a routerLink="new" class="btn btn-primary gap-2 teal-glow">
+    <a
+      *ngIf="canCreateCases"
+      routerLink="new"
+      class="btn btn-primary gap-2 teal-glow"
+    >
       <span class="material-symbols-outlined">add</span>
       New Case
     </a>
@@ -164,6 +168,8 @@
     [totalCount]="totalCount"
     [pageSize]="pageSize"
     [pageOffset]="currentPage - 1"
+    [showUpdateAction]="canUpdateCases"
+    [showDeleteAction]="canDeleteCases"
     (rowSelected)="onRowSelected($event)"
     (updateRequested)="openUpdateModal($event)"
     (deleteRequested)="openDeleteModal($event)"

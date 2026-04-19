@@ -16,7 +16,7 @@ enum FdoPermission: string
     case CREATE_APPOINTMENT = 'create_appointment';
     case UPDATE_APPOINTMENT = 'update_appointment';
 
-    case VIEW_DOCTOR_SCHEDULES = 'view_doctor_schedules';
+    case VIEW_DOCTORS = 'view_doctors';
 
     case EXPORT_PATIENTS = 'export_patients';
     case EXPORT_CASES = 'export_cases';

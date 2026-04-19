@@ -7,7 +7,11 @@
         {{ totalCount }} records found
       </p>
     </div>
-    <a routerLink="/admin/patients/new" class="btn btn-primary gap-2 teal-glow">
+    <a
+      *ngIf="canCreatePatients"
+      [routerLink]="'/' + rolePrefix + '/patients/new'"
+      class="btn btn-primary gap-2 teal-glow"
+    >
       <span class="material-symbols-outlined">person_add</span>
       Add Patient
     </a>
@@ -146,6 +150,8 @@
     [totalCount]="totalCount"
     [pageSize]="pageSize"
     [pageOffset]="currentPage - 1"
+    [showUpdateAction]="canUpdatePatients"
+    [showDeleteAction]="canDeletePatients"
     (rowSelected)="onRowSelected($event)"
     (updateRequested)="openUpdateModal($event)"
     (deleteRequested)="openDeleteModal($event)"

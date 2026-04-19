@@ -18,6 +18,8 @@ import { PatientFormComponent } from '../patient-form/patient-form.component';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
+import { FDO_PERMISSIONS } from '../../../core/constants/fdo-permissions';
 
 @Component({
   selector: 'app-patient-list',
@@ -38,6 +40,7 @@ export class PatientListComponent implements OnInit {
   private readonly patientService = inject(PatientService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
+  private readonly authService = inject(AuthService);
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
   //INFO: Stream for debounced search to avoid excessive API calls
@@ -95,6 +98,26 @@ export class PatientListComponent implements OnInit {
   isDeleteModalOpen = false;
   selectedPatient: Patient | null = null;
   isDeleting = false;
+
+  get rolePrefix(): string {
+    return this.router.url.split('/')[1] || 'admin';
+  }
+
+  get canCreatePatients(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (!this.authService.isFdo()) return false;
+    return this.authService.hasPermission(FDO_PERMISSIONS.CREATE_PATIENT);
+  }
+
+  get canUpdatePatients(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (!this.authService.isFdo()) return false;
+    return this.authService.hasPermission(FDO_PERMISSIONS.UPDATE_PATIENT);
+  }
+
+  get canDeletePatients(): boolean {
+    return this.authService.isAdmin();
+  }
 
   ngOnInit(): void {
     this.loadPatients();

@@ -69,6 +69,9 @@ export class FdoDetailComponent implements OnInit {
     const permissions =
       this.fdo?.userPermissions
         ?.map((item) => item.permission?.permission_name || '')
+        .map((permission) =>
+          permission === 'view_doctor_schedules' ? 'view_doctors' : permission,
+        )
         .filter(Boolean) || [];
 
     return permissions.map((permission) =>

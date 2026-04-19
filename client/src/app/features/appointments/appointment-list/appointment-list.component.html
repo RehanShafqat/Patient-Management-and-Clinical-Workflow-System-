@@ -198,6 +198,7 @@
     [totalCount]="totalCount"
     [pageSize]="pageSize"
     [pageOffset]="currentPage - 1"
+    [showUpdateAction]="canUpdateAppointments"
     [showDeleteAction]="canDeleteAppointments"
     (rowSelected)="onRowSelected($event)"
     (updateRequested)="openUpdateModal($event)"

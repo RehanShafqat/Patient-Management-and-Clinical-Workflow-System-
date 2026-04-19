@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\Role;
 use App\Enums\VisitStatus;
+use App\Models\Diagnoses;
 use App\Models\Visit;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
@@ -91,6 +92,18 @@ class VisitService
             ]));
         }
 
+        $resolvedDiagnosisId = $this->resolveDiagnosisId($data);
+
+        if ($resolvedDiagnosisId !== null) {
+            $data['diagnoses_id'] = $resolvedDiagnosisId;
+        }
+
+        unset(
+            $data['diagnosis_icd_code'],
+            $data['diagnosis_description'],
+            $data['diagnosis_is_active'],
+        );
+
         if (array_key_exists('visit_status', $data)) {
             if ($data['visit_status'] === VisitStatus::COMPLETED->value && !$visit->completed_at) {
                 $data['completed_at'] = now();
@@ -104,6 +117,33 @@ class VisitService
         $visit->update($data);
 
         return $this->getById($visit);
+    }
+
+    private function resolveDiagnosisId(array $data): ?string
+    {
+        if (!empty($data['diagnoses_id'])) {
+            return Diagnoses::findOrFail($data['diagnoses_id'])->id;
+        }
+
+        $icdCode = strtoupper(trim((string) ($data['diagnosis_icd_code'] ?? '')));
+        $description = trim((string) ($data['diagnosis_description'] ?? ''));
+
+        if ($icdCode === '' && $description === '') {
+            return null;
+        }
+
+        if ($icdCode === '' || $description === '') {
+            throw new \Exception('Diagnosis ICD code and description are required to create a diagnosis.', 422);
+        }
+
+        return Diagnoses::updateOrCreate(
+            ['icd_code' => $icdCode],
+            [
+                'diagnoses_name' => $description,
+                'description' => $description,
+                'is_active' => (bool) ($data['diagnosis_is_active'] ?? true),
+            ]
+        )->id;
     }
 
     public function delete(Visit $visit): void

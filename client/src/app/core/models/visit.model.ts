@@ -72,6 +72,9 @@ export interface UpdateVisitPayload {
   visit_time?: string;
   visit_duration_minutes?: number;
   diagnoses_id?: string | null;
+  diagnosis_icd_code?: string;
+  diagnosis_description?: string;
+  diagnosis_is_active?: boolean;
   treatment?: string;
   treatment_plan?: string;
   prescription?: string;

@@ -20,6 +20,8 @@ import {
 } from '../../../shared/components/entity-table/entity-table.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { CaseFormComponent } from '../case-form/case-form.component';
+import { AuthService } from '../../../core/services/auth.service';
+import { FDO_PERMISSIONS } from '../../../core/constants/fdo-permissions';
 
 @Component({
   selector: 'app-case-list',
@@ -38,6 +40,7 @@ export class CaseListComponent implements OnInit {
   private readonly caseService = inject(CaseService);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
+  private readonly authService = inject(AuthService);
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
   private searchSubject = new Subject<string>();
@@ -83,6 +86,22 @@ export class CaseListComponent implements OnInit {
   isDeleteModalOpen = false;
   selectedCase: Case | null = null;
   isDeleting = false;
+
+  get canCreateCases(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (!this.authService.isFdo()) return false;
+    return this.authService.hasPermission(FDO_PERMISSIONS.CREATE_CASE);
+  }
+
+  get canUpdateCases(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (!this.authService.isFdo()) return false;
+    return this.authService.hasPermission(FDO_PERMISSIONS.UPDATE_CASE);
+  }
+
+  get canDeleteCases(): boolean {
+    return this.authService.isAdmin();
+  }
 
   ngOnInit(): void {
     this.loadCases();
