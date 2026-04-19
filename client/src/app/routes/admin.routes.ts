@@ -4,6 +4,7 @@ import { caseManageRoutes } from '../features/cases/cases.routes';
 import { doctorManageRoutes } from '../features/doctors/doctors.routes';
 import { fdoManageRoutes } from '../features/fdos/fdos.routes';
 import { patientManageRoutes } from '../features/patients/patients.routes';
+import { specialtyManageRoutes } from '../features/specialties/specialties.routes';
 import { visitListAndDetailRoutes } from '../features/visits/visits.routes';
 
 export const adminChildRoutes: Routes = [
@@ -28,6 +29,10 @@ export const adminChildRoutes: Routes = [
   {
     path: 'doctors',
     children: doctorManageRoutes,
+  },
+  {
+    path: 'specialties',
+    children: specialtyManageRoutes,
   },
   {
     path: 'patients',

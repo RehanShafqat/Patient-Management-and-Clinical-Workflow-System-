@@ -9,6 +9,11 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
     { label: 'Dashboard', route: '/admin/dashboard', icon: 'grid_view' },
     { label: 'FDOs', route: '/admin/fdo', icon: 'person' },
     { label: 'Doctors', route: '/admin/doctors', icon: 'person' },
+    {
+      label: 'Specialties',
+      route: '/admin/specialties',
+      icon: 'medical_services',
+    },
     { label: 'Patients', route: '/admin/patients', icon: 'person' },
     { label: 'Cases', route: '/admin/cases', icon: 'folder' },
     {
