@@ -3,6 +3,7 @@ import { appointmentCrudRoutes } from '../features/appointments/appointments.rou
 import { caseManageRoutes } from '../features/cases/cases.routes';
 import { doctorManageRoutes } from '../features/doctors/doctors.routes';
 import { fdoManageRoutes } from '../features/fdos/fdos.routes';
+import { insuranceManageRoutes } from '../features/insurances/insurances.routes';
 import { patientManageRoutes } from '../features/patients/patients.routes';
 import { specialtyManageRoutes } from '../features/specialties/specialties.routes';
 import { visitListAndDetailRoutes } from '../features/visits/visits.routes';
@@ -33,6 +34,10 @@ export const adminChildRoutes: Routes = [
   {
     path: 'specialties',
     children: specialtyManageRoutes,
+  },
+  {
+    path: 'insurances',
+    children: insuranceManageRoutes,
   },
   {
     path: 'patients',

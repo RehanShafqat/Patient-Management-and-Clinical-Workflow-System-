@@ -43,7 +43,11 @@ class InsuranceController extends Controller
             return response()->failure('Only Admins and FDOs can view insurances.', 403);
         }
 
-        return response()->success(new InsuranceResource($insurance));
+        $insurance = $this->insuranceService->getById($insurance);
+
+        return response()->success([
+            'insurance' => new InsuranceResource($insurance),
+        ]);
     }
 
     // Create
@@ -51,11 +55,7 @@ class InsuranceController extends Controller
     {
         $user = auth()->user();
         $role = $user ? $user->role->value : Role::ADMIN->value;
-        
-        if ($role === Role::FDO->value) {
-            return response()->failure('You don\'t have permission to create an insurance record. Only Admins can perform this action.', 403);
-        }
-        
+
         if ($role !== Role::ADMIN->value) {
             return response()->failure('Only admins can create insurances.', 403);
         }
