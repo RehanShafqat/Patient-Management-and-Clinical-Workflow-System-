@@ -6,9 +6,17 @@ import { loginSchema } from "../validations";
 import { HttpStatusCode, ResponseMessage } from "../enums";
 import { clearAuthToken, setAuthToken } from "../utils/cookie.util";
 
+/**
+ * Controller responsible for handling authentication flows.
+ * Handles login, user profile retrieval, and logout functionalities.
+ */
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
+  /**
+   * Authenticates a user by validating their credentials.
+   * If successful, sets an HTTP-only access token cookie and returns the user object.
+   */
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
       loginSchema.parse(req.body);
@@ -26,6 +34,10 @@ export class AuthController {
     }
   };
 
+  /**
+   * Retrieves the currently authenticated user's profile based on the attached `userId`.
+   * Requires `checkAccessToken` middleware to have run beforehand.
+   */
   getMe = async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.userId)
@@ -48,12 +60,15 @@ export class AuthController {
     }
   };
 
+  /**
+   * Logs out the user by clearing their HTTP-only access token cookie.
+   */
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
       clearAuthToken(res);
       ApiResponse.send(
         res,
-        null,
+        null,  // "data": null
         ResponseMessage.LOGOUT_SUCCESS,
         HttpStatusCode.OK,
       );

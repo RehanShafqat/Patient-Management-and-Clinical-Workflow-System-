@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -10,7 +10,7 @@ import {
   LogoutResponse,
 } from '../models/auth.model';
 
-import { ApiResponse } from '../interceptors/api-response.interceptor';
+import { ApiResponse, BYPASS_LOG_INTERCEPTOR } from '../interceptors/api-response.interceptor';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +22,7 @@ export class AuthService {
 
   private apiUrl = environment.apiUrl;
   
-  // BehaviorSubject: Emits current and new user values to subscribers
+  // BehaviorSubject: Stores current value, Emits to all subscribers (need a global place to store the logged-in user)
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
   
   // asObservable() - Makes it read-only (components can't call .next() - only AuthService controls user state changes)
@@ -30,7 +30,9 @@ export class AuthService {
 
   // Runs on app initialization via provideAppInitializer in app.config
   checkAuthOnInit(): Observable<void> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/auth/me`).pipe(
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/auth/me`, {
+      context: new HttpContext().set(BYPASS_LOG_INTERCEPTOR, true)
+    }).pipe(
       // tap: Performs side effects (logging, updating state) without changing the value
       tap((response) => {
         const user = response?.data.user;
@@ -39,7 +41,7 @@ export class AuthService {
         // Update BehaviorSubject - emits new value to all subscribers (currentUser$)
         this.currentUserSubject.next(user ?? null);
       }),
-      // map: Transforms the response to void (required by Observable<void> return type)
+      // map: Transforms the response to void (because function returns Observable<void>)
       map(() => void 0),
       // catchError: Catches errors and returns fallback Observable
       catchError(() => {

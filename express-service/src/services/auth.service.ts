@@ -57,12 +57,13 @@ export class AuthService {
     }
 
     if (user.role === Role.FDO) {
-      console.log("Hello");
+      console.log("FDO Role");
 
       const userPermissions = await UserPermission.findAll({
         where: { user_id: user.id },
         include: [{ model: Permission, as: "permission", attributes: ["permission_name"] }],
       });
+
       const permissions = null;
       // = userPermissions.map(
       //   (up) => up.permission.permission_name,
