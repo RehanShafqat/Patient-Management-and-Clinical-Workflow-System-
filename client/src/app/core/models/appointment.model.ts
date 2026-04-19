@@ -110,3 +110,20 @@ export interface PaginatedResponse<T> {
 export interface CreateAppointmentResponse {
   appointment: Appointment;
 }
+
+export interface CompleteAppointmentPayload {
+  diagnoses_id?: string;
+  diagnosis_icd_code?: string;
+  diagnosis_description?: string;
+  diagnosis_is_active?: boolean;
+  visit_duration_minutes?: number;
+  symptoms: string;
+  treatment: string;
+  treatment_plan?: string;
+  prescription: string;
+  notes: string;
+  follow_up_required?: boolean;
+  follow_up_date?: string | null;
+  referral_made?: boolean;
+  referral_to?: string | null;
+}

@@ -6,8 +6,11 @@ namespace App\Services;
 use App\Enums\AppointmentStatus;
 use App\Enums\Role;
 use App\Models\Appointment;
+use App\Models\Diagnoses;
+use App\Models\Visit;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentService
 {
@@ -193,6 +196,99 @@ class AppointmentService
     public function delete(Appointment $appointment): void
     {
         $appointment->delete();
+    }
+
+    public function completeByDoctor(
+        Appointment $appointment,
+        array $data,
+        string $doctorProfileId
+    ): array {
+        if ($appointment->doctor_id !== $doctorProfileId) {
+            throw new \Exception('Unauthorized.', 403);
+        }
+
+        if ($appointment->status === AppointmentStatus::CANCELLED) {
+            throw new \Exception('Cannot complete a cancelled appointment.', 422);
+        }
+
+        return DB::transaction(function () use ($appointment, $data) {
+            $diagnosis = $this->resolveDiagnosis($data);
+
+            if ($appointment->status !== AppointmentStatus::COMPLETED) {
+                $appointment->update(['status' => AppointmentStatus::COMPLETED->value]);
+            }
+
+            $appointment->refresh();
+            $appointment->load('visit');
+
+            $visit = $appointment->visit;
+
+            if (!$visit) {
+                $visit = Visit::createFromAppointment($appointment);
+            }
+
+            $followUpRequired = (bool) ($data['follow_up_required'] ?? false);
+            $referralMade = (bool) ($data['referral_made'] ?? false);
+
+            $visit->update([
+                'diagnoses_id' => $diagnosis->id,
+                'visit_duration_minutes' => $data['visit_duration_minutes'] ?? $visit->visit_duration_minutes,
+                'symptoms' => trim((string) $data['symptoms']),
+                'treatment' => trim((string) $data['treatment']),
+                'treatment_plan' => isset($data['treatment_plan']) ? trim((string) $data['treatment_plan']) : null,
+                'prescription' => trim((string) $data['prescription']),
+                'notes' => trim((string) $data['notes']),
+                'follow_up_required' => $followUpRequired,
+                'follow_up_date' => $followUpRequired ? ($data['follow_up_date'] ?? null) : null,
+                'referral_made' => $referralMade,
+                'referral_to' => $referralMade ? ($data['referral_to'] ?? null) : null,
+                'visit_status' => 'Completed',
+                'completed_at' => now(),
+            ]);
+
+            return [
+                'appointment' => $appointment->load([
+                    'patient',
+                    'doctor.user',
+                    'specialty',
+                    'practiceLocation',
+                    'patientCase',
+                    'createdBy',
+                    'visit',
+                ]),
+                'visit' => $visit->fresh()->load([
+                    'appointment:id,appointment_number',
+                    'case:id,case_number',
+                    'patient:id,first_name,last_name',
+                    'doctor:id,user_id',
+                    'doctor.user:id,first_name,last_name',
+                    'diagnoses:id,icd_code,diagnoses_name,description,is_active',
+                ]),
+            ];
+        });
+    }
+
+    private function resolveDiagnosis(array $data): Diagnoses
+    {
+        if (!empty($data['diagnoses_id'])) {
+            return Diagnoses::findOrFail($data['diagnoses_id']);
+        }
+
+        $icdCode = strtoupper(trim((string) ($data['diagnosis_icd_code'] ?? '')));
+        $description = trim((string) ($data['diagnosis_description'] ?? ''));
+
+        if ($icdCode === '' || $description === '') {
+            throw new \Exception('Diagnosis details are required to complete appointment.', 422);
+        }
+
+        return Diagnoses::updateOrCreate(
+            ['icd_code' => $icdCode],
+            [
+                'diagnoses_name' => $description,
+                'description' => $description,
+                'is_active' => (bool) ($data['diagnosis_is_active'] ?? true),
+            ]
+        );
     }
 
     // Private: doctor conflict check

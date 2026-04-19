@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import {
   Appointment,
   AppointmentFilters,
+  CompleteAppointmentPayload,
   CreateAppointmentPayload,
   CreateAppointmentResponse,
   PaginatedResponse,
@@ -11,6 +12,7 @@ import {
 } from '../models/appointment.model';
 import { ApiResponse } from '../interceptors/api-response.interceptor';
 import { Observable, shareReplay, tap } from 'rxjs';
+import { Visit } from '../models/visit.model';
 
 @Injectable({
   providedIn: 'root',
@@ -84,6 +86,17 @@ export class AppointmentService {
       .patch<
         ApiResponse<{ appointment: Appointment }>
       >(`${this.apiUrl}/${id}`, payload)
+      .pipe(tap(() => this.clearAppointmentsCache()));
+  }
+
+  completeAppointmentByDoctor(
+    id: string,
+    payload: CompleteAppointmentPayload,
+  ): Observable<ApiResponse<{ appointment: Appointment; visit: Visit }>> {
+    return this.http
+      .patch<
+        ApiResponse<{ appointment: Appointment; visit: Visit }>
+      >(`${this.apiUrl}/${id}/complete`, payload)
       .pipe(tap(() => this.clearAppointmentsCache()));
   }
 

@@ -18,7 +18,7 @@ class VisitService
             'patient:id,first_name,last_name',
             'doctor:id,user_id',
             'doctor.user:id,first_name,last_name',
-            'diagnoses:id,diagnoses_name',
+            'diagnoses:id,icd_code,diagnoses_name,description,is_active',
         ]);
 
         if ($user->role->value === Role::DOCTOR->value) {
@@ -76,7 +76,7 @@ class VisitService
             'patient:id,first_name,last_name',
             'doctor:id,user_id',
             'doctor.user:id,first_name,last_name',
-            'diagnoses:id,diagnoses_name',
+            'diagnoses:id,icd_code,diagnoses_name,description,is_active',
         ]);
     }
 

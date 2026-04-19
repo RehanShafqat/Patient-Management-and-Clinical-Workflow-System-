@@ -15,6 +15,7 @@ import {
   Appointment,
   AppointmentStatus,
   AppointmentType,
+  CompleteAppointmentPayload,
   CreateAppointmentPayload,
   UpdateAppointmentPayload,
 } from '../../../core/models/appointment.model';
@@ -39,6 +40,8 @@ import { PracticeLocationService } from '../../../core/services/practice-locatio
 import { PracticeLocation } from '../../../core/models/practice-location.model';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
+import { DiagnosisService } from '../../../core/services/diagnosis.service';
+import { Diagnosis } from '../../../core/models/diagnosis.model';
 
 interface CaseOption extends Case {
   display_label: string;
@@ -47,6 +50,10 @@ interface CaseOption extends Case {
 interface DoctorOption {
   id: string;
   doctor_name: string;
+  display_label: string;
+}
+
+interface DiagnosisOption extends Diagnosis {
   display_label: string;
 }
 
@@ -68,6 +75,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   private readonly patientService = inject(PatientService);
   private readonly specialtyService = inject(SpecialtyService);
   private readonly practiceLocationService = inject(PracticeLocationService);
+  private readonly diagnosisService = inject(DiagnosisService);
   private readonly location = inject(Location);
   private readonly toastr = inject(ToastrService);
   private readonly authService = inject(AuthService);
@@ -95,6 +103,12 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   practiceLocations$ = new Subject<PracticeLocation[]>();
   locationsLoading = false;
   locationSearchInput$ = new Subject<string>();
+
+  diagnoses$ = new Subject<DiagnosisOption[]>();
+  diagnosesLoading = false;
+  diagnosisSearchInput$ = new Subject<string>();
+
+  private diagnosisOptions: DiagnosisOption[] = [];
 
   readonly appointmentTypeOptions: AppointmentType[] = [
     'New Patient',
@@ -128,6 +142,13 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     reason_for_visit: 'Reason for visit',
     notes: 'Notes',
     status: 'Status',
+    diagnoses_id: 'Diagnosis',
+    diagnosis_icd_code: 'Diagnosis ICD code',
+    diagnosis_description: 'Diagnosis description',
+    symptoms: 'Symptoms',
+    treatment: 'Treatment',
+    prescription: 'Prescription',
+    visit_notes: 'Visit notes',
   };
 
   form = this.fb.group({
@@ -146,6 +167,21 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     reason_for_visit: ['', [Validators.required, Validators.minLength(10)]],
     notes: ['', [Validators.maxLength(500)]],
     status: ['' as AppointmentStatus | ''],
+    diagnosis_mode: ['existing' as 'existing' | 'new'],
+    diagnoses_id: [''],
+    diagnosis_icd_code: [''],
+    diagnosis_description: [''],
+    diagnosis_is_active: [true],
+    visit_duration_minutes: [null as number | null],
+    symptoms: [''],
+    treatment: [''],
+    treatment_plan: [''],
+    prescription: [''],
+    visit_notes: [''],
+    follow_up_required: [false],
+    follow_up_date: [''],
+    referral_made: [false],
+    referral_to: [''],
   });
 
   ngOnInit(): void {
@@ -154,6 +190,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     this.setupDoctorSearch();
     this.setupSpecialtySearch();
     this.setupLocationSearch();
+    this.setupDiagnosisSearch();
 
     if (this.appointmentToEdit) {
       this.patchFormValues();
@@ -169,10 +206,29 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       this.form.get('status')?.updateValueAndValidity({ emitEvent: false });
 
       Object.keys(this.form.controls).forEach((key) => {
-        if (key !== 'status') {
+        if (
+          key !== 'status' &&
+          key !== 'diagnosis_mode' &&
+          key !== 'diagnoses_id' &&
+          key !== 'diagnosis_icd_code' &&
+          key !== 'diagnosis_description' &&
+          key !== 'diagnosis_is_active' &&
+          key !== 'visit_duration_minutes' &&
+          key !== 'symptoms' &&
+          key !== 'treatment' &&
+          key !== 'treatment_plan' &&
+          key !== 'prescription' &&
+          key !== 'visit_notes' &&
+          key !== 'follow_up_required' &&
+          key !== 'follow_up_date' &&
+          key !== 'referral_made' &&
+          key !== 'referral_to'
+        ) {
           this.form.get(key)?.disable({ emitEvent: false });
         }
       });
+
+      this.setupDoctorCompletionMode();
     }
 
     this.loadCases('');
@@ -180,6 +236,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     this.loadDoctors('');
     this.loadSpecialties('');
     this.loadLocations('');
+    this.loadDiagnoses('');
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -200,6 +257,17 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
 
   get doctorStatusOnlyMode(): boolean {
     return this.isEditMode && this.isDoctorRole;
+  }
+
+  get completionMode(): 'existing' | 'new' {
+    return (
+      (this.form.get('diagnosis_mode')?.value as 'existing' | 'new') ||
+      'existing'
+    );
+  }
+
+  get isCompletionStatusSelected(): boolean {
+    return this.form.get('status')?.value === 'Completed';
   }
 
   private patchFormValues(): void {
@@ -224,6 +292,169 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       reason_for_visit: this.appointmentToEdit.reason_for_visit,
       notes: this.appointmentToEdit.notes,
       status: this.appointmentToEdit.status,
+      diagnosis_mode: 'existing',
+      diagnoses_id: '',
+      diagnosis_icd_code: '',
+      diagnosis_description: '',
+      diagnosis_is_active: true,
+      visit_duration_minutes: null,
+      symptoms: '',
+      treatment: '',
+      treatment_plan: '',
+      prescription: '',
+      visit_notes: '',
+      follow_up_required: false,
+      follow_up_date: '',
+      referral_made: false,
+      referral_to: '',
+    });
+  }
+
+  private setupDoctorCompletionMode(): void {
+    this.form
+      .get('status')
+      ?.valueChanges.pipe(distinctUntilChanged())
+      .subscribe(() => {
+        this.configureCompletionValidators();
+      });
+
+    this.form
+      .get('diagnosis_mode')
+      ?.valueChanges.pipe(distinctUntilChanged())
+      .subscribe(() => {
+        this.configureCompletionValidators();
+      });
+
+    this.form
+      .get('diagnoses_id')
+      ?.valueChanges.pipe(distinctUntilChanged())
+      .subscribe((diagnosesId) => {
+        if (
+          !this.isCompletionStatusSelected ||
+          this.completionMode !== 'existing'
+        ) {
+          return;
+        }
+
+        const selected = this.diagnosisOptions.find(
+          (option) => option.id === diagnosesId,
+        );
+        this.form.patchValue(
+          {
+            diagnosis_description: selected?.description || '',
+          },
+          { emitEvent: false },
+        );
+      });
+
+    this.form
+      .get('follow_up_required')
+      ?.valueChanges.pipe(distinctUntilChanged())
+      .subscribe(() => {
+        this.configureCompletionValidators();
+      });
+
+    this.form
+      .get('referral_made')
+      ?.valueChanges.pipe(distinctUntilChanged())
+      .subscribe(() => {
+        this.configureCompletionValidators();
+      });
+
+    this.configureCompletionValidators();
+  }
+
+  private configureCompletionValidators(): void {
+    if (!this.doctorStatusOnlyMode) {
+      return;
+    }
+
+    const completionControls = [
+      'diagnosis_mode',
+      'diagnoses_id',
+      'diagnosis_icd_code',
+      'diagnosis_description',
+      'diagnosis_is_active',
+      'visit_duration_minutes',
+      'symptoms',
+      'treatment',
+      'treatment_plan',
+      'prescription',
+      'visit_notes',
+      'follow_up_required',
+      'follow_up_date',
+      'referral_made',
+      'referral_to',
+    ];
+
+    const isCompleted = this.isCompletionStatusSelected;
+
+    if (!isCompleted) {
+      completionControls.forEach((name) => {
+        const control = this.form.get(name);
+        control?.clearValidators();
+        control?.setValue(
+          name === 'diagnosis_mode'
+            ? 'existing'
+            : name === 'diagnosis_is_active'
+              ? true
+              : name === 'follow_up_required' || name === 'referral_made'
+                ? false
+                : name === 'visit_duration_minutes'
+                  ? null
+                  : '',
+          { emitEvent: false },
+        );
+        control?.disable({ emitEvent: false });
+        control?.updateValueAndValidity({ emitEvent: false });
+      });
+
+      return;
+    }
+
+    completionControls.forEach((name) => {
+      this.form.get(name)?.enable({ emitEvent: false });
+    });
+
+    const diagnosisMode = this.completionMode;
+
+    this.form.get('diagnosis_mode')?.setValidators([Validators.required]);
+    this.form
+      .get('visit_duration_minutes')
+      ?.setValidators([Validators.min(1), Validators.max(1440)]);
+    this.form.get('symptoms')?.setValidators([Validators.required]);
+    this.form.get('treatment')?.setValidators([Validators.required]);
+    this.form.get('prescription')?.setValidators([Validators.required]);
+    this.form.get('visit_notes')?.setValidators([Validators.required]);
+
+    if (diagnosisMode === 'existing') {
+      this.form.get('diagnoses_id')?.setValidators([Validators.required]);
+      this.form.get('diagnosis_icd_code')?.clearValidators();
+      this.form.get('diagnosis_description')?.clearValidators();
+    } else {
+      this.form.get('diagnoses_id')?.clearValidators();
+      this.form.get('diagnosis_icd_code')?.setValidators([Validators.required]);
+      this.form
+        .get('diagnosis_description')
+        ?.setValidators([Validators.required]);
+    }
+
+    if (this.form.get('follow_up_required')?.value) {
+      this.form.get('follow_up_date')?.setValidators([Validators.required]);
+    } else {
+      this.form.get('follow_up_date')?.clearValidators();
+      this.form.get('follow_up_date')?.setValue('', { emitEvent: false });
+    }
+
+    if (this.form.get('referral_made')?.value) {
+      this.form.get('referral_to')?.setValidators([Validators.required]);
+    } else {
+      this.form.get('referral_to')?.clearValidators();
+      this.form.get('referral_to')?.setValue('', { emitEvent: false });
+    }
+
+    completionControls.forEach((name) => {
+      this.form.get(name)?.updateValueAndValidity({ emitEvent: false });
     });
   }
 
@@ -358,6 +589,13 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     );
   }
 
+  private mapDiagnosisOptions(diagnoses: Diagnosis[]): DiagnosisOption[] {
+    return diagnoses.map((diagnosis) => ({
+      ...diagnosis,
+      display_label: `${diagnosis.icd_code} - ${diagnosis.diagnoses_name}`,
+    }));
+  }
+
   private loadCases(term: string): void {
     this.caseService
       .getCases({ search: term, per_page: this.searchableSelectPageSize })
@@ -404,6 +642,19 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       })
       .subscribe((response) => {
         this.practiceLocations$.next(response.data);
+      });
+  }
+
+  private loadDiagnoses(term: string): void {
+    this.diagnosisService
+      .getDiagnoses({
+        search: term,
+        is_active: true,
+        per_page: this.searchableSelectPageSize,
+      })
+      .subscribe((response) => {
+        this.diagnosisOptions = this.mapDiagnosisOptions(response.data);
+        this.diagnoses$.next(this.diagnosisOptions);
       });
   }
 
@@ -519,6 +770,31 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       });
   }
 
+  private setupDiagnosisSearch(): void {
+    this.diagnosisSearchInput$
+      .pipe(
+        debounceTime(this.filterDebounceMs),
+        distinctUntilChanged(),
+        tap(() => (this.diagnosesLoading = true)),
+        switchMap((term) =>
+          this.diagnosisService
+            .getDiagnoses({
+              search: term,
+              is_active: true,
+              per_page: this.searchableSelectPageSize,
+            })
+            .pipe(
+              catchError(() => of({ data: [] as Diagnosis[] } as any)),
+              tap(() => (this.diagnosesLoading = false)),
+            ),
+        ),
+      )
+      .subscribe((response: any) => {
+        this.diagnosisOptions = this.mapDiagnosisOptions(response.data || []);
+        this.diagnoses$.next(this.diagnosisOptions);
+      });
+  }
+
   onCaseSearch(term: string | Event): void {
     this.caseSearchInput$.next(typeof term === 'string' ? term : '');
   }
@@ -537,6 +813,10 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
 
   onLocationSearch(term: string | Event): void {
     this.locationSearchInput$.next(typeof term === 'string' ? term : '');
+  }
+
+  onDiagnosisSearch(term: string | Event): void {
+    this.diagnosisSearchInput$.next(typeof term === 'string' ? term : '');
   }
 
   isFieldInvalid(controlName: string): boolean {
@@ -595,6 +875,63 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     const value = this.form.getRawValue();
 
     if (this.doctorStatusOnlyMode && this.appointmentToEdit) {
+      if (value.status === 'Completed') {
+        const completionPayload: CompleteAppointmentPayload = {
+          ...(value.diagnosis_mode === 'existing'
+            ? { diagnoses_id: value.diagnoses_id || undefined }
+            : {
+                diagnosis_icd_code:
+                  value.diagnosis_icd_code?.trim() || undefined,
+                diagnosis_description:
+                  value.diagnosis_description?.trim() || undefined,
+                diagnosis_is_active: !!value.diagnosis_is_active,
+              }),
+          visit_duration_minutes: value.visit_duration_minutes || undefined,
+          symptoms: value.symptoms?.trim() || '',
+          treatment: value.treatment?.trim() || '',
+          treatment_plan: value.treatment_plan?.trim() || undefined,
+          prescription: value.prescription?.trim() || '',
+          notes: value.visit_notes?.trim() || '',
+          follow_up_required: !!value.follow_up_required,
+          follow_up_date: value.follow_up_required
+            ? value.follow_up_date || null
+            : null,
+          referral_made: !!value.referral_made,
+          referral_to: value.referral_made
+            ? value.referral_to?.trim() || null
+            : null,
+        };
+
+        this.isSubmitting = true;
+
+        this.appointmentService
+          .completeAppointmentByDoctor(
+            this.appointmentToEdit.id,
+            completionPayload,
+          )
+          .subscribe({
+            next: (response) => {
+              this.isSubmitting = false;
+              this.toastr.success(
+                'Appointment completed and visit details saved successfully',
+              );
+              this.formSuccess.emit(response.data.appointment);
+              if (!this.formSuccess.observed) {
+                this.location.back();
+              }
+            },
+            error: (error) => {
+              this.isSubmitting = false;
+              const errorMsg =
+                error?.error?.message ||
+                'Failed to complete appointment with visit details';
+              this.toastr.error(errorMsg);
+            },
+          });
+
+        return;
+      }
+
       const updatePayload: UpdateAppointmentPayload = {
         status: value.status as AppointmentStatus,
       };

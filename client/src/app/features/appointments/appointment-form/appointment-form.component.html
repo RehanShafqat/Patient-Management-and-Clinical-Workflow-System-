@@ -24,6 +24,222 @@
           {{ getFieldErrorMessage("status") }}
         </span>
       </label>
+
+      <div
+        *ngIf="isCompletionStatusSelected"
+        class="mt-4 rounded-xl border border-base-300 bg-base-200/40 p-4 space-y-4"
+      >
+        <p class="text-sm font-semibold text-base-content">
+          Visit Details (Required for Completion)
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="form-control w-full">
+            <span class="label-text font-semibold">Diagnosis Source</span>
+            <select
+              class="select select-bordered w-full"
+              formControlName="diagnosis_mode"
+            >
+              <option value="existing">Select Existing ICD Code</option>
+              <option value="new">Create New Diagnosis</option>
+            </select>
+          </label>
+
+          <label class="form-control w-full">
+            <span class="label-text font-semibold"
+              >Visit Duration (minutes)</span
+            >
+            <input
+              type="number"
+              class="input input-bordered w-full"
+              formControlName="visit_duration_minutes"
+            />
+          </label>
+        </div>
+
+        <div *ngIf="completionMode === 'existing'" class="space-y-3">
+          <label class="form-control w-full">
+            <span class="label-text font-semibold">Diagnosis ICD Code</span>
+            <app-searchable-select
+              [items]="(diagnoses$ | async) || []"
+              bindLabel="display_label"
+              bindValue="id"
+              formControlName="diagnoses_id"
+              placeholder="Search ICD code or diagnosis..."
+              (search)="onDiagnosisSearch($event)"
+              [loading]="diagnosesLoading"
+            >
+            </app-searchable-select>
+            <span
+              *ngIf="isFieldInvalid('diagnoses_id')"
+              class="text-xs text-red-500 mt-1"
+            >
+              {{ getFieldErrorMessage("diagnoses_id") }}
+            </span>
+          </label>
+
+          <label class="form-control w-full">
+            <span class="label-text font-semibold">Diagnosis Description</span>
+            <textarea
+              class="textarea textarea-bordered w-full h-20"
+              formControlName="diagnosis_description"
+              readonly
+            ></textarea>
+          </label>
+        </div>
+
+        <div
+          *ngIf="completionMode === 'new'"
+          class="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          <label class="form-control w-full">
+            <span class="label-text font-semibold">New ICD Code</span>
+            <input
+              type="text"
+              class="input input-bordered w-full"
+              formControlName="diagnosis_icd_code"
+              placeholder="e.g. Z99.1"
+            />
+            <span
+              *ngIf="isFieldInvalid('diagnosis_icd_code')"
+              class="text-xs text-red-500 mt-1"
+            >
+              {{ getFieldErrorMessage("diagnosis_icd_code") }}
+            </span>
+          </label>
+
+          <label class="form-control w-full">
+            <span class="label-text font-semibold">Diagnosis Active</span>
+            <select
+              class="select select-bordered w-full"
+              formControlName="diagnosis_is_active"
+            >
+              <option [ngValue]="true">Active</option>
+              <option [ngValue]="false">Inactive</option>
+            </select>
+          </label>
+
+          <label class="form-control w-full md:col-span-2">
+            <span class="label-text font-semibold">Diagnosis Description</span>
+            <textarea
+              class="textarea textarea-bordered w-full h-24"
+              formControlName="diagnosis_description"
+            ></textarea>
+            <span
+              *ngIf="isFieldInvalid('diagnosis_description')"
+              class="text-xs text-red-500 mt-1"
+            >
+              {{ getFieldErrorMessage("diagnosis_description") }}
+            </span>
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="form-control w-full">
+            <span class="label-text font-semibold">Symptoms</span>
+            <textarea
+              class="textarea textarea-bordered w-full h-20"
+              formControlName="symptoms"
+            ></textarea>
+            <span
+              *ngIf="isFieldInvalid('symptoms')"
+              class="text-xs text-red-500 mt-1"
+            >
+              {{ getFieldErrorMessage("symptoms") }}
+            </span>
+          </label>
+
+          <label class="form-control w-full">
+            <span class="label-text font-semibold">Treatment</span>
+            <textarea
+              class="textarea textarea-bordered w-full h-20"
+              formControlName="treatment"
+            ></textarea>
+            <span
+              *ngIf="isFieldInvalid('treatment')"
+              class="text-xs text-red-500 mt-1"
+            >
+              {{ getFieldErrorMessage("treatment") }}
+            </span>
+          </label>
+
+          <label class="form-control w-full">
+            <span class="label-text font-semibold">Treatment Plan</span>
+            <textarea
+              class="textarea textarea-bordered w-full h-20"
+              formControlName="treatment_plan"
+            ></textarea>
+          </label>
+
+          <label class="form-control w-full">
+            <span class="label-text font-semibold">Prescription</span>
+            <textarea
+              class="textarea textarea-bordered w-full h-20"
+              formControlName="prescription"
+            ></textarea>
+            <span
+              *ngIf="isFieldInvalid('prescription')"
+              class="text-xs text-red-500 mt-1"
+            >
+              {{ getFieldErrorMessage("prescription") }}
+            </span>
+          </label>
+        </div>
+
+        <label class="form-control w-full">
+          <span class="label-text font-semibold">Visit Notes</span>
+          <textarea
+            class="textarea textarea-bordered w-full h-24"
+            formControlName="visit_notes"
+          ></textarea>
+          <span
+            *ngIf="isFieldInvalid('visit_notes')"
+            class="text-xs text-red-500 mt-1"
+          >
+            {{ getFieldErrorMessage("visit_notes") }}
+          </span>
+        </label>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="label cursor-pointer justify-start gap-3 px-0">
+              <input
+                type="checkbox"
+                class="checkbox"
+                formControlName="follow_up_required"
+              />
+              <span class="label-text font-semibold">Follow-up required</span>
+            </label>
+            <label class="form-control w-full">
+              <span class="label-text font-semibold">Follow-up Date</span>
+              <input
+                type="date"
+                class="input input-bordered w-full"
+                formControlName="follow_up_date"
+              />
+            </label>
+          </div>
+
+          <div class="space-y-2">
+            <label class="label cursor-pointer justify-start gap-3 px-0">
+              <input
+                type="checkbox"
+                class="checkbox"
+                formControlName="referral_made"
+              />
+              <span class="label-text font-semibold">Referral made</span>
+            </label>
+            <label class="form-control w-full">
+              <span class="label-text font-semibold">Referral To</span>
+              <input
+                type="text"
+                class="input input-bordered w-full"
+                formControlName="referral_to"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
   </ng-container>
 

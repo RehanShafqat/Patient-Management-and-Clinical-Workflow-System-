@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Request\Appointment\StoreAppointmentRequest;
+use App\Http\Request\Appointment\CompleteAppointmentRequest;
 use App\Http\Request\Appointment\UpdateAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
+use App\Http\Resources\VisitResource;
 use App\Models\Appointment;
 use App\Services\AppointmentService;
 use Illuminate\Http\JsonResponse;
@@ -103,6 +105,33 @@ class AppointmentController extends Controller
             return Response::success(
                 ['appointment' => new AppointmentResource($appointment)],
                 'Appointment updated successfully.'
+            );
+        } catch (\Exception $e) {
+            return Response::failure($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    public function complete(CompleteAppointmentRequest $request, Appointment $appointment): JsonResponse
+    {
+        $user = Auth::user();
+
+        if ($user->role->value !== Role::DOCTOR->value) {
+            return Response::failure('Only doctors can complete appointments from this endpoint.', 403);
+        }
+
+        try {
+            $result = $this->appointmentService->completeByDoctor(
+                $appointment,
+                $request->validated(),
+                (string) $user->doctorProfile?->id
+            );
+
+            return Response::success(
+                [
+                    'appointment' => new AppointmentResource($result['appointment']),
+                    'visit' => new VisitResource($result['visit']),
+                ],
+                'Appointment marked as completed and visit details saved.'
             );
         } catch (\Exception $e) {
             return Response::failure($e->getMessage(), $e->getCode() ?: 500);

@@ -16,6 +16,9 @@ export interface Visit {
   visit_duration_minutes?: number | null;
   diagnoses_id?: string | null;
   diagnoses_name?: string | null;
+  diagnoses_icd_code?: string | null;
+  diagnoses_description?: string | null;
+  diagnoses_is_active?: boolean;
   treatment?: string | null;
   treatment_plan?: string | null;
   prescription?: string | null;

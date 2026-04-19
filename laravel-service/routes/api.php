@@ -6,6 +6,7 @@ use App\Http\Controllers\VisitController;
 use App\Http\Controllers\PracticeLocationController;
 use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\FirmController;
+use App\Http\Controllers\DiagnosesController;
 use App\Enums\Role;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,9 @@ Route::middleware('jwt.auth')->group(function () {
 
         // Role-restricted update (doctor = status only, FDO/Admin = full)
         Route::patch('/{appointment}', [AppointmentController::class, 'update'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
+
+        // Doctor-only completion endpoint with visit + diagnosis details
+        Route::patch('/{appointment}/complete', [AppointmentController::class, 'complete'])->middleware('check.role:' . Role::DOCTOR->value);
 
         // FDO and Admin only — cancel
         Route::patch('/{appointment}/cancel', [AppointmentController::class, 'cancel'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value);
@@ -60,6 +64,10 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('/', [InsuranceController::class, 'store'])->middleware('check.role');
         Route::patch('/{insurance}', [InsuranceController::class, 'update'])->middleware('check.role');
         Route::delete('/{insurance}', [InsuranceController::class, 'destroy'])->middleware('check.role');
+    });
+
+    Route::prefix('diagnoses')->group(function () {
+        Route::get('/', [DiagnosesController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
     });
 
     Route::prefix('firms')->group(function () {
