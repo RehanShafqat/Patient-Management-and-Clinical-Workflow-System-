@@ -6,12 +6,15 @@ use App\Http\Controllers\VisitController;
 use App\Http\Controllers\PracticeLocationController;
 use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\FirmController;
+use App\Http\Controllers\DiagnosesController;
 use App\Enums\Role;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('jwt.auth')->group(function () {
     Route::prefix('dashboard')->group(function () {
         Route::get('/stats', [DashboardController::class, 'stats'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::get('/doctor-stats', [DashboardController::class, 'doctorStats'])->middleware('check.role:' . Role::DOCTOR->value);
+        Route::get('/fdo-stats', [DashboardController::class, 'fdoStats'])->middleware('check.role:' . Role::FDO->value);
     });
 
     Route::prefix('appointments')->group(function () {
@@ -25,6 +28,9 @@ Route::middleware('jwt.auth')->group(function () {
 
         // Role-restricted update (doctor = status only, FDO/Admin = full)
         Route::patch('/{appointment}', [AppointmentController::class, 'update'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
+
+        // Doctor-only completion endpoint with visit + diagnosis details
+        Route::patch('/{appointment}/complete', [AppointmentController::class, 'complete'])->middleware('check.role:' . Role::DOCTOR->value);
 
         // FDO and Admin only — cancel
         Route::patch('/{appointment}/cancel', [AppointmentController::class, 'cancel'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value);
@@ -46,24 +52,28 @@ Route::middleware('jwt.auth')->group(function () {
     });
 
     Route::prefix('practice-locations')->group(function () {
-        Route::get('/', [PracticeLocationController::class, 'index'])->middleware('check.role:' . Role::FDO->value);
-        Route::get('/{practiceLocation}', [PracticeLocationController::class, 'show'])->middleware('check.role:' . Role::FDO->value);
-        Route::post('/', [PracticeLocationController::class, 'store'])->middleware('check.role');
-        Route::patch('/{practiceLocation}', [PracticeLocationController::class, 'update'])->middleware('check.role');
-        Route::delete('/{practiceLocation}', [PracticeLocationController::class, 'destroy'])->middleware('check.role');
+        Route::get('/', [PracticeLocationController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::get('/{practiceLocation}', [PracticeLocationController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::post('/', [PracticeLocationController::class, 'store'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::patch('/{practiceLocation}', [PracticeLocationController::class, 'update'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::delete('/{practiceLocation}', [PracticeLocationController::class, 'destroy'])->middleware('check.role:' . Role::ADMIN->value);
     });
 
     Route::prefix('insurances')->group(function () {
-        Route::get('/', [InsuranceController::class, 'index'])->middleware('check.role:' . Role::FDO->value);
-        Route::get('/{insurance}', [InsuranceController::class, 'show'])->middleware('check.role:' . Role::FDO->value);
+        Route::get('/', [InsuranceController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::get('/{insurance}', [InsuranceController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value);
         Route::post('/', [InsuranceController::class, 'store'])->middleware('check.role');
         Route::patch('/{insurance}', [InsuranceController::class, 'update'])->middleware('check.role');
         Route::delete('/{insurance}', [InsuranceController::class, 'destroy'])->middleware('check.role');
     });
 
+    Route::prefix('diagnoses')->group(function () {
+        Route::get('/', [DiagnosesController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value . ',' . Role::DOCTOR->value);
+    });
+
     Route::prefix('firms')->group(function () {
-        Route::get('/', [FirmController::class, 'index'])->middleware('check.role:' . Role::FDO->value);
-        Route::get('/{firm}', [FirmController::class, 'show'])->middleware('check.role:' . Role::FDO->value);
+        Route::get('/', [FirmController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::get('/{firm}', [FirmController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value);
         Route::post('/', [FirmController::class, 'store'])->middleware('check.role');
         Route::patch('/{firm}', [FirmController::class, 'update'])->middleware('check.role');
         Route::delete('/{firm}', [FirmController::class, 'destroy'])->middleware('check.role');

@@ -4,12 +4,20 @@ import patientRoutes from "./patient.routes";
 import caseRoutes from "./case.routes";
 import userRoutes from "./user.routes";
 import specialtyRoutes from "./specialty.routes";
+import { checkAccessToken } from "../middlewares/auth.middleware";
+import { checkRoleMiddleware } from "../middlewares/checkRole.middleware";
+import { Role } from "../enums";
 const router = Router();
 
 router.use("/auth", authRoutes);
-router.use("/patients", patientRoutes);
-router.use("/cases", caseRoutes);
-router.use("/users", userRoutes);
-router.use("/specialties", specialtyRoutes);
+router.use("/patients", checkAccessToken, patientRoutes);
+router.use("/cases", checkAccessToken, caseRoutes);
+router.use("/users", checkAccessToken, userRoutes);
+router.use(
+  "/specialties",
+  checkAccessToken,
+  checkRoleMiddleware([Role.ADMIN]),
+  specialtyRoutes,
+);
 
 export default router;

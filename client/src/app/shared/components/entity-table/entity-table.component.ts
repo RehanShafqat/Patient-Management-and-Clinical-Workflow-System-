@@ -26,6 +26,8 @@ export class EntityTableComponent {
   @Input() totalCount = 0;
   @Input() pageSize = 10;
   @Input() pageOffset = 0;
+  @Input() showUpdateAction = true;
+  @Input() showDeleteAction = true;
 
   get totalPages(): number {
     return Math.ceil(this.totalCount / this.pageSize);

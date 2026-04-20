@@ -3,6 +3,9 @@
   <div
     class="input input-bordered w-full flex items-center justify-between cursor-pointer"
     [class.input-primary]="isOpen"
+    [class.input-disabled]="isDisabled"
+    [class.opacity-60]="isDisabled"
+    [class.cursor-not-allowed]="isDisabled"
     (click)="toggleOpen()"
   >
     <div class="flex-1 truncate">
@@ -54,6 +57,7 @@
           class="input input-bordered input-sm w-full pl-9"
           placeholder="Type to search..."
           [value]="searchText"
+          [disabled]="isDisabled"
           (input)="onSearchInput($event)"
           (click)="$event.stopPropagation()"
         />
@@ -80,8 +84,10 @@
         *ngFor="let item of items"
         class="px-4 py-2.5 cursor-pointer flex flex-col transition-colors hover:bg-base-200"
         [ngClass]="{
-          'bg-base-200 text-primary font-semibold':
-            selectedValue === item[bindValue],
+          'bg-base-200 text-primary font-semibold': valuesEqual(
+            selectedValue,
+            item[bindValue]
+          ),
         }"
         (click)="selectItem(item)"
       >

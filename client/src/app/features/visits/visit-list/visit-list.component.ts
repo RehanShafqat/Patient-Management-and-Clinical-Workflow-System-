@@ -14,9 +14,12 @@ import {
   VisitStatus,
 } from '../../../core/models/visit.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import { VisitFormComponent } from '../visit-form/visit-form.component';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
+import { ExcelExportService } from '../../../core/services/excel-export.service';
+import { FDO_PERMISSIONS } from '../../../core/constants/fdo-permissions';
 
 @Component({
   selector: 'app-visit-list',
@@ -34,7 +37,9 @@ import { environment } from '../../../../environments/environment';
 export class VisitListComponent implements OnInit {
   private readonly visitService = inject(VisitService);
   private readonly router = inject(Router);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly excelExportService = inject(ExcelExportService);
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
   private readonly searchSubject = new Subject<string>();
@@ -75,6 +80,17 @@ export class VisitListComponent implements OnInit {
   isDeleteModalOpen = false;
   isDeleting = false;
   selectedVisit: Visit | null = null;
+
+  get canDeleteVisits(): boolean {
+    return this.isAdminRoute();
+  }
+
+  get canExportVisits(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (this.authService.isDoctor()) return false;
+    if (!this.authService.isFdo()) return false;
+    return this.authService.hasPermission(FDO_PERMISSIONS.EXPORT_VISITS);
+  }
 
   ngOnInit(): void {
     this.setupSearch();
@@ -162,13 +178,13 @@ export class VisitListComponent implements OnInit {
 
   onUpdateSuccess(updatedVisit: Visit): void {
     this.closeUpdateModal();
-    this.toastr.success('Visit updated successfully');
+    this.toastService.success('Visit updated successfully');
     this.loadVisits();
   }
 
   onDeleteRequested(visit: Visit): void {
     if (!this.isAdminRoute()) {
-      this.toastr.error('Only admins can delete visits.');
+      this.toastService.error('Only admins can delete visits.');
       return;
     }
 
@@ -194,7 +210,7 @@ export class VisitListComponent implements OnInit {
       next: () => {
         this.isDeleting = false;
         this.isDeleteModalOpen = false;
-        this.toastr.success('Visit deleted successfully');
+        this.toastService.success('Visit deleted successfully');
         this.selectedVisit = null;
         this.loadVisits();
       },
@@ -225,5 +241,68 @@ export class VisitListComponent implements OnInit {
 
   private isAdminRoute(): boolean {
     return this.router.url.startsWith('/admin/');
+  }
+
+  exportVisitsToExcel(): void {
+    if (!this.canExportVisits) {
+      this.toastService.error('You do not have permission to export visits');
+      return;
+    }
+
+    if (this.totalCount === 0) {
+      this.toastService.info('No visit data available to export');
+      return;
+    }
+
+    const exportFilters = this.buildExportFilters();
+
+    this.visitService.getVisits(exportFilters).subscribe({
+      next: (response) => {
+        const exportRows = response.data.map((visit) => ({
+          'Visit ID': visit.id,
+          'Visit Number': visit.visit_number ?? '',
+          Patient: visit.patient_name ?? '',
+          Doctor: visit.doctor_name ?? '',
+          'Case Number': visit.case_number ?? '',
+          'Visit Date': visit.visit_date ?? '',
+          'Visit Time': visit.visit_time ?? '',
+          Status: visit.visit_status ?? '',
+          'Follow Up Required': visit.follow_up_required ? 'Yes' : 'No',
+          'Follow Up Date': visit.follow_up_date ?? '',
+          Diagnosis: visit.diagnoses_name ?? '',
+        }));
+
+        if (exportRows.length === 0) {
+          this.toastService.info('No visit data available to export');
+          return;
+        }
+
+        this.excelExportService.exportJsonAsExcel(
+          exportRows,
+          `visits-${new Date().toISOString().slice(0, 10)}`,
+          'Visits',
+        );
+
+        this.toastService.success('Visits exported to Excel successfully');
+      },
+      error: () => {
+        this.toastService.error('Failed to export visit data');
+      },
+    });
+  }
+
+  private buildExportFilters(): VisitFilters {
+    const exportFilters: VisitFilters = {
+      ...this.filters,
+      page: 1,
+      per_page: this.totalCount,
+    };
+
+    if (!exportFilters.search) delete exportFilters.search;
+    if (!exportFilters.visit_status) delete exportFilters.visit_status;
+    if (!exportFilters.date_from) delete exportFilters.date_from;
+    if (!exportFilters.date_to) delete exportFilters.date_to;
+
+    return exportFilters;
   }
 }

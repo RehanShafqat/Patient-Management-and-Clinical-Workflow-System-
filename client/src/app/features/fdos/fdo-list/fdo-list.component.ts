@@ -3,7 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   EntityTableColumn,
   EntityTableComponent,
@@ -13,6 +13,8 @@ import { environment } from '../../../../environments/environment';
 import { FdoFilters, FdoUser } from '../../../core/models/fdo.model';
 import { FdoService } from '../../../core/services/fdo.service';
 import { FdoFormComponent } from '../fdo-form/fdo-form.component';
+import { AuthService } from '../../../core/services/auth.service';
+import { ExcelExportService } from '../../../core/services/excel-export.service';
 
 @Component({
   selector: 'app-fdo-list',
@@ -30,7 +32,9 @@ import { FdoFormComponent } from '../fdo-form/fdo-form.component';
 export class FdoListComponent implements OnInit {
   private readonly fdoService = inject(FdoService);
   private readonly router = inject(Router);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly excelExportService = inject(ExcelExportService);
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
   private readonly searchSubject = new Subject<string>();
@@ -61,6 +65,10 @@ export class FdoListComponent implements OnInit {
   isDeleting = false;
   selectedFdo: FdoUser | null = null;
   selectedFdoId: string | null = null;
+
+  get canExportFdos(): boolean {
+    return this.authService.isAdmin();
+  }
 
   ngOnInit(): void {
     this.setupSearch();
@@ -186,7 +194,7 @@ export class FdoListComponent implements OnInit {
       next: () => {
         this.isDeleting = false;
         this.isDeleteModalOpen = false;
-        this.toastr.success('FDO archived successfully');
+        this.toastService.success('FDO archived successfully');
         this.selectedFdo = null;
         this.loadFdos();
       },
@@ -194,5 +202,64 @@ export class FdoListComponent implements OnInit {
         this.isDeleting = false;
       },
     });
+  }
+
+  exportFdosToExcel(): void {
+    if (!this.canExportFdos) {
+      this.toastService.error('You do not have permission to export FDOs');
+      return;
+    }
+
+    if (this.totalCount === 0) {
+      this.toastService.info('No FDO data available to export');
+      return;
+    }
+
+    const exportFilters = this.buildExportFilters();
+
+    this.fdoService.getFdos(exportFilters).subscribe({
+      next: (response) => {
+        const exportRows = response.data.map((fdo) => ({
+          'FDO ID': fdo.id,
+          'First Name': fdo.first_name ?? '',
+          'Last Name': fdo.last_name ?? '',
+          Email: fdo.email ?? '',
+          Phone: fdo.phone ?? '',
+          Status: fdo.is_active ? 'Active' : 'Inactive',
+          'Created At': fdo.created_at ?? '',
+        }));
+
+        if (exportRows.length === 0) {
+          this.toastService.info('No FDO data available to export');
+          return;
+        }
+
+        this.excelExportService.exportJsonAsExcel(
+          exportRows,
+          `fdos-${new Date().toISOString().slice(0, 10)}`,
+          'FDOs',
+        );
+
+        this.toastService.success('FDOs exported to Excel successfully');
+      },
+      error: () => {
+        this.toastService.error('Failed to export FDO data');
+      },
+    });
+  }
+
+  private buildExportFilters(): FdoFilters {
+    const exportFilters: FdoFilters = {
+      ...this.filters,
+      page: 1,
+      per_page: this.totalCount,
+    };
+
+    if (!exportFilters.search) delete exportFilters.search;
+    if (typeof exportFilters.is_active !== 'boolean') {
+      delete exportFilters.is_active;
+    }
+
+    return exportFilters;
   }
 }

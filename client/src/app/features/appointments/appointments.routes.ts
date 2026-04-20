@@ -1,16 +1,73 @@
 import { Routes } from '@angular/router';
-import { AppointmentListComponent } from './appointment-list/appointment-list.component';
+import { FDO_PERMISSIONS } from '../../core/constants/fdo-permissions';
 
-export const appointmentsRoutes: Routes = [
+export const appointmentCrudRoutes: Routes = [
   {
     path: '',
-    component: AppointmentListComponent,
-    data: { title: 'Appointments' },
+    data: {
+      requiredAnyPermissions: [
+        FDO_PERMISSIONS.VIEW_APPOINTMENTS,
+        FDO_PERMISSIONS.UPDATE_APPOINTMENT,
+      ],
+    },
+    loadComponent: () =>
+      import('./appointment-list/appointment-list.component').then(
+        (m) => m.AppointmentListComponent,
+      ),
   },
-  // You can add appointment detail route here when ready
-  // {
-  //   path: ':id',
-  //   component: AppointmentDetailComponent,
-  //   data: { title: 'Appointment Detail' },
-  // },
+  {
+    path: 'new',
+    data: {
+      requiredPermission: FDO_PERMISSIONS.CREATE_APPOINTMENT,
+    },
+    loadComponent: () =>
+      import('./appointment-create/appointment-create.component').then(
+        (m) => m.AppointmentCreateComponent,
+      ),
+  },
+  {
+    path: 'form',
+    redirectTo: 'new',
+    pathMatch: 'full',
+  },
+  {
+    path: ':id',
+    data: {
+      requiredAnyPermissions: [
+        FDO_PERMISSIONS.VIEW_APPOINTMENTS,
+        FDO_PERMISSIONS.UPDATE_APPOINTMENT,
+      ],
+    },
+    loadComponent: () =>
+      import('./appointment-detail/appointment-detail.component').then(
+        (m) => m.AppointmentDetailComponent,
+      ),
+  },
+];
+
+export const appointmentListAndDetailRoutes: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./appointment-list/appointment-list.component').then(
+        (m) => m.AppointmentListComponent,
+      ),
+  },
+  {
+    path: 'new',
+    redirectTo: '',
+    pathMatch: 'full',
+  },
+  {
+    path: 'form',
+    redirectTo: '',
+    pathMatch: 'full',
+  },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./appointment-detail/appointment-detail.component').then(
+        (m) => m.AppointmentDetailComponent,
+      ),
+  },
 ];

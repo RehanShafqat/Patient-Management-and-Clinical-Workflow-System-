@@ -53,7 +53,11 @@ class VisitController extends Controller
             }
         }
 
-        $visit = $this->visitService->update($visit, $request->validated());
+        $visit = $this->visitService->update(
+            $visit,
+            $request->validated(),
+            Auth::user()->role->value
+        );
 
         return Response::success(
             ['visit' => new VisitResource($visit)],

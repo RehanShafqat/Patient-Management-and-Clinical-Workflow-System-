@@ -8,11 +8,12 @@ interface LoginResponse {
 }
 
 interface AuthUser {
-  id: number;
+  id: string;
   role: 'admin' | 'doctor' | 'fdo';
   first_name: string;
   last_name: string;
   email: string;
+  permissions?: string[];
   created_at?: string;
 }
 

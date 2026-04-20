@@ -16,6 +16,9 @@ export interface Visit {
   visit_duration_minutes?: number | null;
   diagnoses_id?: string | null;
   diagnoses_name?: string | null;
+  diagnoses_icd_code?: string | null;
+  diagnoses_description?: string | null;
+  diagnoses_is_active?: boolean;
   treatment?: string | null;
   treatment_plan?: string | null;
   prescription?: string | null;
@@ -69,6 +72,9 @@ export interface UpdateVisitPayload {
   visit_time?: string;
   visit_duration_minutes?: number;
   diagnoses_id?: string | null;
+  diagnosis_icd_code?: string;
+  diagnosis_description?: string;
+  diagnosis_is_active?: boolean;
   treatment?: string;
   treatment_plan?: string;
   prescription?: string;

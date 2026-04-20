@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Request\Appointment\StoreAppointmentRequest;
+use App\Http\Request\Appointment\CompleteAppointmentRequest;
 use App\Http\Request\Appointment\UpdateAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
+use App\Http\Resources\VisitResource;
 use App\Models\Appointment;
 use App\Services\AppointmentService;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +16,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use App\Enums\Role;
+use App\Enums\AppointmentStatus;
 use App\Enums\FdoPermission;
 use App\Enums\HttpStatus;
 
@@ -87,6 +90,13 @@ class AppointmentController extends Controller
             $validated = $request->validated();
             $role = Auth::user()->role->value;
 
+            if ($role === Role::DOCTOR->value) {
+                $doctorId = Auth::user()->doctorProfile?->id;
+                if ($appointment->doctor_id !== $doctorId) {
+                    return Response::failure('Unauthorized.', 403);
+                }
+            }
+
             $appointment = $this->appointmentService->update(
                 $appointment,
                 $validated,
@@ -96,6 +106,38 @@ class AppointmentController extends Controller
             return Response::success(
                 ['appointment' => new AppointmentResource($appointment)],
                 'Appointment updated successfully.'
+            );
+        } catch (\Exception $e) {
+            return Response::failure($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    public function complete(CompleteAppointmentRequest $request, Appointment $appointment): JsonResponse
+    {
+        $user = Auth::user();
+        $wasAlreadyCompleted = $appointment->status === AppointmentStatus::COMPLETED;
+
+        if ($user->role->value !== Role::DOCTOR->value) {
+            return Response::failure('Only doctors can complete appointments from this endpoint.', 403);
+        }
+
+        try {
+            $result = $this->appointmentService->completeByDoctor(
+                $appointment,
+                $request->validated(),
+                (string) $user->doctorProfile?->id
+            );
+
+            $message = $wasAlreadyCompleted
+                ? 'Visit details updated successfully.'
+                : 'Appointment marked as completed and visit details saved.';
+
+            return Response::success(
+                [
+                    'appointment' => new AppointmentResource($result['appointment']),
+                    'visit' => new VisitResource($result['visit']),
+                ],
+                $message
             );
         } catch (\Exception $e) {
             return Response::failure($e->getMessage(), $e->getCode() ?: 500);

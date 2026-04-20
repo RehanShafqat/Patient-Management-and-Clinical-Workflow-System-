@@ -3,7 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   EntityTableColumn,
   EntityTableComponent,
@@ -17,6 +17,8 @@ import { DoctorService } from '../../../core/services/doctor.service';
 import { SpecialtyService } from '../../../core/services/specialty.service';
 import { PracticeLocationService } from '../../../core/services/practice-location.service';
 import { DoctorFormComponent } from '../doctor-form/doctor-form.component';
+import { AuthService } from '../../../core/services/auth.service';
+import { ExcelExportService } from '../../../core/services/excel-export.service';
 
 @Component({
   selector: 'app-doctor-list',
@@ -37,7 +39,9 @@ export class DoctorListComponent implements OnInit {
   private readonly specialtyService = inject(SpecialtyService);
   private readonly practiceLocationService = inject(PracticeLocationService);
   private readonly router = inject(Router);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly excelExportService = inject(ExcelExportService);
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
   private readonly searchSubject = new Subject<string>();
@@ -87,6 +91,10 @@ export class DoctorListComponent implements OnInit {
   isDeleting = false;
   selectedDoctor: DoctorUser | null = null;
   selectedDoctorId: string | null = null;
+
+  get canExportDoctors(): boolean {
+    return this.authService.isAdmin();
+  }
 
   ngOnInit(): void {
     this.setupSearch();
@@ -247,7 +255,7 @@ export class DoctorListComponent implements OnInit {
       next: () => {
         this.isDeleting = false;
         this.isDeleteModalOpen = false;
-        this.toastr.success('Doctor archived successfully');
+        this.toastService.success('Doctor archived successfully');
         this.selectedDoctor = null;
         this.loadDoctors();
       },
@@ -255,5 +263,71 @@ export class DoctorListComponent implements OnInit {
         this.isDeleting = false;
       },
     });
+  }
+
+  exportDoctorsToExcel(): void {
+    if (!this.canExportDoctors) {
+      this.toastService.error('You do not have permission to export doctors');
+      return;
+    }
+
+    if (this.totalCount === 0) {
+      this.toastService.info('No doctor data available to export');
+      return;
+    }
+
+    const exportFilters = this.buildExportFilters();
+
+    this.doctorService.getDoctors(exportFilters).subscribe({
+      next: (response) => {
+        const exportRows = response.data.map((doctor) => ({
+          'Doctor ID': doctor.id,
+          'First Name': doctor.first_name ?? '',
+          'Last Name': doctor.last_name ?? '',
+          Email: doctor.email ?? '',
+          Phone: doctor.phone ?? '',
+          Specialty: doctor.doctorProfile?.specialty?.specialty_name ?? '',
+          'Practice Location':
+            doctor.doctorProfile?.practiceLocation?.location_name ?? '',
+          Status: doctor.is_active ? 'Active' : 'Inactive',
+          'Created At': doctor.created_at ?? '',
+        }));
+
+        if (exportRows.length === 0) {
+          this.toastService.info('No doctor data available to export');
+          return;
+        }
+
+        this.excelExportService.exportJsonAsExcel(
+          exportRows,
+          `doctors-${new Date().toISOString().slice(0, 10)}`,
+          'Doctors',
+        );
+
+        this.toastService.success('Doctors exported to Excel successfully');
+      },
+      error: () => {
+        this.toastService.error('Failed to export doctor data');
+      },
+    });
+  }
+
+  private buildExportFilters(): DoctorFilters {
+    const exportFilters: DoctorFilters = {
+      ...this.filters,
+      page: 1,
+      per_page: this.totalCount,
+    };
+
+    if (!exportFilters.search) delete exportFilters.search;
+    if (typeof exportFilters.is_active !== 'boolean') {
+      delete exportFilters.is_active;
+    }
+    if (!exportFilters.specialty_id) delete exportFilters.specialty_id;
+    if (!exportFilters.practice_location_id) {
+      delete exportFilters.practice_location_id;
+    }
+
+    return exportFilters;
   }
 }

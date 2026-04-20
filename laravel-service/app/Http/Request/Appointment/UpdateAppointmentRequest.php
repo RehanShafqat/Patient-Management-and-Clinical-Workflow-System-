@@ -23,7 +23,7 @@ class UpdateAppointmentRequest extends FormRequest
                 'status' => [
                     'required',
                     new Enum(AppointmentStatus::class),
-                    'in:Checked In,In Progress,Completed',
+                    'in:Checked In,In Progress',
                 ],
             ];
         }
@@ -49,7 +49,7 @@ class UpdateAppointmentRequest extends FormRequest
 
             'case_id.exists' => 'The selected case does not exist.',
             'doctor_id.exists' => 'The selected doctor does not exist.',
-            'status.in' => 'Doctors can only set status to Checked In, In Progress, or Completed.',
+            'status.in' => 'Doctors can only set status to Checked In or In Progress from this endpoint.',
         ];
     }
 }

@@ -17,7 +17,7 @@ export class InsuranceAddress extends Model<
   declare id: CreationOptional<string>;
   declare insurance_id: ForeignKey<string>;
   declare address: string;
-  declare phone: CreationOptional<string | null>;
+  declare phone: string;
   declare is_primary: CreationOptional<boolean>;
   declare created_at: CreationOptional<Date>;
   declare updated_at: CreationOptional<Date>;
@@ -35,10 +35,20 @@ export class InsuranceAddress extends Model<
   static initModel(sequelize: Sequelize): typeof InsuranceAddress {
     InsuranceAddress.init(
       {
-        id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+        id: {
+          type: DataTypes.UUID,
+          primaryKey: true,
+          defaultValue: DataTypes.UUIDV4,
+        },
         insurance_id: { type: DataTypes.UUID, allowNull: false },
         address: { type: DataTypes.TEXT, allowNull: false },
-        phone: { type: DataTypes.STRING, allowNull: true },
+        phone: {
+          type: DataTypes.STRING(11),
+          allowNull: false,
+          validate: {
+            len: [11, 11],
+          },
+        },
         is_primary: {
           type: DataTypes.BOOLEAN,
           allowNull: false,

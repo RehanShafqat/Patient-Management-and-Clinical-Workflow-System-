@@ -31,6 +31,9 @@ class VisitResource extends JsonResource
 
             'diagnoses_id' => $this->diagnoses_id,
             'diagnoses_name' => $this->whenLoaded('diagnoses', fn() => $this->diagnoses?->diagnoses_name),
+            'diagnoses_icd_code' => $this->whenLoaded('diagnoses', fn() => $this->diagnoses?->icd_code),
+            'diagnoses_description' => $this->whenLoaded('diagnoses', fn() => $this->diagnoses?->description),
+            'diagnoses_is_active' => $this->whenLoaded('diagnoses', fn() => (bool) $this->diagnoses?->is_active),
 
             'treatment' => $this->treatment,
             'treatment_plan' => $this->treatment_plan,

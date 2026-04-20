@@ -30,7 +30,7 @@ import { PracticeLocationService } from '../../../core/services/practice-locatio
 import { InsuranceService } from '../../../core/services/insurance.service';
 import { FirmService } from '../../../core/services/firm.service';
 import { CaseService } from '../../../core/services/case.service';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   Case,
   CaseCategory,
@@ -62,7 +62,7 @@ export class CaseFormComponent implements OnInit, OnChanges {
   private insuranceService = inject(InsuranceService);
   private firmService = inject(FirmService);
   private caseService = inject(CaseService);
-  private toastr = inject(ToastrService);
+  private toastService = inject(ToastService);
 
   caseForm!: FormGroup;
   isSubmitting = false;
@@ -399,7 +399,7 @@ export class CaseFormComponent implements OnInit, OnChanges {
   onSubmit() {
     if (this.caseForm.invalid) {
       this.caseForm.markAllAsTouched();
-      this.toastr.error('Please fill all required fields correctly.');
+      this.toastService.error('Please fill all required fields correctly.');
       return;
     }
 
@@ -409,25 +409,25 @@ export class CaseFormComponent implements OnInit, OnChanges {
     if (this.caseMode === 'create') {
       this.caseService.createCase(payload).subscribe({
         next: (res) => {
-          this.toastr.success('Case created successfully');
+          this.toastService.success('Case created successfully');
           this.isSubmitting = false;
           this.formSuccess.emit(res.data.case);
         },
         error: (err) => {
           this.isSubmitting = false;
-          this.toastr.error(err.error?.message || 'Failed to create case');
+          this.toastService.error(err.error?.message || 'Failed to create case');
         },
       });
     } else if (this.caseMode === 'edit' && this.initialData) {
       this.caseService.updateCase(this.initialData.id, payload).subscribe({
         next: (res) => {
-          this.toastr.success('Case updated successfully');
+          this.toastService.success('Case updated successfully');
           this.isSubmitting = false;
           this.formSuccess.emit(res.data.case);
         },
         error: (err) => {
           this.isSubmitting = false;
-          this.toastr.error(err.error?.message || 'Failed to update case');
+          this.toastService.error(err.error?.message || 'Failed to update case');
         },
       });
     }

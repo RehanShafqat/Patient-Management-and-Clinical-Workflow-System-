@@ -7,6 +7,7 @@ import {
   updatePatientSchema,
 } from "../validations/patient.validation";
 import { HttpStatusCode, PatientStatus, ResponseMessage } from "../enums";
+import { Appointment, DoctorProfile } from "../models";
 type CreatePatientInput = {
   first_name: string;
   last_name: string;
@@ -62,6 +63,7 @@ export class PatientService {
     page: number = 1,
     limit: number = 15,
     filters: PatientListFilters = {},
+    userId?: string,
   ) => {
     const offset = (page - 1) * limit;
 
@@ -108,9 +110,40 @@ export class PatientService {
       }
       where.registration_date = registrationDateRange;
     }
+    //INFO: This is to ensure that doctors can only see their own patients. Admins can see all patients.
+
+    const include: any[] = [];
+
+    if (userId) {
+      const doctorProfile = await DoctorProfile.findOne({
+        where: {
+          user_id: userId,
+        },
+        attributes: ["id"],
+      });
+
+      if (!doctorProfile) {
+        return {
+          rows: [],
+          count: 0,
+        };
+      }
+
+      include.push({
+        model: Appointment,
+        as: "appointments",
+        attributes: [],
+        required: true,
+        where: {
+          doctor_id: doctorProfile.id,
+        },
+      });
+    }
 
     return Patient.findAndCountAll({
+      include,
       where,
+      distinct: true,
       limit,
       offset,
       order: [["created_at", "DESC"]],

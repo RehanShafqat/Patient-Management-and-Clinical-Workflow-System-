@@ -7,10 +7,23 @@
       </p>
     </div>
 
-    <a routerLink="new" class="btn btn-primary gap-2 teal-glow">
-      <span class="material-symbols-outlined">person_add</span>
-      New FDO
-    </a>
+    <div class="flex items-center gap-2">
+      <button
+        *ngIf="canExportFdos"
+        type="button"
+        class="btn btn-outline gap-2"
+        [disabled]="loading"
+        (click)="exportFdosToExcel()"
+      >
+        <span class="material-symbols-outlined">download</span>
+        Export Excel
+      </button>
+
+      <a routerLink="new" class="btn btn-primary gap-2 teal-glow">
+        <span class="material-symbols-outlined">person_add</span>
+        New FDO
+      </a>
+    </div>
   </div>
 
   <div

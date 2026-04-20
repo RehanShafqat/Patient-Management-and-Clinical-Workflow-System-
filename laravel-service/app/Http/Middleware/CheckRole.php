@@ -14,7 +14,7 @@ class CheckRole
         $user = $request->user();
 
         if (!$user) {
-            $userRole = Role::ADMIN->value;
+            return response()->failure('Unauthorized. No user authenticated.', 401);
         } else {
             $userRole = $user->role?->value;
         }

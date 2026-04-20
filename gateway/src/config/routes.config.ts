@@ -8,6 +8,7 @@ export const routes = [
       "/api/dashboard",
       "/api/firms",
       "/api/insurances",
+      "/api/diagnoses",
     ],
     target: process.env.LARAVEL_SERVICE_URL,
   },

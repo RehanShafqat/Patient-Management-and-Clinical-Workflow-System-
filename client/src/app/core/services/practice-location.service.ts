@@ -1,30 +1,89 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
-import { PracticeLocation, PracticeLocationFilters } from '../models/practice-location.model';
+import { Observable, shareReplay, tap } from 'rxjs';
+import {
+  CreatePracticeLocationPayload,
+  PracticeLocation,
+  PracticeLocationFilters,
+  UpdatePracticeLocationPayload,
+} from '../models/practice-location.model';
 import { PaginatedResponse } from '../models/patient.model';
+import { ApiResponse } from '../interceptors/api-response.interceptor';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PracticeLocationService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/practice-locations`;
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/practice-locations`;
+  private readonly practiceLocationsCache = new Map<
+    string,
+    Observable<PaginatedResponse<PracticeLocation>>
+  >();
+
+  private clearPracticeLocationsCache(): void {
+    this.practiceLocationsCache.clear();
+  }
 
   getPracticeLocations(
-    filters: PracticeLocationFilters = {}
+    filters: PracticeLocationFilters = {},
   ): Observable<PaginatedResponse<PracticeLocation>> {
     let params = new HttpParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, value.toString());
-      }
-    });
 
-    // We get response wrapped in ApiResponse for list endpoints typically?
-    // Let's assume pagination matches the standard. Laravel sometimes returns data wrapped in data: { data: [] }. 
-    // Usually PracticeLocationResource::collection($practiceLocations) returns { data: [], links, meta }
-    return this.http.get<PaginatedResponse<PracticeLocation>>(this.apiUrl, { params });
+    Object.entries(filters)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params = params.set(key, value.toString());
+        }
+      });
+
+    const cacheKey = params.toString();
+    const cached = this.practiceLocationsCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const request$ = this.http
+      .get<PaginatedResponse<PracticeLocation>>(this.apiUrl, { params })
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+
+    this.practiceLocationsCache.set(cacheKey, request$);
+
+    return request$;
+  }
+
+  getPracticeLocationById(
+    id: string,
+  ): Observable<ApiResponse<PracticeLocation>> {
+    return this.http.get<ApiResponse<PracticeLocation>>(`${this.apiUrl}/${id}`);
+  }
+
+  createPracticeLocation(
+    payload: CreatePracticeLocationPayload,
+  ): Observable<ApiResponse<{ practice_location: PracticeLocation }>> {
+    return this.http
+      .post<
+        ApiResponse<{ practice_location: PracticeLocation }>
+      >(this.apiUrl, payload)
+      .pipe(tap(() => this.clearPracticeLocationsCache()));
+  }
+
+  updatePracticeLocation(
+    id: string,
+    payload: UpdatePracticeLocationPayload,
+  ): Observable<ApiResponse<{ practice_location: PracticeLocation }>> {
+    return this.http
+      .patch<
+        ApiResponse<{ practice_location: PracticeLocation }>
+      >(`${this.apiUrl}/${id}`, payload)
+      .pipe(tap(() => this.clearPracticeLocationsCache()));
+  }
+
+  deletePracticeLocation(id: string): Observable<ApiResponse<null>> {
+    return this.http
+      .delete<ApiResponse<null>>(`${this.apiUrl}/${id}`)
+      .pipe(tap(() => this.clearPracticeLocationsCache()));
   }
 }

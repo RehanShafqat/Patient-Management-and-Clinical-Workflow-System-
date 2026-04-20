@@ -11,9 +11,10 @@ export enum FdoPermission {
   CREATE_APPOINTMENT = "create_appointment",
   UPDATE_APPOINTMENT = "update_appointment",
 
-  VIEW_DOCTOR_SCHEDULES = "view_doctor_schedules",
+  VIEW_DOCTORS = "view_doctors",
 
   EXPORT_PATIENTS = "export_patients",
   EXPORT_CASES = "export_cases",
   EXPORT_APPOINTMENTS = "export_appointments",
+  EXPORT_VISITS = "export_visits",
 }

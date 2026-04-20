@@ -9,6 +9,7 @@ import {
   AuthUser,
   LogoutResponse,
 } from '../models/auth.model';
+import { FDO_PERMISSIONS, FdoPermission } from '../constants/fdo-permissions';
 
 import { ApiResponse } from '../interceptors/api-response.interceptor';
 @Injectable({
@@ -88,6 +89,89 @@ export class AuthService {
     return this.getCurrentUser()?.role === 'fdo';
   }
 
+  getPermissions(): string[] {
+    return this.getCurrentUser()?.permissions || [];
+  }
+
+  private matchesPermission(
+    userPermissions: string[],
+    permission: FdoPermission,
+  ): boolean {
+    if (userPermissions.includes(permission)) {
+      return true;
+    }
+
+    if (permission === FDO_PERMISSIONS.VIEW_DOCTORS) {
+      return userPermissions.includes(
+        FDO_PERMISSIONS.LEGACY_VIEW_DOCTOR_SCHEDULES,
+      );
+    }
+
+    return false;
+  }
+
+  hasPermission(permission: FdoPermission): boolean {
+    //INFO: Doctor permissions are handled in the backend and component pages as well.
+    if (this.isAdmin() || this.isDoctor()) {
+      return true;
+    }
+
+    if (!this.isFdo()) {
+      return false;
+    }
+
+    const userPermissions = this.getPermissions();
+
+    //INFO: Update appointment is a superset of view appointment.
+    if (
+      permission === FDO_PERMISSIONS.VIEW_APPOINTMENTS &&
+      userPermissions.includes(FDO_PERMISSIONS.UPDATE_APPOINTMENT)
+    ) {
+      return true;
+    }
+
+    return this.matchesPermission(userPermissions, permission);
+  }
+
+  hasAnyPermission(permissions: FdoPermission[]): boolean {
+    if (this.isAdmin() || this.isDoctor()) {
+      return true;
+    }
+
+    if (!this.isFdo()) {
+      return false;
+    }
+
+    const userPermissions = this.getPermissions();
+    return permissions.some((permission) =>
+      this.matchesPermission(userPermissions, permission),
+    );
+  }
+
+  getFirstAllowedFdoRoute(): string {
+    if (this.hasPermission(FDO_PERMISSIONS.VIEW_PATIENTS)) {
+      return '/fdo/patients';
+    }
+
+    if (this.hasPermission(FDO_PERMISSIONS.VIEW_CASES)) {
+      return '/fdo/cases';
+    }
+
+    if (this.hasPermission(FDO_PERMISSIONS.VIEW_APPOINTMENTS)) {
+      return '/fdo/appointments';
+    }
+
+    if (this.hasPermission(FDO_PERMISSIONS.CREATE_APPOINTMENT)) {
+      return '/fdo/appointments/new';
+    }
+
+    if (this.hasPermission(FDO_PERMISSIONS.UPDATE_APPOINTMENT)) {
+      return '/fdo/appointments';
+    }
+
+    return '/fdo/dashboard';
+  }
+
   // Redirect to correct dashboard based on role
   redirectToDashboard(): void {
     console.log(this.currentUserSubject.value?.role);
@@ -95,6 +179,7 @@ export class AuthService {
     const role = this.getCurrentUser()?.role;
     if (role === 'admin') this.router.navigate(['/admin/dashboard']);
     else if (role === 'doctor') this.router.navigate(['/doctor/dashboard']);
-    else if (role === 'fdo') this.router.navigate(['/fdo/dashboard']);
+    else if (role === 'fdo')
+      this.router.navigate([this.getFirstAllowedFdoRoute()]);
   }
 }

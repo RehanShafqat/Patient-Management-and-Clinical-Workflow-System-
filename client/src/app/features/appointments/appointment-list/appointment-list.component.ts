@@ -15,9 +15,12 @@ import {
   AppointmentType,
 } from '../../../core/models/appointment.model';
 import { AppointmentFormComponent } from '../appointment-form/appointment-form.component';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
+import { FDO_PERMISSIONS } from '../../../core/constants/fdo-permissions';
+import { ExcelExportService } from '../../../core/services/excel-export.service';
 
 @Component({
   selector: 'app-appointment-list',
@@ -37,7 +40,9 @@ import { environment } from '../../../../environments/environment';
 export class AppointmentListComponent implements OnInit {
   private readonly appointmentService = inject(AppointmentService);
   private readonly router = inject(Router);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly excelExportService = inject(ExcelExportService);
   private readonly dropdownPageSize = environment.searchableSelectPageSize;
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
@@ -49,7 +54,7 @@ export class AppointmentListComponent implements OnInit {
   private dateRangeSubject = new Subject<{ from?: string; to?: string }>();
 
   //INFO: Table column configuration
-  readonly columns: EntityTableColumn[] = [
+  private readonly allColumns: EntityTableColumn[] = [
     { name: 'Appointment#', prop: 'appointment_number', minWidth: 130 },
     { name: 'Patient', prop: 'patient_name', minWidth: 180 },
     { name: 'Doctor', prop: 'doctor_name', minWidth: 150 },
@@ -61,6 +66,17 @@ export class AppointmentListComponent implements OnInit {
     { name: 'Status', prop: 'status', type: 'status', width: 120 },
     { name: 'Reason', prop: 'reason_for_visit', minWidth: 150 },
   ];
+
+  get columns(): EntityTableColumn[] {
+    if (!this.isDoctorRole) {
+      return this.allColumns;
+    }
+
+    return this.allColumns.filter(
+      (column) =>
+        column.prop !== 'doctor_name' && column.prop !== 'specialty_name',
+    );
+  }
 
   readonly statusOptions: AppointmentStatus[] = [
     'Scheduled',
@@ -118,6 +134,46 @@ export class AppointmentListComponent implements OnInit {
   isDeleteModalOpen = false;
   selectedAppointment: Appointment | null = null;
   isDeleting = false;
+
+  get isDoctorRole(): boolean {
+    return this.authService.isDoctor();
+  }
+
+  get canCreateAppointments(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (this.authService.isDoctor()) return false;
+    if (this.authService.isFdo()) {
+      return this.authService.hasPermission(FDO_PERMISSIONS.CREATE_APPOINTMENT);
+    }
+
+    return false;
+  }
+
+  get canDeleteAppointments(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (this.authService.isDoctor()) return false;
+    if (this.authService.isFdo()) {
+      return this.authService.hasPermission(FDO_PERMISSIONS.UPDATE_APPOINTMENT);
+    }
+
+    return false;
+  }
+
+  get canUpdateAppointments(): boolean {
+    if (this.authService.isAdmin() || this.authService.isDoctor()) return true;
+    if (this.authService.isFdo()) {
+      return this.authService.hasPermission(FDO_PERMISSIONS.UPDATE_APPOINTMENT);
+    }
+
+    return false;
+  }
+
+  get canExportAppointments(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (this.authService.isDoctor()) return false;
+    if (!this.authService.isFdo()) return false;
+    return this.authService.hasPermission(FDO_PERMISSIONS.EXPORT_APPOINTMENTS);
+  }
 
   ngOnInit(): void {
     // Load all appointments without filters first to populate options
@@ -192,6 +248,11 @@ export class AppointmentListComponent implements OnInit {
     if (!fetchFilters.practice_location_id)
       delete fetchFilters.practice_location_id;
     if (!fetchFilters.created_by) delete fetchFilters.created_by;
+
+    if (this.isDoctorRole) {
+      delete fetchFilters.doctor_name;
+      delete fetchFilters.specialty_id;
+    }
 
     //INFO: Defensive cleanup in case select emits string "undefined" from template bindings.
     if (
@@ -328,6 +389,19 @@ export class AppointmentListComponent implements OnInit {
   openUpdateModal(appointment: Appointment): void {
     this.selectedAppointment = appointment;
     this.isUpdateModalOpen = true;
+
+    this.appointmentService.getAppointmentById(appointment.id).subscribe({
+      next: (response) => {
+        if (!this.isUpdateModalOpen) {
+          return;
+        }
+
+        this.selectedAppointment = response.data;
+      },
+      error: () => {
+        this.toastService.error('Unable to load latest appointment details.');
+      },
+    });
   }
 
   closeUpdateModal(): void {
@@ -338,7 +412,6 @@ export class AppointmentListComponent implements OnInit {
   onUpdateSuccess(updatedAppointment: Appointment): void {
     this.closeUpdateModal();
     this.loadAppointments();
-    this.toastr.success('Appointment updated successfully');
   }
 
   openDeleteModal(appointment: Appointment): void {
@@ -361,7 +434,7 @@ export class AppointmentListComponent implements OnInit {
         next: () => {
           this.isDeleting = false;
           this.isDeleteModalOpen = false;
-          this.toastr.success('Appointment cancelled successfully');
+          this.toastService.success('Appointment cancelled successfully');
           this.selectedAppointment = null;
           this.loadAppointments();
         },
@@ -369,5 +442,84 @@ export class AppointmentListComponent implements OnInit {
           this.isDeleting = false;
         },
       });
+  }
+
+  exportAppointmentsToExcel(): void {
+    if (!this.canExportAppointments) {
+      this.toastService.error(
+        'You do not have permission to export appointments',
+      );
+      return;
+    }
+
+    if (this.totalCount === 0) {
+      this.toastService.info('No appointment data available to export');
+      return;
+    }
+
+    const exportFilters = this.buildExportFilters();
+
+    this.appointmentService.getAppointments(exportFilters).subscribe({
+      next: (response) => {
+        const exportRows = response.data.map((appointment) => ({
+          'Appointment ID': appointment.id,
+          'Appointment Number': appointment.appointment_number ?? '',
+          Patient: appointment.patient_name ?? '',
+          Doctor: appointment.doctor_name ?? '',
+          Specialty: appointment.specialty_name ?? '',
+          Location: appointment.practice_location_name ?? '',
+          Date: appointment.appointment_date ?? '',
+          Time: appointment.appointment_time ?? '',
+          Type: appointment.appointment_type ?? '',
+          Status: appointment.status ?? '',
+          'Reason for Visit': appointment.reason_for_visit ?? '',
+        }));
+
+        if (exportRows.length === 0) {
+          this.toastService.info('No appointment data available to export');
+          return;
+        }
+
+        this.excelExportService.exportJsonAsExcel(
+          exportRows,
+          `appointments-${new Date().toISOString().slice(0, 10)}`,
+          'Appointments',
+        );
+
+        this.toastService.success(
+          'Appointments exported to Excel successfully',
+        );
+      },
+      error: () => {
+        this.toastService.error('Failed to export appointment data');
+      },
+    });
+  }
+
+  private buildExportFilters(): AppointmentFilters {
+    const exportFilters: AppointmentFilters = {
+      ...this.filters,
+      page: 1,
+      per_page: this.totalCount,
+    };
+
+    if (!exportFilters.patient_name) delete exportFilters.patient_name;
+    if (!exportFilters.doctor_name) delete exportFilters.doctor_name;
+    if (!exportFilters.date_from) delete exportFilters.date_from;
+    if (!exportFilters.date_to) delete exportFilters.date_to;
+    if (!exportFilters.specialty_id) delete exportFilters.specialty_id;
+    if (!exportFilters.practice_location_id)
+      delete exportFilters.practice_location_id;
+    if (!exportFilters.created_by) delete exportFilters.created_by;
+
+    if (!exportFilters.appointment_type) delete exportFilters.appointment_type;
+    if (!exportFilters.status) delete exportFilters.status;
+
+    if (this.isDoctorRole) {
+      delete exportFilters.doctor_name;
+      delete exportFilters.specialty_id;
+    }
+
+    return exportFilters;
   }
 }

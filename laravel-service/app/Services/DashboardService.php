@@ -7,6 +7,7 @@ use App\Models\PatientCase;
 use App\Models\Appointment;
 use App\Models\Visit;
 use App\Models\DoctorProfile;
+use App\Models\User;
 use App\Enums\AppointmentStatus;
 use App\Enums\CaseStatus;
 use App\Enums\VisitStatus;
@@ -107,6 +108,252 @@ class DashboardService
             'caseCategories' => $caseCategories,
             'recentPatients' => $recentPatients,
             'staffPerformance' => $staffPerformance,
+        ];
+    }
+
+    public function getDoctorStats($user): array
+    {
+        $today = Carbon::today();
+        $doctorId = $user->doctorProfile?->id;
+
+        if (!$doctorId) {
+            return [
+                'todayAppointmentsCount' => 0,
+                'completedVisitsCount' => 0,
+                'activeCasesCount' => 0,
+                'myPatientsCount' => 0,
+                'appointmentsTrend' => [],
+                'statusBreakdown' => [],
+                'upcomingAppointments' => [],
+                'recentVisits' => [],
+            ];
+        }
+
+        $todayAppointmentsCount = Appointment::where('doctor_id', $doctorId)
+            ->whereDate('appointment_date', $today)
+            ->count();
+
+        $completedVisitsCount = Visit::where('doctor_id', $doctorId)
+            ->where('visit_status', VisitStatus::COMPLETED->value)
+            ->count();
+
+        $activeCasesCount = PatientCase::where('case_status', CaseStatus::ACTIVE)
+            ->whereHas('appointments', function ($query) use ($doctorId) {
+                $query->where('doctor_id', $doctorId);
+            })
+            ->distinct('id')
+            ->count('id');
+
+        $myPatientsCount = Appointment::where('doctor_id', $doctorId)
+            ->distinct('patient_id')
+            ->count('patient_id');
+
+        $appointmentsTrend = Appointment::select(
+            DB::raw('DATE(appointment_date) as date'),
+            DB::raw('count(*) as count')
+        )
+            ->where('doctor_id', $doctorId)
+            ->where('appointment_date', '>=', Carbon::now()->subDays(14))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $statusBreakdown = Appointment::select('status', DB::raw('count(*) as count'))
+            ->where('doctor_id', $doctorId)
+            ->where('appointment_date', '>=', Carbon::now()->subDays(30))
+            ->groupBy('status')
+            ->orderByDesc('count')
+            ->get();
+
+        $upcomingAppointments = Appointment::with([
+            'patient:id,first_name,last_name',
+            'patientCase:id,case_number',
+        ])
+            ->where('doctor_id', $doctorId)
+            ->whereDate('appointment_date', '>=', $today)
+            ->whereNotIn('status', [
+                AppointmentStatus::CANCELLED->value,
+                AppointmentStatus::NO_SHOW->value,
+                AppointmentStatus::COMPLETED->value,
+            ])
+            ->orderBy('appointment_date')
+            ->orderBy('appointment_time')
+            ->limit(5)
+            ->get()
+            ->map(function (Appointment $appointment) {
+                $firstName = $appointment->patient?->first_name ?? '';
+                $lastName = $appointment->patient?->last_name ?? '';
+
+                return [
+                    'id' => $appointment->id,
+                    'appointment_number' => $appointment->appointment_number,
+                    'appointment_date' => optional($appointment->appointment_date)->toDateString(),
+                    'appointment_time' => $appointment->appointment_time,
+                    'status' => $appointment->status?->value ?? null,
+                    'patient_name' => trim("{$firstName} {$lastName}") ?: 'Unknown Patient',
+                    'case_number' => $appointment->patientCase?->case_number,
+                ];
+            })
+            ->values();
+
+        $recentVisits = Visit::with([
+            'patient:id,first_name,last_name',
+            'diagnoses:id,diagnoses_name',
+        ])
+            ->where('doctor_id', $doctorId)
+            ->orderBy('visit_date', 'desc')
+            ->orderBy('visit_time', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function (Visit $visit) {
+                $firstName = $visit->patient?->first_name ?? '';
+                $lastName = $visit->patient?->last_name ?? '';
+
+                return [
+                    'id' => $visit->id,
+                    'visit_number' => $visit->visit_number,
+                    'visit_date' => optional($visit->visit_date)->toDateString(),
+                    'visit_status' => $visit->visit_status?->value ?? null,
+                    'patient_name' => trim("{$firstName} {$lastName}") ?: 'Unknown Patient',
+                    'diagnoses_name' => $visit->diagnoses?->diagnoses_name,
+                ];
+            })
+            ->values();
+
+        return [
+            'todayAppointmentsCount' => $todayAppointmentsCount,
+            'completedVisitsCount' => $completedVisitsCount,
+            'activeCasesCount' => $activeCasesCount,
+            'myPatientsCount' => $myPatientsCount,
+            'appointmentsTrend' => $appointmentsTrend,
+            'statusBreakdown' => $statusBreakdown,
+            'upcomingAppointments' => $upcomingAppointments,
+            'recentVisits' => $recentVisits,
+        ];
+    }
+
+    public function getFdoStats(User $user): array
+    {
+        $today = Carbon::today();
+        $startOfWeek = Carbon::now()->startOfWeek();
+
+        $todayAppointmentsCount = Appointment::whereDate('appointment_date', $today)->count();
+
+        $upcomingAppointmentsCount = Appointment::whereDate('appointment_date', '>=', $today)
+            ->whereNotIn('status', [
+                AppointmentStatus::CANCELLED->value,
+                AppointmentStatus::NO_SHOW->value,
+                AppointmentStatus::COMPLETED->value,
+            ])
+            ->count();
+
+        $checkedInAppointmentsCount = Appointment::whereDate('appointment_date', $today)
+            ->whereIn('status', [
+                AppointmentStatus::CHECKED_IN->value,
+                AppointmentStatus::IN_PROGRESS->value,
+            ])
+            ->count();
+
+        $completedVisitsTodayCount = Visit::whereDate('visit_date', $today)
+            ->where('visit_status', VisitStatus::COMPLETED->value)
+            ->count();
+
+        $activeCasesCount = PatientCase::where('case_status', CaseStatus::ACTIVE->value)->count();
+
+        $newPatientsThisWeek = Patient::where('created_at', '>=', $startOfWeek)->count();
+
+        $appointmentsTrend = Appointment::select(
+            DB::raw('DATE(appointment_date) as date'),
+            DB::raw('count(*) as count')
+        )
+            ->where('appointment_date', '>=', Carbon::now()->subDays(14))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $statusBreakdown = Appointment::select('status', DB::raw('count(*) as count'))
+            ->whereDate('appointment_date', $today)
+            ->groupBy('status')
+            ->orderByDesc('count')
+            ->get();
+
+        $upcomingAppointments = Appointment::with([
+            'patient:id,first_name,last_name',
+            'patientCase:id,case_number',
+            'doctor.user:id,first_name,last_name',
+        ])
+            ->whereDate('appointment_date', '>=', $today)
+            ->whereNotIn('status', [
+                AppointmentStatus::CANCELLED->value,
+                AppointmentStatus::NO_SHOW->value,
+                AppointmentStatus::COMPLETED->value,
+            ])
+            ->orderBy('appointment_date')
+            ->orderBy('appointment_time')
+            ->limit(8)
+            ->get()
+            ->map(function (Appointment $appointment) {
+                $patientFirstName = $appointment->patient?->first_name ?? '';
+                $patientLastName = $appointment->patient?->last_name ?? '';
+
+                $doctorFirstName = $appointment->doctor?->user?->first_name ?? '';
+                $doctorLastName = $appointment->doctor?->user?->last_name ?? '';
+                $doctorName = trim("{$doctorFirstName} {$doctorLastName}");
+
+                return [
+                    'id' => $appointment->id,
+                    'appointment_number' => $appointment->appointment_number,
+                    'appointment_date' => optional($appointment->appointment_date)->toDateString(),
+                    'appointment_time' => $appointment->appointment_time,
+                    'status' => $appointment->status?->value ?? null,
+                    'patient_name' => trim("{$patientFirstName} {$patientLastName}") ?: 'Unknown Patient',
+                    'doctor_name' => $doctorName !== '' ? "Dr. {$doctorName}" : null,
+                    'case_number' => $appointment->patientCase?->case_number,
+                ];
+            })
+            ->values();
+
+        $recentVisits = Visit::with([
+            'patient:id,first_name,last_name',
+            'doctor.user:id,first_name,last_name',
+            'diagnoses:id,diagnoses_name',
+        ])
+            ->orderBy('visit_date', 'desc')
+            ->orderBy('visit_time', 'desc')
+            ->limit(8)
+            ->get()
+            ->map(function (Visit $visit) {
+                $patientFirstName = $visit->patient?->first_name ?? '';
+                $patientLastName = $visit->patient?->last_name ?? '';
+
+                $doctorFirstName = $visit->doctor?->user?->first_name ?? '';
+                $doctorLastName = $visit->doctor?->user?->last_name ?? '';
+                $doctorName = trim("{$doctorFirstName} {$doctorLastName}");
+
+                return [
+                    'id' => $visit->id,
+                    'visit_number' => $visit->visit_number,
+                    'visit_date' => optional($visit->visit_date)->toDateString(),
+                    'visit_status' => $visit->visit_status?->value ?? null,
+                    'patient_name' => trim("{$patientFirstName} {$patientLastName}") ?: 'Unknown Patient',
+                    'doctor_name' => $doctorName !== '' ? "Dr. {$doctorName}" : null,
+                    'diagnoses_name' => $visit->diagnoses?->diagnoses_name,
+                ];
+            })
+            ->values();
+
+        return [
+            'fdoName' => trim("{$user->first_name} {$user->last_name}"),
+            'todayAppointmentsCount' => $todayAppointmentsCount,
+            'upcomingAppointmentsCount' => $upcomingAppointmentsCount,
+            'checkedInAppointmentsCount' => $checkedInAppointmentsCount,
+            'completedVisitsTodayCount' => $completedVisitsTodayCount,
+            'activeCasesCount' => $activeCasesCount,
+            'newPatientsThisWeek' => $newPatientsThisWeek,
+            'appointmentsTrend' => $appointmentsTrend,
+            'statusBreakdown' => $statusBreakdown,
+            'upcomingAppointments' => $upcomingAppointments,
+            'recentVisits' => $recentVisits,
         ];
     }
 }

@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   CreateFdoPayload,
   FdoPermissionOption,
@@ -39,7 +39,7 @@ export class FdoFormComponent implements OnChanges {
 
   private readonly fb = inject(FormBuilder);
   private readonly fdoService = inject(FdoService);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
 
   loading = false;
   isSubmitting = false;
@@ -57,6 +57,13 @@ export class FdoFormComponent implements OnChanges {
   currentFdo: FdoUser | null = null;
   permissionGroups: PermissionGroup[] = [];
   private selectedPermissionIds = new Set<string>();
+  private permissionIdToName = new Map<string, string>();
+  private permissionNameToId = new Map<string, string>();
+
+  private readonly permissionDependencies: Record<string, string[]> = {
+    create_case: ['view_patients'],
+    create_appointment: ['view_patients', 'view_cases', 'view_doctors'],
+  };
 
   form = this.fb.group({
     first_name: ['', [Validators.required, Validators.minLength(2)]],
@@ -142,6 +149,7 @@ export class FdoFormComponent implements OnChanges {
         this.permissionGroups = this.buildPermissionGroups(
           response.data.permissions,
         );
+        this.enforcePermissionDependencies();
         this.loading = false;
       },
       error: () => {
@@ -168,6 +176,7 @@ export class FdoFormComponent implements OnChanges {
         this.permissionGroups = this.buildPermissionGroups(
           permissionResponse.data.permissions,
         );
+        this.enforcePermissionDependencies();
 
         this.form.patchValue({
           first_name: this.currentFdo.first_name,
@@ -190,8 +199,21 @@ export class FdoFormComponent implements OnChanges {
   ): PermissionGroup[] {
     const groupMap = new Map<string, PermissionGroup>();
 
+    this.permissionIdToName = new Map<string, string>();
+    this.permissionNameToId = new Map<string, string>();
+
     permissions.forEach((permission) => {
-      const groupKey = permission.permission_name.split('_')[1] || 'general';
+      const normalizedName = this.normalizePermissionName(
+        permission.permission_name,
+      );
+
+      this.permissionIdToName.set(permission.id, normalizedName);
+      this.permissionNameToId.set(normalizedName, permission.id);
+
+      const derivedGroupKey =
+        permission.permission_name.split('_')[1] || 'general';
+      const groupKey =
+        derivedGroupKey === 'doctors' ? 'doctor' : derivedGroupKey;
 
       if (!groupMap.has(groupKey)) {
         groupMap.set(groupKey, {
@@ -212,6 +234,7 @@ export class FdoFormComponent implements OnChanges {
   togglePermission(permissionId: string, checked: boolean): void {
     if (checked) {
       this.selectedPermissionIds.add(permissionId);
+      this.applyPermissionDependencies(permissionId);
       this.permissionTouched = true;
       return;
     }
@@ -262,7 +285,7 @@ export class FdoFormComponent implements OnChanges {
       this.fdoService.createFdo(payload).subscribe({
         next: (response) => {
           this.isSubmitting = false;
-          this.toastr.success('FDO created successfully');
+          this.toastService.success('FDO created successfully');
           this.formSuccess.emit(response.data.user);
         },
         error: () => {
@@ -291,7 +314,7 @@ export class FdoFormComponent implements OnChanges {
     this.fdoService.updateFdo(this.currentFdo.id, payload).subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        this.toastr.success('FDO updated successfully');
+        this.toastService.success('FDO updated successfully');
         this.formSuccess.emit(response.data.user);
       },
       error: () => {
@@ -338,13 +361,87 @@ export class FdoFormComponent implements OnChanges {
   }
 
   permissionActionLabel(permissionName: string): string {
-    const action = permissionName.split('_')[0] || permissionName;
+    const normalizedName = this.normalizePermissionName(permissionName);
+    const action = normalizedName.split('_')[0] || normalizedName;
     return this.toTitleCase(action);
   }
 
   permissionTargetLabel(permissionName: string): string {
-    const parts = permissionName.split('_').slice(1);
+    const normalizedName = this.normalizePermissionName(permissionName);
+
+    if (normalizedName === 'view_doctors') {
+      return 'Doctor';
+    }
+
+    const parts = normalizedName.split('_').slice(1);
     return this.toTitleCase(parts.join(' '));
+  }
+
+  displayPermissionName(permissionName: string): string {
+    return this.normalizePermissionName(permissionName);
+  }
+
+  private normalizePermissionName(permissionName: string): string {
+    if (permissionName === 'view_doctor_schedules') {
+      return 'view_doctors';
+    }
+
+    return permissionName;
+  }
+
+  private resolvePermissionIdByName(
+    permissionName: string,
+  ): string | undefined {
+    const normalizedName = this.normalizePermissionName(permissionName);
+    const direct = this.permissionNameToId.get(normalizedName);
+
+    if (direct) {
+      return direct;
+    }
+
+    if (normalizedName === 'view_doctors') {
+      return this.permissionNameToId.get('view_doctor_schedules');
+    }
+
+    return undefined;
+  }
+
+  private applyPermissionDependencies(permissionId: string): void {
+    const queue: string[] = [permissionId];
+    const visited = new Set<string>();
+
+    while (queue.length > 0) {
+      const currentId = queue.shift()!;
+      if (visited.has(currentId)) {
+        continue;
+      }
+
+      visited.add(currentId);
+      const permissionName = this.permissionIdToName.get(currentId);
+      if (!permissionName) {
+        continue;
+      }
+
+      const dependencies = this.permissionDependencies[permissionName] || [];
+      dependencies.forEach((dependencyName) => {
+        const dependencyId = this.resolvePermissionIdByName(dependencyName);
+        if (!dependencyId) {
+          return;
+        }
+
+        if (!this.selectedPermissionIds.has(dependencyId)) {
+          this.selectedPermissionIds.add(dependencyId);
+          queue.push(dependencyId);
+        }
+      });
+    }
+  }
+
+  private enforcePermissionDependencies(): void {
+    const selectedIds = Array.from(this.selectedPermissionIds);
+    selectedIds.forEach((permissionId) => {
+      this.applyPermissionDependencies(permissionId);
+    });
   }
 
   private toTitleCase(value: string): string {
