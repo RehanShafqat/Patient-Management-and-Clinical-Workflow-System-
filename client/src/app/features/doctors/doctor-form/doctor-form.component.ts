@@ -228,12 +228,15 @@ export class DoctorFormComponent implements OnInit, OnChanges {
         const profile = doctor.doctorProfile;
 
         if (profile?.specialty?.id) {
-          const exists = this.specialties.some((s) => s.id === profile.specialty?.id);
+          const exists = this.specialties.some(
+            (s) => s.id === profile.specialty?.id,
+          );
           if (!exists) {
             this.specialties = [
               {
                 id: profile.specialty.id,
-                specialty_name: profile.specialty.specialty_name || 'Selected specialty',
+                specialty_name:
+                  profile.specialty.specialty_name || 'Selected specialty',
                 is_active: true,
               },
               ...this.specialties,

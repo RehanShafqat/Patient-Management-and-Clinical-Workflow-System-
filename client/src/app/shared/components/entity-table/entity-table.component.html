@@ -2,11 +2,11 @@
   <ngx-datatable
     class="material striped bootstrap w-full"
     [rows]="rows"
-    [columnMode]="columnMode"
-    [headerHeight]="headerHeight"
-    [footerHeight]="footerHeight"
-    [rowHeight]="rowHeight"
-    [scrollbarH]="!isCompactView"
+    [columnMode]="'standard'"
+    [headerHeight]="56"
+    [footerHeight]="56"
+    [rowHeight]="64"
+    [scrollbarH]="true"
     [externalPaging]="true"
     [count]="totalCount"
     [offset]="pageOffset"
@@ -20,8 +20,8 @@
     [name]="col.name"
     [prop]="col.prop"
     [sortable]="true"
-    [minWidth]="resolveMinWidth(col)"
-    [width]="resolveWidth(col)"
+    [minWidth]="col.minWidth ?? 140"
+    [width]="col.width ?? 180"
   >
     <ng-template ngx-datatable-cell-template let-value="value">
       <ng-container [ngSwitch]="col.type">
@@ -44,8 +44,8 @@
     [draggable]="false"
     [resizeable]="false"
     [canAutoResize]="false"
-    [minWidth]="isCompactView ? 156 : 210"
-    [width]="isCompactView ? 170 : 240"
+    [minWidth]="210"
+    [width]="240"
   >
     <ng-template ngx-datatable-cell-template let-row="row">
       <div class="action-buttons" (click)="$event.stopPropagation()">

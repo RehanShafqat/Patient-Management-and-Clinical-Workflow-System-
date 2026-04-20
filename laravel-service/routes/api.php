@@ -52,11 +52,11 @@ Route::middleware('jwt.auth')->group(function () {
     });
 
     Route::prefix('practice-locations')->group(function () {
-        Route::get('/', [PracticeLocationController::class, 'index'])->middleware('check.role:' . Role::FDO->value);
-        Route::get('/{practiceLocation}', [PracticeLocationController::class, 'show'])->middleware('check.role:' . Role::FDO->value);
-        Route::post('/', [PracticeLocationController::class, 'store'])->middleware('check.role');
-        Route::patch('/{practiceLocation}', [PracticeLocationController::class, 'update'])->middleware('check.role');
-        Route::delete('/{practiceLocation}', [PracticeLocationController::class, 'destroy'])->middleware('check.role');
+        Route::get('/', [PracticeLocationController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::get('/{practiceLocation}', [PracticeLocationController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::post('/', [PracticeLocationController::class, 'store'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::patch('/{practiceLocation}', [PracticeLocationController::class, 'update'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::delete('/{practiceLocation}', [PracticeLocationController::class, 'destroy'])->middleware('check.role:' . Role::ADMIN->value);
     });
 
     Route::prefix('insurances')->group(function () {

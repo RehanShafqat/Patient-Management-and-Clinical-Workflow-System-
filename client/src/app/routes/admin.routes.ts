@@ -5,6 +5,7 @@ import { doctorManageRoutes } from '../features/doctors/doctors.routes';
 import { fdoManageRoutes } from '../features/fdos/fdos.routes';
 import { insuranceManageRoutes } from '../features/insurances/insurances.routes';
 import { patientManageRoutes } from '../features/patients/patients.routes';
+import { practiceLocationManageRoutes } from '../features/practice-locations/practice-locations.routes';
 import { specialtyManageRoutes } from '../features/specialties/specialties.routes';
 import { visitListAndDetailRoutes } from '../features/visits/visits.routes';
 
@@ -38,6 +39,10 @@ export const adminChildRoutes: Routes = [
   {
     path: 'insurances',
     children: insuranceManageRoutes,
+  },
+  {
+    path: 'practice-locations',
+    children: practiceLocationManageRoutes,
   },
   {
     path: 'patients',

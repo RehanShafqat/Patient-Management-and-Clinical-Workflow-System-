@@ -446,7 +446,9 @@ export class AppointmentListComponent implements OnInit {
 
   exportAppointmentsToExcel(): void {
     if (!this.canExportAppointments) {
-      this.toastService.error('You do not have permission to export appointments');
+      this.toastService.error(
+        'You do not have permission to export appointments',
+      );
       return;
     }
 
@@ -484,7 +486,9 @@ export class AppointmentListComponent implements OnInit {
           'Appointments',
         );
 
-        this.toastService.success('Appointments exported to Excel successfully');
+        this.toastService.success(
+          'Appointments exported to Excel successfully',
+        );
       },
       error: () => {
         this.toastService.error('Failed to export appointment data');

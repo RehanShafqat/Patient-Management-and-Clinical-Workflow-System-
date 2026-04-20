@@ -26,6 +26,11 @@ export const NAV_ITEMS: Record<string, NavItem[]> = {
       route: '/admin/insurances',
       icon: 'shield',
     },
+    {
+      label: 'Practice Locations',
+      route: '/admin/practice-locations',
+      icon: 'location_on',
+    },
     { label: 'Patients', route: '/admin/patients', icon: 'person' },
     { label: 'Cases', route: '/admin/cases', icon: 'folder' },
     {

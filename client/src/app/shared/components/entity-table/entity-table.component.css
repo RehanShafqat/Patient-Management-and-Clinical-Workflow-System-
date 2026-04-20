@@ -11,7 +11,7 @@
   box-shadow: none !important;
   overflow: hidden;
   width: 100%;
-  min-width: 0;
+  min-width: 720px;
 }
 
 ::ng-deep .ngx-datatable.material .datatable-header {
@@ -129,23 +129,15 @@
   min-width: fit-content;
 }
 
-@media (max-width: 1200px) {
-  ::ng-deep .ngx-datatable.material .datatable-header .datatable-header-cell,
-  ::ng-deep .ngx-datatable.material .datatable-body .datatable-body-cell {
-    padding-left: 0.55rem !important;
-    padding-right: 0.55rem !important;
+@media (max-width: 1024px) {
+  ::ng-deep .ngx-datatable.material {
+    min-width: 640px;
   }
+}
 
-  ::ng-deep .ngx-datatable.material .datatable-header .datatable-header-cell {
-    font-size: 0.68rem;
-    letter-spacing: 0.025em;
-  }
-
-  ::ng-deep .ngx-datatable.material .datatable-body-cell-label {
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+@media (max-width: 768px) {
+  ::ng-deep .ngx-datatable.material {
+    min-width: 560px;
   }
 
   .entity-table-footer {
@@ -161,10 +153,5 @@
 
   .table-action-btn {
     padding: 0.24rem 0.52rem;
-    font-size: 0.68rem;
-  }
-
-  .action-buttons {
-    gap: 0.3rem;
   }
 }
