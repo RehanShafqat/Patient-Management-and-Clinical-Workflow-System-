@@ -44,4 +44,20 @@ class DashboardController extends Controller
             return response()->failure($e->getMessage(), 500);
         }
     }
+
+    /**
+     * Get FDO-focused dashboard statistics.
+     *
+     * @return JsonResponse
+     */
+    public function fdoStats(): JsonResponse
+    {
+        try {
+            $stats = $this->dashboardService->getFdoStats(Auth::user());
+
+            return response()->success($stats, 'FDO dashboard statistics fetched successfully.');
+        } catch (\Exception $e) {
+            return response()->failure($e->getMessage(), 500);
+        }
+    }
 }

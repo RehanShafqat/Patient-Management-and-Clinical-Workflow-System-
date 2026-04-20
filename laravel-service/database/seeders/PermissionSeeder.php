@@ -21,7 +21,7 @@ class PermissionSeeder extends Seeder
         }
 
         $permissionNames = array_map(
-            static fn (FdoPermission $permission): string => $permission->value,
+            static fn(FdoPermission $permission): string => $permission->value,
             FdoPermission::cases(),
         );
 

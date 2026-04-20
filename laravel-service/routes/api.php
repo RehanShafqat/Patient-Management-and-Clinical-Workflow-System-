@@ -14,6 +14,7 @@ Route::middleware('jwt.auth')->group(function () {
     Route::prefix('dashboard')->group(function () {
         Route::get('/stats', [DashboardController::class, 'stats'])->middleware('check.role:' . Role::ADMIN->value);
         Route::get('/doctor-stats', [DashboardController::class, 'doctorStats'])->middleware('check.role:' . Role::DOCTOR->value);
+        Route::get('/fdo-stats', [DashboardController::class, 'fdoStats'])->middleware('check.role:' . Role::FDO->value);
     });
 
     Route::prefix('appointments')->group(function () {

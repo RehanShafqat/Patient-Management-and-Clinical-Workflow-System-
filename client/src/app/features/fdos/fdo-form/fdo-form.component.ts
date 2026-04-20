@@ -210,7 +210,8 @@ export class FdoFormComponent implements OnChanges {
       this.permissionIdToName.set(permission.id, normalizedName);
       this.permissionNameToId.set(normalizedName, permission.id);
 
-      const derivedGroupKey = permission.permission_name.split('_')[1] || 'general';
+      const derivedGroupKey =
+        permission.permission_name.split('_')[1] || 'general';
       const groupKey =
         derivedGroupKey === 'doctors' ? 'doctor' : derivedGroupKey;
 
@@ -388,7 +389,9 @@ export class FdoFormComponent implements OnChanges {
     return permissionName;
   }
 
-  private resolvePermissionIdByName(permissionName: string): string | undefined {
+  private resolvePermissionIdByName(
+    permissionName: string,
+  ): string | undefined {
     const normalizedName = this.normalizePermissionName(permissionName);
     const direct = this.permissionNameToId.get(normalizedName);
 

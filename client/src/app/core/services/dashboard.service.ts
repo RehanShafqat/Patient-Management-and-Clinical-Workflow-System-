@@ -52,6 +52,37 @@ export interface DoctorDashboardStats {
   }[];
 }
 
+export interface FdoDashboardStats {
+  fdoName: string;
+  todayAppointmentsCount: number;
+  upcomingAppointmentsCount: number;
+  checkedInAppointmentsCount: number;
+  completedVisitsTodayCount: number;
+  activeCasesCount: number;
+  newPatientsThisWeek: number;
+  appointmentsTrend: { date: string; count: number }[];
+  statusBreakdown: { status: string; count: number }[];
+  upcomingAppointments: {
+    id: string;
+    appointment_number: string;
+    appointment_date: string;
+    appointment_time: string;
+    status: string;
+    patient_name: string;
+    doctor_name?: string | null;
+    case_number?: string | null;
+  }[];
+  recentVisits: {
+    id: string;
+    visit_number: string;
+    visit_date: string;
+    visit_status: string;
+    patient_name: string;
+    doctor_name?: string | null;
+    diagnoses_name?: string | null;
+  }[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -59,12 +90,15 @@ export class DashboardService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/dashboard/stats`;
   private doctorApiUrl = `${environment.apiUrl}/dashboard/doctor-stats`;
+  private fdoApiUrl = `${environment.apiUrl}/dashboard/fdo-stats`;
   private statsCache$?: Observable<DashboardStats>;
   private doctorStatsCache$?: Observable<DoctorDashboardStats>;
+  private fdoStatsCache$?: Observable<FdoDashboardStats>;
 
   clearStatsCache(): void {
     this.statsCache$ = undefined;
     this.doctorStatsCache$ = undefined;
+    this.fdoStatsCache$ = undefined;
   }
 
   getStats(): Observable<DashboardStats> {
@@ -91,5 +125,18 @@ export class DashboardService {
     }
 
     return this.doctorStatsCache$;
+  }
+
+  getFdoStats(): Observable<FdoDashboardStats> {
+    if (!this.fdoStatsCache$) {
+      this.fdoStatsCache$ = this.http
+        .get<{ data: FdoDashboardStats }>(this.fdoApiUrl)
+        .pipe(
+          map((response) => response.data),
+          shareReplay({ bufferSize: 1, refCount: false }),
+        );
+    }
+
+    return this.fdoStatsCache$;
   }
 }
