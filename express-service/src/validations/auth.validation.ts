@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { withRequiredPreprocess } from "./validation.utils";
 
+/**
+ * Zod schema for validating user login requests.
+ * Ensures that both email and password are provided and correctly formatted.
+ */
 export const loginSchema = z.object({
   email: withRequiredPreprocess(
     z

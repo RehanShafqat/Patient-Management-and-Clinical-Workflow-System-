@@ -9,6 +9,7 @@ import {
 import { AuthService } from '../services/auth.service';
 import { FdoPermission } from '../constants/fdo-permissions';
 
+// Helper: Returns dashboard URL based on user role or redirects to login if not authenticated
 const getRoleDashboardUrl = (
   authService: AuthService,
   router: Router,
@@ -47,6 +48,7 @@ export const guestGuard: CanActivateFn = () => {
   return getRoleDashboardUrl(authService, router);
 };
 
+// Verifies user is logged in AND has admin role; redirects otherwise
 export const adminGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -58,6 +60,7 @@ export const adminGuard: CanActivateFn = () => {
   return getRoleDashboardUrl(authService, router);
 };
 
+// Verifies user is logged in AND has doctor role; redirects otherwise
 export const doctorGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -69,6 +72,7 @@ export const doctorGuard: CanActivateFn = () => {
   return getRoleDashboardUrl(authService, router);
 };
 
+// Verifies user is logged in AND has FDO role; redirects otherwise
 export const fdoGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -107,8 +111,13 @@ const hasRoutePermission = (
   return authService.hasPermission(requiredPermission);
 };
 
-export const adminChildGuard: CanActivateChildFn = (route, state) =>
-  adminGuard(route, state);
+
+// Child guards that apply the same logic to nested routes
+export const adminChildGuard: CanActivateChildFn = (route, state) => {
+  // route = the child route being accessed
+  // state = the current router state (current URL, params, etc.)
+  return adminGuard(route, state);
+};
 export const doctorChildGuard: CanActivateChildFn = (route, state) =>
   doctorGuard(route, state);
 export const fdoChildGuard: CanActivateChildFn = (route, state) => {

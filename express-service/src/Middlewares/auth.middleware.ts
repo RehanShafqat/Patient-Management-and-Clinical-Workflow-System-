@@ -3,6 +3,13 @@ import { env } from "../config/env.config";
 import { AppError } from "../utils/app-error.util";
 import { verifyJwtToken } from "../utils/jwt.util";
 
+/**
+ * Middleware to protect routes by verifying the provided access token.
+ * It checks the cookies for an `accessToken`, verifies its validity via JWT,
+ * and attaches the extracted `userId` and `userRole` to the request object.
+ *
+ * @throws {AppError} 401 If the token is missing, invalid, or expired.
+ */
 export const checkAccessToken = (
   req: Request,
   _res: Response,
