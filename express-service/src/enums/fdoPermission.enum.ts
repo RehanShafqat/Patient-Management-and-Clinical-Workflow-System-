@@ -16,4 +16,5 @@ export enum FdoPermission {
   EXPORT_PATIENTS = "export_patients",
   EXPORT_CASES = "export_cases",
   EXPORT_APPOINTMENTS = "export_appointments",
+  EXPORT_VISITS = "export_visits",
 }

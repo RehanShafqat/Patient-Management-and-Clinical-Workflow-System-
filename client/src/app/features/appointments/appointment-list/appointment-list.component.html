@@ -7,14 +7,27 @@
         {{ totalCount }} records found
       </p>
     </div>
-    <a
-      *ngIf="canCreateAppointments"
-      routerLink="new"
-      class="btn btn-primary gap-2 teal-glow"
-    >
-      <span class="material-symbols-outlined">event_available</span>
-      New Appointment
-    </a>
+    <div class="flex items-center gap-2">
+      <button
+        *ngIf="canExportAppointments"
+        type="button"
+        class="btn btn-outline gap-2"
+        [disabled]="loading"
+        (click)="exportAppointmentsToExcel()"
+      >
+        <span class="material-symbols-outlined">download</span>
+        Export Excel
+      </button>
+
+      <a
+        *ngIf="canCreateAppointments"
+        routerLink="new"
+        class="btn btn-primary gap-2 teal-glow"
+      >
+        <span class="material-symbols-outlined">event_available</span>
+        New Appointment
+      </a>
+    </div>
   </div>
 
   <!-- INFO: Advanced Filtering Section -->

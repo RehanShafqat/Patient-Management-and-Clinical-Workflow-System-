@@ -1,26 +1,27 @@
-<ngx-datatable
-  class="material striped bootstrap w-full"
-  [rows]="rows"
-  [columnMode]="'standard'"
-  [headerHeight]="56"
-  [footerHeight]="56"
-  [rowHeight]="64"
-  [scrollbarH]="true"
-  [externalPaging]="true"
-  [count]="totalCount"
-  [offset]="pageOffset"
-  [limit]="pageSize"
-  [loadingIndicator]="loading"
-  (activate)="onRowActivate($event)"
-  (page)="onPage($event)"
->
+<div class="entity-table-container">
+  <ngx-datatable
+    class="material striped bootstrap w-full"
+    [rows]="rows"
+    [columnMode]="columnMode"
+    [headerHeight]="headerHeight"
+    [footerHeight]="footerHeight"
+    [rowHeight]="rowHeight"
+    [scrollbarH]="!isCompactView"
+    [externalPaging]="true"
+    [count]="totalCount"
+    [offset]="pageOffset"
+    [limit]="pageSize"
+    [loadingIndicator]="loading"
+    (activate)="onRowActivate($event)"
+    (page)="onPage($event)"
+  >
   <ngx-datatable-column
     *ngFor="let col of columns"
     [name]="col.name"
     [prop]="col.prop"
     [sortable]="true"
-    [minWidth]="col.minWidth ?? 140"
-    [width]="col.width ?? 180"
+    [minWidth]="resolveMinWidth(col)"
+    [width]="resolveWidth(col)"
   >
     <ng-template ngx-datatable-cell-template let-value="value">
       <ng-container [ngSwitch]="col.type">
@@ -43,8 +44,8 @@
     [draggable]="false"
     [resizeable]="false"
     [canAutoResize]="false"
-    [minWidth]="210"
-    [width]="240"
+    [minWidth]="isCompactView ? 156 : 210"
+    [width]="isCompactView ? 170 : 240"
   >
     <ng-template ngx-datatable-cell-template let-row="row">
       <div class="action-buttons" (click)="$event.stopPropagation()">
@@ -78,7 +79,7 @@
       let-offset="offset"
     >
       <div
-        class="flex items-center justify-between w-full px-4 py-3 bg-base-100 border-t border-base-300"
+        class="entity-table-footer flex items-center justify-between w-full px-4 py-3 bg-base-100 border-t border-base-300"
       >
         <div class="text-xs text-base-content/60 font-medium">
           Showing {{ offset * pageSize + 1 }} to
@@ -86,7 +87,7 @@
           entries
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="entity-table-footer-controls flex items-center gap-4">
           <div class="text-sm font-semibold text-base-content">
             {{ curPage }} of {{ totalPages }}
           </div>
@@ -121,4 +122,5 @@
       </div>
     </ng-template>
   </ngx-datatable-footer>
-</ngx-datatable>
+  </ngx-datatable>
+</div>

@@ -19,12 +19,13 @@ patientRouter.get(
   checkRoleMiddleware([Role.FDO, Role.DOCTOR]),
   patientController.getAllPatients,
 );
-patientRouter.get(
+patientRouter.get("/:id", patientController.getPatientById);
+patientRouter.put(
   "/:id",
-  // checkAccessToken,
-  patientController.getPatientById,
+  checkRoleMiddleware([Role.FDO]),
+  patientController.updatePatient,
 );
-patientRouter.put("/:id", checkAccessToken, patientController.updatePatient);
-patientRouter.delete("/:id", checkAccessToken, patientController.deletePatient);
+
+patientRouter.delete("/:id", patientController.deletePatient);
 
 export default patientRouter;

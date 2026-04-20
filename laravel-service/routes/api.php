@@ -60,8 +60,8 @@ Route::middleware('jwt.auth')->group(function () {
     });
 
     Route::prefix('insurances')->group(function () {
-        Route::get('/', [InsuranceController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value);
-        Route::get('/{insurance}', [InsuranceController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value . ',' . Role::FDO->value);
+        Route::get('/', [InsuranceController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::get('/{insurance}', [InsuranceController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value);
         Route::post('/', [InsuranceController::class, 'store'])->middleware('check.role');
         Route::patch('/{insurance}', [InsuranceController::class, 'update'])->middleware('check.role');
         Route::delete('/{insurance}', [InsuranceController::class, 'destroy'])->middleware('check.role');
@@ -72,8 +72,8 @@ Route::middleware('jwt.auth')->group(function () {
     });
 
     Route::prefix('firms')->group(function () {
-        Route::get('/', [FirmController::class, 'index'])->middleware('check.role:' . Role::FDO->value);
-        Route::get('/{firm}', [FirmController::class, 'show'])->middleware('check.role:' . Role::FDO->value);
+        Route::get('/', [FirmController::class, 'index'])->middleware('check.role:' . Role::ADMIN->value);
+        Route::get('/{firm}', [FirmController::class, 'show'])->middleware('check.role:' . Role::ADMIN->value);
         Route::post('/', [FirmController::class, 'store'])->middleware('check.role');
         Route::patch('/{firm}', [FirmController::class, 'update'])->middleware('check.role');
         Route::delete('/{firm}', [FirmController::class, 'destroy'])->middleware('check.role');

@@ -1,5 +1,12 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 
 export type EntityTableColumnType = 'text' | 'date' | 'status';
@@ -19,7 +26,7 @@ export interface EntityTableColumn {
   templateUrl: './entity-table.component.html',
   styleUrl: './entity-table.component.css',
 })
-export class EntityTableComponent {
+export class EntityTableComponent implements OnInit {
   @Input({ required: true }) columns: EntityTableColumn[] = [];
   @Input({ required: true }) rows: any[] = [];
   @Input() loading = false;
@@ -28,6 +35,8 @@ export class EntityTableComponent {
   @Input() pageOffset = 0;
   @Input() showUpdateAction = true;
   @Input() showDeleteAction = true;
+
+  isCompactView = false;
 
   get totalPages(): number {
     return Math.ceil(this.totalCount / this.pageSize);
@@ -43,6 +52,44 @@ export class EntityTableComponent {
   @Output() updateRequested = new EventEmitter<any>();
   @Output() deleteRequested = new EventEmitter<any>();
   @Output() pageChanged = new EventEmitter<{ offset: number; limit: number }>();
+
+  ngOnInit(): void {
+    this.updateViewportMode();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateViewportMode();
+  }
+
+  get columnMode(): 'standard' | 'force' {
+    return this.isCompactView ? 'force' : 'standard';
+  }
+
+  get rowHeight(): number {
+    return this.isCompactView ? 56 : 64;
+  }
+
+  get headerHeight(): number {
+    return this.isCompactView ? 52 : 56;
+  }
+
+  get footerHeight(): number {
+    return this.isCompactView ? 78 : 56;
+  }
+
+  resolveMinWidth(col: EntityTableColumn): number {
+    const baseMinWidth = col.minWidth ?? 140;
+    return this.isCompactView ? Math.min(baseMinWidth, 120) : baseMinWidth;
+  }
+
+  resolveWidth(col: EntityTableColumn): number {
+    if (this.isCompactView) {
+      return Math.min(col.width ?? 180, 150);
+    }
+
+    return col.width ?? 180;
+  }
 
   onRowActivate(event: { type: string; row: any }): void {
     if (event.type !== 'click') {
@@ -78,5 +125,9 @@ export class EntityTableComponent {
     if (normalized === 'deceased') return 'status-chip-deceased';
 
     return 'status-chip-default';
+  }
+
+  private updateViewportMode(): void {
+    this.isCompactView = window.innerWidth <= 1200;
   }
 }

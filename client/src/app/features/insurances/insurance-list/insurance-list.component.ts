@@ -3,7 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   EntityTableColumn,
   EntityTableComponent,
@@ -16,6 +16,8 @@ import {
 } from '../../../core/models/insurance.model';
 import { InsuranceService } from '../../../core/services/insurance.service';
 import { InsuranceFormComponent } from '../insurance-form/insurance-form.component';
+import { AuthService } from '../../../core/services/auth.service';
+import { ExcelExportService } from '../../../core/services/excel-export.service';
 
 @Component({
   selector: 'app-insurance-list',
@@ -33,7 +35,9 @@ import { InsuranceFormComponent } from '../insurance-form/insurance-form.compone
 export class InsuranceListComponent implements OnInit {
   private readonly insuranceService = inject(InsuranceService);
   private readonly router = inject(Router);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly excelExportService = inject(ExcelExportService);
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
   private readonly searchSubject = new Subject<string>();
@@ -84,6 +88,10 @@ export class InsuranceListComponent implements OnInit {
   isDeleteModalOpen = false;
   isDeleting = false;
   selectedInsurance: Insurance | null = null;
+
+  get canExportInsurances(): boolean {
+    return this.authService.isAdmin();
+  }
 
   ngOnInit(): void {
     this.setupSearch();
@@ -189,7 +197,7 @@ export class InsuranceListComponent implements OnInit {
       },
       error: () => {
         this.isLoadingSelectedInsurance = false;
-        this.toastr.error('Unable to load insurance details for editing.');
+        this.toastService.error('Unable to load insurance details for editing.');
         this.closeUpdateModal();
       },
     });
@@ -230,7 +238,7 @@ export class InsuranceListComponent implements OnInit {
       next: () => {
         this.isDeleting = false;
         this.isDeleteModalOpen = false;
-        this.toastr.success('Insurance deleted successfully');
+        this.toastService.success('Insurance deleted successfully');
         this.selectedInsurance = null;
         this.loadInsurances();
       },
@@ -238,5 +246,66 @@ export class InsuranceListComponent implements OnInit {
         this.isDeleting = false;
       },
     });
+  }
+
+  exportInsurancesToExcel(): void {
+    if (!this.canExportInsurances) {
+      this.toastService.error('You do not have permission to export insurances');
+      return;
+    }
+
+    if (this.totalCount === 0) {
+      this.toastService.info('No insurance data available to export');
+      return;
+    }
+
+    const exportFilters = this.buildExportFilters();
+
+    this.insuranceService.getInsurances(exportFilters).subscribe({
+      next: (response) => {
+        const exportRows = response.data.map((insurance) => ({
+          'Insurance ID': insurance.id,
+          'Insurance Name': insurance.insurance_name ?? '',
+          'Insurance Code': insurance.insurance_code ?? '',
+          Status: this.normalizeBoolean(insurance.is_active)
+            ? 'Active'
+            : 'Inactive',
+          'Primary Address': insurance.primary_address?.address ?? '',
+          'Primary Phone': insurance.primary_address?.phone ?? '',
+          'Created At': insurance.created_at ?? '',
+        }));
+
+        if (exportRows.length === 0) {
+          this.toastService.info('No insurance data available to export');
+          return;
+        }
+
+        this.excelExportService.exportJsonAsExcel(
+          exportRows,
+          `insurances-${new Date().toISOString().slice(0, 10)}`,
+          'Insurances',
+        );
+
+        this.toastService.success('Insurances exported to Excel successfully');
+      },
+      error: () => {
+        this.toastService.error('Failed to export insurance data');
+      },
+    });
+  }
+
+  private buildExportFilters(): InsuranceFilters {
+    const exportFilters: InsuranceFilters = {
+      ...this.filters,
+      page: 1,
+      per_page: this.totalCount,
+    };
+
+    if (!exportFilters.search) delete exportFilters.search;
+    if (typeof exportFilters.is_active !== 'boolean') {
+      delete exportFilters.is_active;
+    }
+
+    return exportFilters;
   }
 }

@@ -9,7 +9,7 @@ import {
   inject,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   CreateSpecialtyPayload,
   Specialty,
@@ -31,7 +31,7 @@ export class SpecialtyFormComponent implements OnChanges {
 
   private readonly fb = inject(FormBuilder);
   private readonly specialtyService = inject(SpecialtyService);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
   private readonly location = inject(Location);
 
   isSubmitting = false;
@@ -141,7 +141,7 @@ export class SpecialtyFormComponent implements OnChanges {
         .subscribe({
           next: (response) => {
             this.isSubmitting = false;
-            this.toastr.success('Specialty updated successfully');
+            this.toastService.success('Specialty updated successfully');
             this.formSuccess.emit(response.data.specialty);
           },
           error: () => {
@@ -155,7 +155,7 @@ export class SpecialtyFormComponent implements OnChanges {
     this.specialtyService.createSpecialty(payload).subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        this.toastr.success('Specialty created successfully');
+        this.toastService.success('Specialty created successfully');
         this.formSuccess.emit(response.data.specialty);
       },
       error: () => {

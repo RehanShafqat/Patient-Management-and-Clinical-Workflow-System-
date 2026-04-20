@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   CreateFdoPayload,
   FdoPermissionOption,
@@ -39,7 +39,7 @@ export class FdoFormComponent implements OnChanges {
 
   private readonly fb = inject(FormBuilder);
   private readonly fdoService = inject(FdoService);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
 
   loading = false;
   isSubmitting = false;
@@ -285,7 +285,7 @@ export class FdoFormComponent implements OnChanges {
       this.fdoService.createFdo(payload).subscribe({
         next: (response) => {
           this.isSubmitting = false;
-          this.toastr.success('FDO created successfully');
+          this.toastService.success('FDO created successfully');
           this.formSuccess.emit(response.data.user);
         },
         error: () => {
@@ -314,7 +314,7 @@ export class FdoFormComponent implements OnChanges {
     this.fdoService.updateFdo(this.currentFdo.id, payload).subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        this.toastr.success('FDO updated successfully');
+        this.toastService.success('FDO updated successfully');
         this.formSuccess.emit(response.data.user);
       },
       error: () => {

@@ -17,7 +17,7 @@ import {
   UpdatePatientPayload,
 } from '../../../core/models/patient.model';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-patient-form',
@@ -40,7 +40,7 @@ export class PatientFormComponent implements OnInit {
   private patientService = inject(PatientService);
   private router = inject(Router);
   private location = inject(Location);
-  private toastr = inject(ToastrService);
+  private toastService = inject(ToastService);
 
   readonly phoneRegex = /^(\+?\d{1,3}[-.\s]?)?\d{1,4}[-.\s]?\d{3}[-.\s]?\d{4}$/;
 
@@ -382,7 +382,7 @@ export class PatientFormComponent implements OnInit {
         .subscribe({
           next: (response) => {
             this.isSubmitting = false;
-            this.toastr.success('Patient record updated successfully');
+            this.toastService.success('Patient record updated successfully');
             this.formSuccess.emit(response.data.patient);
           },
           error: () => {
@@ -394,7 +394,7 @@ export class PatientFormComponent implements OnInit {
       this.patientService.createPatient(payload).subscribe({
         next: (response) => {
           this.isSubmitting = false;
-          this.toastr.success('Patient registered successfully');
+          this.toastService.success('Patient registered successfully');
           this.formSuccess.emit(response.data.patient);
           if (!this.formSuccess.observed) {
             this.location.back();

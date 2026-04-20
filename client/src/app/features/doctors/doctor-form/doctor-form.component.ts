@@ -4,13 +4,14 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnInit,
   Output,
   SimpleChanges,
   inject,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
+import { catchError, forkJoin, of } from 'rxjs';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   CreateDoctorPayload,
   DoctorUser,
@@ -21,14 +22,15 @@ import { PracticeLocation } from '../../../core/models/practice-location.model';
 import { DoctorService } from '../../../core/services/doctor.service';
 import { SpecialtyService } from '../../../core/services/specialty.service';
 import { PracticeLocationService } from '../../../core/services/practice-location.service';
+import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-doctor-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SearchableSelectComponent],
   templateUrl: './doctor-form.component.html',
 })
-export class DoctorFormComponent implements OnChanges {
+export class DoctorFormComponent implements OnInit, OnChanges {
   @Input() doctorId: string | null = null;
   @Output() formSuccess = new EventEmitter<DoctorUser>();
   @Output() formCancel = new EventEmitter<void>();
@@ -37,9 +39,11 @@ export class DoctorFormComponent implements OnChanges {
   private readonly doctorService = inject(DoctorService);
   private readonly specialtyService = inject(SpecialtyService);
   private readonly practiceLocationService = inject(PracticeLocationService);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
 
   loading = false;
+  specialtiesLoading = false;
+  practiceLocationsLoading = false;
   isSubmitting = false;
   scheduleError = '';
 
@@ -89,6 +93,16 @@ export class DoctorFormComponent implements OnChanges {
 
   get isCreateMode(): boolean {
     return !this.doctorId;
+  }
+
+  ngOnInit(): void {
+    this.applyModeValidators();
+
+    // Create page uses this component without Input binding,
+    // so ngOnChanges is not triggered there.
+    if (this.isCreateMode) {
+      this.loadOptionsOnly();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -156,24 +170,33 @@ export class DoctorFormComponent implements OnChanges {
 
   private loadOptionsOnly(): void {
     this.loading = true;
+    this.specialtiesLoading = true;
+    this.practiceLocationsLoading = true;
 
     forkJoin({
-      specialties: this.specialtyService.getSpecialties({
-        per_page: 10,
-        is_active: true,
-      }),
-      practiceLocations: this.practiceLocationService.getPracticeLocations({
-        per_page: 10,
-      }),
+      specialties: this.specialtyService
+        .getSpecialties({
+          per_page: 10,
+        })
+        .pipe(catchError(() => of({ data: [] as Specialty[] } as any))),
+      practiceLocations: this.practiceLocationService
+        .getPracticeLocations({
+          per_page: 10,
+        })
+        .pipe(catchError(() => of({ data: [] as PracticeLocation[] } as any))),
     }).subscribe({
       next: ({ specialties, practiceLocations }) => {
         this.specialties = specialties.data;
         this.practiceLocations = practiceLocations.data;
+        this.specialtiesLoading = false;
+        this.practiceLocationsLoading = false;
         this.loading = false;
       },
       error: () => {
         this.specialties = [];
         this.practiceLocations = [];
+        this.specialtiesLoading = false;
+        this.practiceLocationsLoading = false;
         this.loading = false;
       },
     });
@@ -181,46 +204,126 @@ export class DoctorFormComponent implements OnChanges {
 
   private loadForm(id: string): void {
     this.loading = true;
+    this.specialtiesLoading = true;
+    this.practiceLocationsLoading = true;
 
     forkJoin({
       doctorResponse: this.doctorService.getDoctorById(id),
-      specialties: this.specialtyService.getSpecialties({
-        per_page: 10,
-        is_active: true,
-      }),
-      practiceLocations: this.practiceLocationService.getPracticeLocations({
-        per_page: 10,
-      }),
+      specialties: this.specialtyService
+        .getSpecialties({
+          per_page: 10,
+        })
+        .pipe(catchError(() => of({ data: [] as Specialty[] } as any))),
+      practiceLocations: this.practiceLocationService
+        .getPracticeLocations({
+          per_page: 10,
+        })
+        .pipe(catchError(() => of({ data: [] as PracticeLocation[] } as any))),
     }).subscribe({
       next: ({ doctorResponse, specialties, practiceLocations }) => {
-        this.currentDoctor = doctorResponse.data.user;
+        const doctor = doctorResponse.data.user;
+        this.currentDoctor = doctor;
         this.specialties = specialties.data;
         this.practiceLocations = practiceLocations.data;
-        console.log('This is from doctor form', this.currentDoctor);
+        const profile = doctor.doctorProfile;
 
-        const profile = this.currentDoctor.doctorProfile;
+        if (profile?.specialty?.id) {
+          const exists = this.specialties.some((s) => s.id === profile.specialty?.id);
+          if (!exists) {
+            this.specialties = [
+              {
+                id: profile.specialty.id,
+                specialty_name: profile.specialty.specialty_name || 'Selected specialty',
+                is_active: true,
+              },
+              ...this.specialties,
+            ];
+          }
+        }
+
+        if (profile?.practiceLocation?.id) {
+          const exists = this.practiceLocations.some(
+            (location) => location.id === profile.practiceLocation?.id,
+          );
+          if (!exists) {
+            this.practiceLocations = [
+              {
+                id: profile.practiceLocation.id,
+                location_name:
+                  profile.practiceLocation.location_name || 'Selected location',
+                address: profile.practiceLocation.address || '-',
+                city: profile.practiceLocation.city || '-',
+                state: profile.practiceLocation.state || '-',
+                zip: profile.practiceLocation.zip || '-',
+                phone: profile.practiceLocation.phone || '-',
+                email: profile.practiceLocation.email || '-',
+                is_active:
+                  profile.practiceLocation.is_active === undefined
+                    ? true
+                    : profile.practiceLocation.is_active,
+              },
+              ...this.practiceLocations,
+            ];
+          }
+        }
 
         this.form.patchValue({
-          first_name: this.currentDoctor.first_name,
-          last_name: this.currentDoctor.last_name,
-          phone: this.currentDoctor.phone || '',
-          is_active: this.currentDoctor.is_active,
+          first_name: doctor.first_name,
+          last_name: doctor.last_name,
+          phone: doctor.phone || '',
+          is_active: doctor.is_active,
           specialty_id: profile?.specialty_id || '',
           practice_location_id: profile?.practice_location_id || '',
           license_number: profile?.license_number || '',
-          email: this.currentDoctor.email || '',
+          email: doctor.email || '',
           bio: profile?.bio || '',
         });
 
         this.hydrateAvailability(profile?.availability_schedule);
 
         this.scheduleError = '';
+        this.specialtiesLoading = false;
+        this.practiceLocationsLoading = false;
         this.loading = false;
       },
       error: () => {
+        this.specialtiesLoading = false;
+        this.practiceLocationsLoading = false;
         this.loading = false;
       },
     });
+  }
+
+  onSpecialtySearch(term: string | Event): void {
+    const search = typeof term === 'string' ? term : '';
+    this.specialtiesLoading = true;
+
+    this.specialtyService
+      .getSpecialties({
+        search,
+        per_page: 10,
+      })
+      .pipe(catchError(() => of({ data: [] as Specialty[] } as any)))
+      .subscribe((response) => {
+        this.specialties = response.data;
+        this.specialtiesLoading = false;
+      });
+  }
+
+  onPracticeLocationSearch(term: string | Event): void {
+    const search = typeof term === 'string' ? term : '';
+    this.practiceLocationsLoading = true;
+
+    this.practiceLocationService
+      .getPracticeLocations({
+        search,
+        per_page: 10,
+      })
+      .pipe(catchError(() => of({ data: [] as PracticeLocation[] } as any)))
+      .subscribe((response) => {
+        this.practiceLocations = response.data;
+        this.practiceLocationsLoading = false;
+      });
   }
 
   onCancel(): void {
@@ -262,7 +365,7 @@ export class DoctorFormComponent implements OnChanges {
       this.doctorService.createDoctor(payload).subscribe({
         next: (response) => {
           this.isSubmitting = false;
-          this.toastr.success('Doctor created successfully');
+          this.toastService.success('Doctor created successfully');
           this.formSuccess.emit(response.data.user);
         },
         error: () => {
@@ -297,7 +400,7 @@ export class DoctorFormComponent implements OnChanges {
     this.doctorService.updateDoctor(this.currentDoctor.id, payload).subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        this.toastr.success('Doctor updated successfully');
+        this.toastService.success('Doctor updated successfully');
         this.formSuccess.emit(response.data.user);
       },
       error: () => {

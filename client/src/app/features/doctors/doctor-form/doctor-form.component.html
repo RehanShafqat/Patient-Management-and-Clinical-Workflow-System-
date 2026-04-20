@@ -147,18 +147,16 @@
               Specialty
             </span>
           </label>
-          <select
-            class="select select-bordered h-10 min-h-0 text-sm w-full"
+          <app-searchable-select
+            [items]="specialties"
+            bindLabel="specialty_name"
+            bindValue="id"
             formControlName="specialty_id"
+            placeholder="Select specialty"
+            (search)="onSpecialtySearch($event)"
+            [loading]="specialtiesLoading"
           >
-            <option value="" disabled>Select specialty</option>
-            <option
-              *ngFor="let specialty of specialties"
-              [value]="specialty.id"
-            >
-              {{ specialty.specialty_name }}
-            </option>
-          </select>
+          </app-searchable-select>
         </div>
 
         <div class="form-control w-full">
@@ -169,18 +167,16 @@
               Practice Location
             </span>
           </label>
-          <select
-            class="select select-bordered h-10 min-h-0 text-sm w-full"
+          <app-searchable-select
+            [items]="practiceLocations"
+            bindLabel="location_name"
+            bindValue="id"
             formControlName="practice_location_id"
+            placeholder="Select location"
+            (search)="onPracticeLocationSearch($event)"
+            [loading]="practiceLocationsLoading"
           >
-            <option value="" disabled>Select location</option>
-            <option
-              *ngFor="let location of practiceLocations"
-              [value]="location.id"
-            >
-              {{ location.location_name }}
-            </option>
-          </select>
+          </app-searchable-select>
         </div>
 
         <div class="form-control w-full md:col-span-2">

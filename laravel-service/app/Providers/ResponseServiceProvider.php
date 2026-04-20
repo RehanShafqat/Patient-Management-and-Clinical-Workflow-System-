@@ -9,18 +9,26 @@ class ResponseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        Response::macro('success', function ($data = [], string $message = '', int $status = 200) {
+        $normalizeStatus = static function (int $status, int $fallback): int {
+            return ($status >= 100 && $status <= 599) ? $status : $fallback;
+        };
+
+        Response::macro('success', function ($data = [], string $message = '', int $status = 200) use ($normalizeStatus) {
+            $safeStatus = $normalizeStatus($status, 200);
+
             return Response::json([
                 'success' => true,
                 'data' => $data,
                 'message' => $message
-            ], $status);
+            ], $safeStatus);
         });
-        Response::macro('failure', function (string $message = '', int $status = 400) {
+        Response::macro('failure', function (string $message = '', int $status = 400) use ($normalizeStatus) {
+            $safeStatus = $normalizeStatus($status, 400);
+
             return Response::json([
                 'success' => false,
                 'message' => $message
-            ], $status);
+            ], $safeStatus);
         });
     }
 }

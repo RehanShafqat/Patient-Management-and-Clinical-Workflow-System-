@@ -21,4 +21,5 @@ enum FdoPermission: string
     case EXPORT_PATIENTS = 'export_patients';
     case EXPORT_CASES = 'export_cases';
     case EXPORT_APPOINTMENTS = 'export_appointments';
+    case EXPORT_VISITS = 'export_visits';
 }

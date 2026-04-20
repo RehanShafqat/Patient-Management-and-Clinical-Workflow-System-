@@ -16,29 +16,27 @@ class AppointmentResource extends JsonResource
             // Case
             'case_id' => $this->case_id,
             'case_number' => $this->whenLoaded('patientCase', fn() =>
-                $this->patientCase->case_number),
+            $this->patientCase?->case_number),
 
             // Patient
             'patient_id' => $this->patient_id,
             'patient_name' => $this->whenLoaded('patient', fn() =>
-                $this->patient->first_name . ' ' .
-                $this->patient->last_name),
+            trim(($this->patient?->first_name ?? '') . ' ' . ($this->patient?->last_name ?? ''))),
 
             // Doctor
             'doctor_id' => $this->doctor_id,
             'doctor_name' => $this->whenLoaded('doctor', fn() =>
-                $this->doctor->user->first_name . ' ' .
-                $this->doctor->user->last_name),
+            trim(($this->doctor?->user?->first_name ?? '') . ' ' . ($this->doctor?->user?->last_name ?? ''))),
 
             // Specialty
             'specialty_id' => $this->specialty_id,
             'specialty_name' => $this->whenLoaded('specialty', fn() =>
-                $this->specialty->specialty_name),
+            $this->specialty?->specialty_name),
 
             // Location
             'practice_location_id' => $this->practice_location_id,
             'practice_location_name' => $this->whenLoaded('practiceLocation', fn() =>
-                $this->practiceLocation->location_name),
+            $this->practiceLocation?->location_name),
 
             // Schedule
             'appointment_date' => $this->appointment_date?->format('Y-m-d'),
@@ -61,12 +59,11 @@ class AppointmentResource extends JsonResource
             // Created by FDO
             'created_by' => $this->created_by,
             'created_by_name' => $this->whenLoaded('createdBy', fn() =>
-                $this->createdBy->first_name . ' ' .
-                $this->createdBy->last_name),
+            trim(($this->createdBy?->first_name ?? '') . ' ' . ($this->createdBy?->last_name ?? ''))),
 
             // Visit (loaded only when appointment is completed)
             'visit_id' => $this->whenLoaded('visit', fn() =>
-                $this->visit?->id),
+            $this->visit?->id),
 
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),

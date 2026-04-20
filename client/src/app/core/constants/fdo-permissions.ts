@@ -19,6 +19,7 @@ export const FDO_PERMISSIONS = {
   EXPORT_PATIENTS: 'export_patients',
   EXPORT_CASES: 'export_cases',
   EXPORT_APPOINTMENTS: 'export_appointments',
+  EXPORT_VISITS: 'export_visits',
 } as const;
 
 export type FdoPermission =

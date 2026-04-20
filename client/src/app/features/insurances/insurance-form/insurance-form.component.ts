@@ -15,7 +15,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   CreateInsurancePayload,
   InsuranceAddressPayload,
@@ -38,7 +38,7 @@ export class InsuranceFormComponent implements OnChanges {
 
   private readonly fb = inject(FormBuilder);
   private readonly insuranceService = inject(InsuranceService);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
   private readonly location = inject(Location);
 
   isSubmitting = false;
@@ -323,7 +323,7 @@ export class InsuranceFormComponent implements OnChanges {
     }
 
     if (!this.hasExactlyOnePrimary()) {
-      this.toastr.error('Please select exactly one primary address.');
+      this.toastService.error('Please select exactly one primary address.');
       return;
     }
 
@@ -363,7 +363,7 @@ export class InsuranceFormComponent implements OnChanges {
         .subscribe({
           next: (response) => {
             this.isSubmitting = false;
-            this.toastr.success('Insurance updated successfully');
+            this.toastService.success('Insurance updated successfully');
             this.formSuccess.emit(response.data.insurance);
           },
           error: () => {
@@ -377,7 +377,7 @@ export class InsuranceFormComponent implements OnChanges {
     this.insuranceService.createInsurance(payload).subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        this.toastr.success('Insurance created successfully');
+        this.toastService.success('Insurance created successfully');
         this.formSuccess.emit(response.data.insurance);
       },
       error: () => {

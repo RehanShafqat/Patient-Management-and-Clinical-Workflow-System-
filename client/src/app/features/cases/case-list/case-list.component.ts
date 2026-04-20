@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CaseService } from '../../../core/services/case.service';
 import { environment } from '../../../../environments/environment';
@@ -22,6 +22,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 import { CaseFormComponent } from '../case-form/case-form.component';
 import { AuthService } from '../../../core/services/auth.service';
 import { FDO_PERMISSIONS } from '../../../core/constants/fdo-permissions';
+import { ExcelExportService } from '../../../core/services/excel-export.service';
 
 @Component({
   selector: 'app-case-list',
@@ -39,8 +40,9 @@ import { FDO_PERMISSIONS } from '../../../core/constants/fdo-permissions';
 export class CaseListComponent implements OnInit {
   private readonly caseService = inject(CaseService);
   private readonly router = inject(Router);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
+  private readonly excelExportService = inject(ExcelExportService);
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
   private searchSubject = new Subject<string>();
@@ -101,6 +103,13 @@ export class CaseListComponent implements OnInit {
 
   get canDeleteCases(): boolean {
     return this.authService.isAdmin();
+  }
+
+  get canExportCases(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (this.authService.isDoctor()) return false;
+    if (!this.authService.isFdo()) return false;
+    return this.authService.hasPermission(FDO_PERMISSIONS.EXPORT_CASES);
   }
 
   ngOnInit(): void {
@@ -257,7 +266,7 @@ export class CaseListComponent implements OnInit {
       next: () => {
         this.isDeleting = false;
         this.isDeleteModalOpen = false;
-        this.toastr.success('Case record deleted successfully');
+        this.toastService.success('Case record deleted successfully');
         this.selectedCase = null;
         this.loadCases();
       },
@@ -265,5 +274,73 @@ export class CaseListComponent implements OnInit {
         this.isDeleting = false;
       },
     });
+  }
+
+  exportCasesToExcel(): void {
+    if (!this.canExportCases) {
+      this.toastService.error('You do not have permission to export cases');
+      return;
+    }
+
+    if (this.totalCount === 0) {
+      this.toastService.info('No case data available to export');
+      return;
+    }
+
+    const exportFilters = this.buildExportFilters();
+
+    this.caseService.getCases(exportFilters).subscribe({
+      next: (response) => {
+        const exportRows = response.data.map((patientCase) => ({
+          'Case ID': patientCase.id,
+          'Case Number': patientCase.case_number ?? '',
+          Patient: patientCase.patient
+            ? `${patientCase.patient.first_name ?? ''} ${patientCase.patient.last_name ?? ''}`.trim()
+            : '',
+          Category: patientCase.category ?? '',
+          'Case Type': patientCase.case_type ?? '',
+          Priority: patientCase.priority ?? '',
+          Status: patientCase.case_status ?? '',
+          'Opening Date': patientCase.opening_date ?? '',
+          'Closing Date': patientCase.closing_date ?? '',
+          'Purpose of Visit': patientCase.purpose_of_visit ?? '',
+        }));
+
+        if (exportRows.length === 0) {
+          this.toastService.info('No case data available to export');
+          return;
+        }
+
+        this.excelExportService.exportJsonAsExcel(
+          exportRows,
+          `cases-${new Date().toISOString().slice(0, 10)}`,
+          'Cases',
+        );
+
+        this.toastService.success('Cases exported to Excel successfully');
+      },
+      error: () => {
+        this.toastService.error('Failed to export case data');
+      },
+    });
+  }
+
+  private buildExportFilters(): CaseFilters {
+    const exportFilters: CaseFilters = {
+      ...this.filters,
+      page: 1,
+      per_page: this.totalCount,
+    };
+
+    if (!exportFilters.search) delete exportFilters.search;
+    if (!exportFilters.case_status) delete exportFilters.case_status;
+    if (!exportFilters.priority) delete exportFilters.priority;
+    if (!exportFilters.category) delete exportFilters.category;
+    if (!exportFilters.case_type) delete exportFilters.case_type;
+    if (!exportFilters.opening_date_from)
+      delete exportFilters.opening_date_from;
+    if (!exportFilters.opening_date_to) delete exportFilters.opening_date_to;
+
+    return exportFilters;
   }
 }

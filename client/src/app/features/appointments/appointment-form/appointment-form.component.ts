@@ -19,9 +19,10 @@ import {
   CreateAppointmentPayload,
   UpdateAppointmentPayload,
 } from '../../../core/models/appointment.model';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import { SearchableSelectComponent } from '../../../shared/components/searchable-select/searchable-select.component';
 import {
+  BehaviorSubject,
   Subject,
   catchError,
   debounceTime,
@@ -42,6 +43,10 @@ import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 import { DiagnosisService } from '../../../core/services/diagnosis.service';
 import { Diagnosis } from '../../../core/models/diagnosis.model';
+import { DoctorService } from '../../../core/services/doctor.service';
+import { DoctorUser } from '../../../core/models/doctor.model';
+import { VisitService } from '../../../core/services/visit.service';
+import { Visit } from '../../../core/models/visit.model';
 
 interface CaseOption extends Case {
   display_label: string;
@@ -56,6 +61,10 @@ interface DoctorOption {
 interface DiagnosisOption extends Diagnosis {
   display_label: string;
 }
+
+type AppointmentWithOptionalVisit = Appointment & {
+  visit?: Partial<Visit> | null;
+};
 
 @Component({
   selector: 'app-appointment-form',
@@ -76,8 +85,10 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   private readonly specialtyService = inject(SpecialtyService);
   private readonly practiceLocationService = inject(PracticeLocationService);
   private readonly diagnosisService = inject(DiagnosisService);
+  private readonly doctorService = inject(DoctorService);
+  private readonly visitService = inject(VisitService);
   private readonly location = inject(Location);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
 
   private readonly searchableSelectPageSize =
@@ -104,7 +115,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   locationsLoading = false;
   locationSearchInput$ = new Subject<string>();
 
-  diagnoses$ = new Subject<DiagnosisOption[]>();
+  diagnoses$ = new BehaviorSubject<DiagnosisOption[]>([]);
   diagnosesLoading = false;
   diagnosisSearchInput$ = new Subject<string>();
 
@@ -128,6 +139,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   ];
 
   isSubmitting = false;
+  private loadedVisitForAppointmentId: string | null = null;
 
   private readonly fieldLabels: Record<string, string> = {
     case_id: 'Case',
@@ -185,11 +197,14 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   });
 
   ngOnInit(): void {
-    this.setupCaseSearch();
-    this.setupPatientSearch();
-    this.setupDoctorSearch();
-    this.setupSpecialtySearch();
-    this.setupLocationSearch();
+    if (!this.doctorStatusOnlyMode) {
+      this.setupCaseSearch();
+      this.setupPatientSearch();
+      this.setupDoctorSearch();
+      this.setupSpecialtySearch();
+      this.setupLocationSearch();
+    }
+
     this.setupDiagnosisSearch();
 
     if (this.appointmentToEdit) {
@@ -229,6 +244,11 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       });
 
       this.setupDoctorCompletionMode();
+
+      // In doctor status mode, only diagnosis data is required.
+      // Avoid loading non-doctor dropdown sources that can be unauthorized.
+      this.loadDiagnoses('');
+      return;
     }
 
     this.loadCases('');
@@ -244,6 +264,11 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       this.patchFormValues();
       this.form.get('case_id')?.disable();
       this.form.get('patient_id')?.disable();
+
+      if (this.doctorStatusOnlyMode) {
+        this.applyCompletedStatusLock();
+        this.configureCompletionValidators();
+      }
     }
   }
 
@@ -270,12 +295,26 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     return this.form.get('status')?.value === 'Completed';
   }
 
+  get isCompletedStatusLocked(): boolean {
+    return (
+      this.doctorStatusOnlyMode &&
+      this.appointmentToEdit?.status === 'Completed'
+    );
+  }
+
   private patchFormValues(): void {
     if (!this.appointmentToEdit) {
       return;
     }
 
+    if (this.loadedVisitForAppointmentId !== this.appointmentToEdit.id) {
+      this.loadedVisitForAppointmentId = null;
+    }
+
     this.seedSelectOptionsFromInitialData();
+
+    const visitData = this.getVisitDataFromAppointment();
+    const diagnosisMode = this.resolveDiagnosisMode(visitData);
 
     this.form.patchValue({
       case_id: this.appointmentToEdit.case_id,
@@ -292,29 +331,190 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       reason_for_visit: this.appointmentToEdit.reason_for_visit,
       notes: this.appointmentToEdit.notes,
       status: this.appointmentToEdit.status,
-      diagnosis_mode: 'existing',
-      diagnoses_id: '',
-      diagnosis_icd_code: '',
-      diagnosis_description: '',
-      diagnosis_is_active: true,
-      visit_duration_minutes: null,
-      symptoms: '',
-      treatment: '',
-      treatment_plan: '',
-      prescription: '',
-      visit_notes: '',
-      follow_up_required: false,
-      follow_up_date: '',
-      referral_made: false,
-      referral_to: '',
+      diagnosis_mode: diagnosisMode,
+      diagnoses_id: visitData?.diagnoses_id || '',
+      diagnosis_icd_code: visitData?.diagnoses_icd_code || '',
+      diagnosis_description:
+        visitData?.diagnoses_description || visitData?.diagnoses_name || '',
+      diagnosis_is_active: visitData?.diagnoses_is_active ?? true,
+      visit_duration_minutes: visitData?.visit_duration_minutes ?? null,
+      symptoms: visitData?.symptoms || '',
+      treatment: visitData?.treatment || '',
+      treatment_plan: visitData?.treatment_plan || '',
+      prescription: visitData?.prescription || '',
+      visit_notes: visitData?.notes || '',
+      follow_up_required: !!visitData?.follow_up_required,
+      follow_up_date: this.normalizeDateForInput(visitData?.follow_up_date),
+      referral_made: !!visitData?.referral_made,
+      referral_to: visitData?.referral_to || '',
     });
+
+    if (visitData?.diagnoses_id) {
+      this.seedDiagnosisOptionFromVisit(visitData);
+    }
+
+    this.loadVisitDetailsForEdit();
+  }
+
+  private getVisitDataFromAppointment(): Partial<Visit> | null {
+    const appointment = this.appointmentToEdit as AppointmentWithOptionalVisit;
+    return appointment?.visit || null;
+  }
+
+  private resolveDiagnosisMode(
+    visitData: Partial<Visit> | null,
+  ): 'existing' | 'new' {
+    if (visitData?.diagnoses_id) {
+      return 'existing';
+    }
+
+    if (visitData?.diagnoses_icd_code || visitData?.diagnoses_description) {
+      return 'new';
+    }
+
+    return 'existing';
+  }
+
+  private normalizeDateForInput(value?: string | null): string {
+    if (!value) {
+      return '';
+    }
+
+    return value.slice(0, 10);
+  }
+
+  private seedDiagnosisOptionFromVisit(visitData: Partial<Visit>): void {
+    if (!visitData.diagnoses_id) {
+      return;
+    }
+
+    const alreadyExists = this.diagnosisOptions.some(
+      (option) => option.id === visitData.diagnoses_id,
+    );
+
+    if (alreadyExists) {
+      return;
+    }
+
+    const icdCode = visitData.diagnoses_icd_code || 'Unknown ICD';
+    const diagnosisName =
+      visitData.diagnoses_name ||
+      visitData.diagnoses_description ||
+      'Diagnosis';
+
+    this.diagnosisOptions = [
+      {
+        id: visitData.diagnoses_id,
+        icd_code: icdCode,
+        diagnoses_name: diagnosisName,
+        description: visitData.diagnoses_description || diagnosisName,
+        is_active: visitData.diagnoses_is_active ?? true,
+        display_label: `${icdCode} - ${diagnosisName}`,
+      } as DiagnosisOption,
+      ...this.diagnosisOptions,
+    ];
+
+    this.diagnoses$.next(this.diagnosisOptions);
+  }
+
+  private loadVisitDetailsForEdit(): void {
+    if (!this.doctorStatusOnlyMode || !this.appointmentToEdit?.visit_id) {
+      return;
+    }
+
+    if (this.loadedVisitForAppointmentId === this.appointmentToEdit.id) {
+      return;
+    }
+
+    this.loadedVisitForAppointmentId = this.appointmentToEdit.id;
+
+    this.visitService.getVisitById(this.appointmentToEdit.visit_id).subscribe({
+      next: (response) => {
+        // Do not clobber values the doctor already edited while async data was loading.
+        if (this.hasUserEditedCompletionDetails()) {
+          return;
+        }
+
+        const visit = response.data;
+
+        this.seedDiagnosisOptionFromVisit(visit);
+
+        this.form.patchValue(
+          {
+            diagnosis_mode: this.resolveDiagnosisMode(visit),
+            diagnoses_id: visit.diagnoses_id || '',
+            diagnosis_icd_code: visit.diagnoses_icd_code || '',
+            diagnosis_description:
+              visit.diagnoses_description || visit.diagnoses_name || '',
+            diagnosis_is_active: visit.diagnoses_is_active ?? true,
+            visit_duration_minutes: visit.visit_duration_minutes ?? null,
+            symptoms: visit.symptoms || '',
+            treatment: visit.treatment || '',
+            treatment_plan: visit.treatment_plan || '',
+            prescription: visit.prescription || '',
+            visit_notes: visit.notes || '',
+            follow_up_required: !!visit.follow_up_required,
+            follow_up_date: this.normalizeDateForInput(visit.follow_up_date),
+            referral_made: !!visit.referral_made,
+            referral_to: visit.referral_to || '',
+          },
+          { emitEvent: false },
+        );
+
+        this.configureCompletionValidators();
+      },
+      error: () => {
+        this.loadedVisitForAppointmentId = null;
+      },
+    });
+  }
+
+  private hasUserEditedCompletionDetails(): boolean {
+    const completionControls = [
+      'diagnosis_mode',
+      'diagnoses_id',
+      'diagnosis_icd_code',
+      'diagnosis_description',
+      'visit_duration_minutes',
+      'symptoms',
+      'treatment',
+      'treatment_plan',
+      'prescription',
+      'visit_notes',
+      'follow_up_required',
+      'follow_up_date',
+      'referral_made',
+      'referral_to',
+    ];
+
+    return completionControls.some((name) => !!this.form.get(name)?.dirty);
+  }
+
+  private applyCompletedStatusLock(): void {
+    if (!this.doctorStatusOnlyMode) {
+      return;
+    }
+
+    const statusControl = this.form.get('status');
+
+    if (this.isCompletedStatusLocked) {
+      statusControl?.setValue('Completed', { emitEvent: false });
+      statusControl?.disable({ emitEvent: false });
+      return;
+    }
+
+    statusControl?.enable({ emitEvent: false });
   }
 
   private setupDoctorCompletionMode(): void {
     this.form
       .get('status')
       ?.valueChanges.pipe(distinctUntilChanged())
-      .subscribe(() => {
+      .subscribe((status) => {
+        if (status === 'Completed' && this.diagnosisOptions.length === 0) {
+          this.loadDiagnoses('');
+        }
+
         this.configureCompletionValidators();
       });
 
@@ -337,7 +537,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
         }
 
         const selected = this.diagnosisOptions.find(
-          (option) => option.id === diagnosesId,
+          (option) => String(option.id) === String(diagnosesId),
         );
         this.form.patchValue(
           {
@@ -362,6 +562,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
       });
 
     this.configureCompletionValidators();
+    this.applyCompletedStatusLock();
   }
 
   private configureCompletionValidators(): void {
@@ -567,20 +768,29 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
     });
   }
 
-  private mapDoctorOptions(appointments: Appointment[]): DoctorOption[] {
+  private mapDoctorOptions(doctors: DoctorUser[]): DoctorOption[] {
     const unique = new Map<string, DoctorOption>();
 
-    appointments.forEach((appointment) => {
-      if (!appointment.doctor_id || !appointment.doctor_name) {
+    doctors.forEach((doctor) => {
+      const doctorProfileId = doctor.doctorProfile?.id;
+      if (!doctorProfileId) {
         return;
       }
 
-      unique.set(appointment.doctor_id, {
-        id: appointment.doctor_id,
-        doctor_name: appointment.doctor_name,
-        display_label: appointment.specialty_name
-          ? `${appointment.doctor_name} • ${appointment.specialty_name}`
-          : appointment.doctor_name,
+      const doctorName =
+        `${doctor.first_name ?? ''} ${doctor.last_name ?? ''}`.trim();
+      if (!doctorName) {
+        return;
+      }
+
+      const specialtyName = doctor.doctorProfile?.specialty?.specialty_name;
+
+      unique.set(doctorProfileId, {
+        id: doctorProfileId,
+        doctor_name: doctorName,
+        display_label: specialtyName
+          ? `${doctorName} • ${specialtyName}`
+          : doctorName,
       });
     });
 
@@ -613,9 +823,10 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   }
 
   private loadDoctors(term: string): void {
-    this.appointmentService
-      .getAppointments({
-        doctor_name: term,
+    this.doctorService
+      .getDoctors({
+        search: term,
+        is_active: true,
         per_page: this.searchableSelectPageSize,
       })
       .subscribe((response) => {
@@ -708,13 +919,14 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
         distinctUntilChanged(),
         tap(() => (this.doctorsLoading = true)),
         switchMap((term) =>
-          this.appointmentService
-            .getAppointments({
-              doctor_name: term,
+          this.doctorService
+            .getDoctors({
+              search: term,
+              is_active: true,
               per_page: this.searchableSelectPageSize,
             })
             .pipe(
-              catchError(() => of({ data: [] as Appointment[] } as any)),
+              catchError(() => of({ data: [] as DoctorUser[] } as any)),
               tap(() => (this.doctorsLoading = false)),
             ),
         ),
@@ -816,7 +1028,13 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
   }
 
   onDiagnosisSearch(term: string | Event): void {
-    this.diagnosisSearchInput$.next(typeof term === 'string' ? term : '');
+    if (typeof term === 'string') {
+      this.diagnosisSearchInput$.next(term);
+      return;
+    }
+
+    const eventTarget = term.target as HTMLInputElement | null;
+    this.diagnosisSearchInput$.next(eventTarget?.value || '');
   }
 
   isFieldInvalid(controlName: string): boolean {
@@ -874,6 +1092,17 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
 
     const value = this.form.getRawValue();
 
+    if (
+      this.doctorStatusOnlyMode &&
+      this.isCompletedStatusLocked &&
+      value.status !== 'Completed'
+    ) {
+      this.toastService.error(
+        'Completed appointments cannot be moved to another status.',
+      );
+      return;
+    }
+
     if (this.doctorStatusOnlyMode && this.appointmentToEdit) {
       if (value.status === 'Completed') {
         const completionPayload: CompleteAppointmentPayload = {
@@ -912,9 +1141,6 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
           .subscribe({
             next: (response) => {
               this.isSubmitting = false;
-              this.toastr.success(
-                'Appointment completed and visit details saved successfully',
-              );
               this.formSuccess.emit(response.data.appointment);
               if (!this.formSuccess.observed) {
                 this.location.back();
@@ -925,7 +1151,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
               const errorMsg =
                 error?.error?.message ||
                 'Failed to complete appointment with visit details';
-              this.toastr.error(errorMsg);
+              this.toastService.error(errorMsg);
             },
           });
 
@@ -952,7 +1178,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
             this.isSubmitting = false;
             const errorMsg =
               error?.error?.message || 'Failed to update appointment status';
-            this.toastr.error(errorMsg);
+            this.toastService.error(errorMsg);
           },
         });
 
@@ -1004,7 +1230,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
             this.isSubmitting = false;
             const errorMsg =
               error?.error?.message || 'Failed to update appointment';
-            this.toastr.error(errorMsg);
+            this.toastService.error(errorMsg);
           },
         });
     } else {
@@ -1021,7 +1247,7 @@ export class AppointmentFormComponent implements OnInit, OnChanges {
           this.isSubmitting = false;
           const errorMsg =
             error?.error?.message || 'Failed to create appointment';
-          this.toastr.error(errorMsg);
+          this.toastService.error(errorMsg);
         },
       });
     }

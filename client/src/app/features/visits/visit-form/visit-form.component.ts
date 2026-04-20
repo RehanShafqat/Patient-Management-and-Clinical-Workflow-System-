@@ -10,7 +10,7 @@ import {
   inject,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import { VisitService } from '../../../core/services/visit.service';
 import {
   UpdateVisitPayload,
@@ -43,7 +43,7 @@ export class VisitFormComponent implements OnInit, OnChanges {
 
   private readonly fb = inject(FormBuilder);
   private readonly visitService = inject(VisitService);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
   private readonly diagnosisService = inject(DiagnosisService);
   private readonly searchableSelectPageSize =
@@ -438,7 +438,7 @@ export class VisitFormComponent implements OnInit, OnChanges {
       this.visitService.updateVisit(this.visitToEdit.id, payload).subscribe({
         next: (response) => {
           this.isSubmitting = false;
-          this.toastr.success('Visit updated successfully');
+          this.toastService.success('Visit updated successfully');
           this.formSuccess.emit(response.data.visit);
         },
         error: () => {
@@ -488,7 +488,7 @@ export class VisitFormComponent implements OnInit, OnChanges {
     this.visitService.updateVisit(this.visitToEdit.id, payload).subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        this.toastr.success('Visit updated successfully');
+        this.toastService.success('Visit updated successfully');
         this.formSuccess.emit(response.data.visit);
       },
       error: () => {

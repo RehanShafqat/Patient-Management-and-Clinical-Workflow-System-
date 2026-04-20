@@ -7,7 +7,6 @@ import {
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ToastrModule } from 'ngx-toastr';
 
 import { routes } from './app.routes';
 import { credentialsInterceptor } from './core/interceptors';
@@ -24,15 +23,6 @@ export const appConfig: ApplicationConfig = {
       const auth = inject(AuthService);
       return auth.checkAuthOnInit();
     }),
-    importProvidersFrom([
-      BrowserAnimationsModule,
-      ToastrModule.forRoot({
-        timeOut: 3000,
-        positionClass: 'toast-bottom-right',
-        preventDuplicates: true,
-        progressBar: true,
-        closeButton: true,
-      }),
-    ]),
+    importProvidersFrom([BrowserAnimationsModule]),
   ],
 };

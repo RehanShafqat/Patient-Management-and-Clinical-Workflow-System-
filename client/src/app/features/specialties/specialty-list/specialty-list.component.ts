@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   EntityTableColumn,
   EntityTableComponent,
@@ -16,6 +16,8 @@ import {
 import { SpecialtyService } from '../../../core/services/specialty.service';
 import { SpecialtyFormComponent } from '../specialty-form/specialty-form.component';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { ExcelExportService } from '../../../core/services/excel-export.service';
 
 @Component({
   selector: 'app-specialty-list',
@@ -33,7 +35,9 @@ import { Router, RouterLink } from '@angular/router';
 export class SpecialtyListComponent implements OnInit {
   private readonly specialtyService = inject(SpecialtyService);
   private readonly router = inject(Router);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly excelExportService = inject(ExcelExportService);
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
   private readonly searchSubject = new Subject<string>();
@@ -66,6 +70,10 @@ export class SpecialtyListComponent implements OnInit {
   isDeleteModalOpen = false;
   isDeleting = false;
   selectedSpecialty: Specialty | null = null;
+
+  get canExportSpecialties(): boolean {
+    return this.authService.isAdmin();
+  }
 
   ngOnInit(): void {
     this.setupSearch();
@@ -196,7 +204,7 @@ export class SpecialtyListComponent implements OnInit {
       next: () => {
         this.isDeleting = false;
         this.isDeleteModalOpen = false;
-        this.toastr.success('Specialty deleted successfully');
+        this.toastService.success('Specialty deleted successfully');
         this.selectedSpecialty = null;
         this.loadSpecialties();
       },
@@ -204,5 +212,62 @@ export class SpecialtyListComponent implements OnInit {
         this.isDeleting = false;
       },
     });
+  }
+
+  exportSpecialtiesToExcel(): void {
+    if (!this.canExportSpecialties) {
+      this.toastService.error('You do not have permission to export specialties');
+      return;
+    }
+
+    if (this.totalCount === 0) {
+      this.toastService.info('No specialty data available to export');
+      return;
+    }
+
+    const exportFilters = this.buildExportFilters();
+
+    this.specialtyService.getSpecialties(exportFilters).subscribe({
+      next: (response) => {
+        const exportRows = response.data.map((specialty) => ({
+          'Specialty ID': specialty.id,
+          'Specialty Name': specialty.specialty_name ?? '',
+          Description: specialty.description ?? '',
+          Status: specialty.is_active ? 'Active' : 'Inactive',
+          'Created At': specialty.created_at ?? '',
+        }));
+
+        if (exportRows.length === 0) {
+          this.toastService.info('No specialty data available to export');
+          return;
+        }
+
+        this.excelExportService.exportJsonAsExcel(
+          exportRows,
+          `specialties-${new Date().toISOString().slice(0, 10)}`,
+          'Specialties',
+        );
+
+        this.toastService.success('Specialties exported to Excel successfully');
+      },
+      error: () => {
+        this.toastService.error('Failed to export specialty data');
+      },
+    });
+  }
+
+  private buildExportFilters(): SpecialtyFilters {
+    const exportFilters: SpecialtyFilters = {
+      ...this.filters,
+      page: 1,
+      per_page: this.totalCount,
+    };
+
+    if (!exportFilters.search) delete exportFilters.search;
+    if (typeof exportFilters.is_active !== 'boolean') {
+      delete exportFilters.is_active;
+    }
+
+    return exportFilters;
   }
 }

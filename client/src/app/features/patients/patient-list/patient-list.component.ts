@@ -15,11 +15,12 @@ import {
   PatientStatus,
 } from '../../../core/models/patient.model';
 import { PatientFormComponent } from '../patient-form/patient-form.component';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../../core/services/toast.service';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 import { FDO_PERMISSIONS } from '../../../core/constants/fdo-permissions';
+import { ExcelExportService } from '../../../core/services/excel-export.service';
 
 @Component({
   selector: 'app-patient-list',
@@ -39,8 +40,9 @@ import { FDO_PERMISSIONS } from '../../../core/constants/fdo-permissions';
 export class PatientListComponent implements OnInit {
   private readonly patientService = inject(PatientService);
   private readonly router = inject(Router);
-  private readonly toastr = inject(ToastrService);
+  private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
+  private readonly excelExportService = inject(ExcelExportService);
   private readonly filterDebounceMs = environment.filterDebounceMs;
 
   //INFO: Stream for debounced search to avoid excessive API calls
@@ -117,6 +119,13 @@ export class PatientListComponent implements OnInit {
 
   get canDeletePatients(): boolean {
     return this.authService.isAdmin();
+  }
+
+  get canExportPatients(): boolean {
+    if (this.authService.isAdmin()) return true;
+    if (this.authService.isDoctor()) return false;
+    if (!this.authService.isFdo()) return false;
+    return this.authService.hasPermission(FDO_PERMISSIONS.EXPORT_PATIENTS);
   }
 
   ngOnInit(): void {
@@ -286,7 +295,7 @@ export class PatientListComponent implements OnInit {
       next: () => {
         this.isDeleting = false;
         this.isDeleteModalOpen = false;
-        this.toastr.success('Patient record archived successfully');
+        this.toastService.success('Patient record archived successfully');
         this.selectedPatient = null;
         this.loadPatients();
       },
@@ -294,5 +303,72 @@ export class PatientListComponent implements OnInit {
         this.isDeleting = false;
       },
     });
+  }
+
+  exportPatientsToExcel(): void {
+    if (!this.canExportPatients) {
+      this.toastService.error('You do not have permission to export patients');
+      return;
+    }
+
+    if (this.totalCount === 0) {
+      this.toastService.info('No patient data available to export');
+      return;
+    }
+
+    const exportFilters = this.buildExportFilters();
+
+    this.patientService.getPatients(exportFilters).subscribe({
+      next: (response) => {
+        const exportRows = response.data.map((patient) => ({
+          'Patient ID': patient.id,
+          'First Name': patient.first_name ?? '',
+          'Middle Name': patient.middle_name ?? '',
+          'Last Name': patient.last_name ?? '',
+          Email: patient.email ?? '',
+          Phone: patient.phone ?? '',
+          Mobile: patient.mobile ?? '',
+          Gender: patient.gender ?? '',
+          'Date of Birth': patient.date_of_birth ?? '',
+          Status: patient.patient_status ?? '',
+          City: patient.city ?? '',
+          Country: patient.country ?? '',
+          Address: patient.address ?? '',
+          'Registration Date': patient.registration_date ?? '',
+        }));
+
+        if (exportRows.length === 0) {
+          this.toastService.info('No patient data available to export');
+          return;
+        }
+
+        this.excelExportService.exportJsonAsExcel(
+          exportRows,
+          `patients-${new Date().toISOString().slice(0, 10)}`,
+          'Patients',
+        );
+
+        this.toastService.success('Patients exported to Excel successfully');
+      },
+      error: () => {
+        this.toastService.error('Failed to export patient data');
+      },
+    });
+  }
+
+  private buildExportFilters(): PatientFilters {
+    const exportFilters: PatientFilters = {
+      ...this.filters,
+      page: 1,
+      per_page: this.totalCount,
+    };
+
+    if (!exportFilters.search) delete exportFilters.search;
+    if (!exportFilters.city) delete exportFilters.city;
+    if (!exportFilters.country) delete exportFilters.country;
+    if (!exportFilters.patient_status) delete exportFilters.patient_status;
+    if (!exportFilters.gender) delete exportFilters.gender;
+
+    return exportFilters;
   }
 }

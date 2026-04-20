@@ -58,25 +58,36 @@
         </div>
 
         <div *ngIf="completionMode === 'existing'" class="space-y-3">
-          <label class="form-control w-full">
-            <span class="label-text font-semibold">Diagnosis ICD Code</span>
-            <app-searchable-select
-              [items]="(diagnoses$ | async) || []"
-              bindLabel="display_label"
-              bindValue="id"
-              formControlName="diagnoses_id"
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-semibold">Diagnosis ICD Code</span>
+            </label>
+            <input
+              type="text"
+              class="input input-bordered w-full mb-2"
               placeholder="Search ICD code or diagnosis..."
-              (search)="onDiagnosisSearch($event)"
-              [loading]="diagnosesLoading"
+              (input)="onDiagnosisSearch($event)"
+            />
+            <select
+              class="select select-bordered w-full"
+              formControlName="diagnoses_id"
+              [class.select-error]="isFieldInvalid('diagnoses_id')"
             >
-            </app-searchable-select>
+              <option value="">Select diagnosis</option>
+              <option
+                *ngFor="let diagnosis of (diagnoses$ | async) || []"
+                [value]="diagnosis.id"
+              >
+                {{ diagnosis.display_label }}
+              </option>
+            </select>
             <span
               *ngIf="isFieldInvalid('diagnoses_id')"
-              class="text-xs text-red-500 mt-1"
+              class="block text-xs text-red-500 mt-1"
             >
               {{ getFieldErrorMessage("diagnoses_id") }}
             </span>
-          </label>
+          </div>
 
           <label class="form-control w-full">
             <span class="label-text font-semibold">Diagnosis Description</span>
@@ -201,41 +212,57 @@
         </label>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <label class="label cursor-pointer justify-start gap-3 px-0">
+          <div class="rounded-lg border border-base-300 bg-base-100 p-3 space-y-3">
+            <label class="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 class="checkbox"
                 formControlName="follow_up_required"
               />
-              <span class="label-text font-semibold">Follow-up required</span>
+              <span class="font-semibold text-base-content">Follow-up required</span>
             </label>
             <label class="form-control w-full">
-              <span class="label-text font-semibold">Follow-up Date</span>
+              <span class="text-sm font-semibold mb-1">Follow-up Date</span>
               <input
                 type="date"
                 class="input input-bordered w-full"
                 formControlName="follow_up_date"
+                [disabled]="!form.get('follow_up_required')?.value"
+                [class.input-disabled]="!form.get('follow_up_required')?.value"
               />
+              <span
+                *ngIf="isFieldInvalid('follow_up_date')"
+                class="block text-xs text-red-500 mt-1"
+              >
+                {{ getFieldErrorMessage("follow_up_date") }}
+              </span>
             </label>
           </div>
 
-          <div class="space-y-2">
-            <label class="label cursor-pointer justify-start gap-3 px-0">
+          <div class="rounded-lg border border-base-300 bg-base-100 p-3 space-y-3">
+            <label class="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 class="checkbox"
                 formControlName="referral_made"
               />
-              <span class="label-text font-semibold">Referral made</span>
+              <span class="font-semibold text-base-content">Referral made</span>
             </label>
             <label class="form-control w-full">
-              <span class="label-text font-semibold">Referral To</span>
+              <span class="text-sm font-semibold mb-1">Referral To</span>
               <input
                 type="text"
                 class="input input-bordered w-full"
                 formControlName="referral_to"
+                [disabled]="!form.get('referral_made')?.value"
+                [class.input-disabled]="!form.get('referral_made')?.value"
               />
+              <span
+                *ngIf="isFieldInvalid('referral_to')"
+                class="block text-xs text-red-500 mt-1"
+              >
+                {{ getFieldErrorMessage("referral_to") }}
+              </span>
             </label>
           </div>
         </div>

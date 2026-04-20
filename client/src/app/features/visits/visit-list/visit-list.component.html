@@ -6,6 +6,17 @@
         {{ totalCount }} records found
       </p>
     </div>
+
+    <button
+      *ngIf="canExportVisits"
+      type="button"
+      class="btn btn-outline gap-2"
+      [disabled]="loading"
+      (click)="exportVisitsToExcel()"
+    >
+      <span class="material-symbols-outlined">download</span>
+      Export Excel
+    </button>
   </div>
 
   <div
